@@ -72,10 +72,47 @@ These form the mass matrix $M.$
 
 Next we will also need integrals involving a derivative of a basis function
 $
-integral_(I_j) phi_j^m 
+integral_(I_j) phi_j^m (dif phi_j^n)/(dif x) dif x = integral_(hat(I)) hat(phi)^m (dif hat(phi)^n)/(dif xi) 2/h h/2 dif xi =\
+= integral_(hat(I)) xi^m n xi^(n-1) dif xi = cases(0 quad &: quad (m+n) percent 2 = 0,(2n)/(m+n) quad &: quad (m+n)percent 2 != 0)
 $
+These integrals form the matrix $C$.
 
+Next we need to know the values of the basis functions on the cell boundaries:
+$
+phi_j^m (x_(j-1/2)) = (-1)^m,\
+phi_j^m (x_(j+1/2)) = 1
+$
+those values will form the matrix $B$.
 
+=== Legender polynomials
+
+=== Lagrange polynomials
+
+== Setting up discretizied system
+
+We expect the approximation on element $I_j$ to be a linear combination of the basis functions:
+$
+u_h (x,t) bar.v_(I_j) = limits(sum)_(m=0)^k U_j^m (t) phi_j^m (x),
+$
+where $U_j^m$ is a vector of coefficients of the approximate solution on element $I_j$.
+
+We also expect the test function to be of the same form, their vector of coefficients is $V_j^m$
+
+Now we can discretize our equation in the weak formulation:
++ $ integral_(I_j) (partial u_h)/(partial t) v dif x = integral_(I_j) partial/(partial t)(U_j^m phi_j^m) V_j^n phi_j^n dif x = integral_(I_j) (dif U_j^m)/(dif t) V_j^n phi_j^m phi_j^n dif x = ((dif U_j)/(dif t))^T M V_j $
++ $ integral_(I_j) -a u_h (partial v)/(partial x) dif x = -a integral_(I_j) U_j^m phi_j^m (partial V_j^n phi_j^n)/(partial x) dif x = -a integral_(I_j) U_j^m V_j^n phi_j^m (dif phi_j^n)/(dif x) dif x = -a U_j C V_j $
++ $ a hat(u)_h (x_(j+1/2)) v(x_(j+1/2)) - a hat(u)_h (x_(j-1/2)) v(x_(j-1/2)) = B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) $
+
+Thus we get the following matrix equation
+$ ((dif U_j)/(dif t))^T M V_j -a U_j C V_j + B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) = 0 $
+$ ((dif U_j)/(dif t))^T M  -a U_j C + B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) = 0 $
 
 == Time discretization
+To solve the equation for the coefficients $U_j (t)$ we apply RK2 method.
+$
+((dif U_j)/(dif t))^T = M^(-1) a U_j C - M^(-1) B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) = F(U_j)\
+T_1 = U_j^i + Delta t F(U_j)\
+T_2 = (3U_j^i+T_1+Delta t F(T_1))1/4\
+U_j^(i+1) = (U_j^i + 2 T_2 + 2 delta t F(T_2))1/3
+$
 
