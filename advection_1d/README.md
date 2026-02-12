@@ -28,3 +28,14 @@ To initialize the recurrence we need to know the first two terms, they are given
 &P_1^{\alpha,\beta} = [\alpha-\beta+(\alpha+\beta+2)x]/2
 \end{align*}
 ```
+## JacobiGassQuadrature.hpp
+This script computes the nodes and weights for the Gauss quadrature.
+``` math
+\begin{align*}
+\int_a^b f(x)\ dx \approx \sum_{i=1}^N w_i g(x_i)
+\end{align*}
+```
+The algorithm used is the one presented in [Calculation of Gauss Quadrature Rules](https://web.stanford.edu/class/cme335/spr11/S0025-5718-69-99647-1.pdf) by Golub and Welsh. Although there have been many improvments since, both in precision and speed (see [FAST AND ACCURATE COMPUTATION OF GAUSS–LEGENDRE
+AND GAUSS–JACOBI QUADRATURE NODES AND WEIGHTS](https://epubs.siam.org/doi/10.1137/120889873)), I opted for the simpler GW algorithm.
+
+
