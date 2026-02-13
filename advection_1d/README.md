@@ -3,8 +3,17 @@
 This solver was written along the book Nodal Discontinuous Galerkin Methods by Hesthaven and Warburton.
 
 # DGM
+The Discontinuous Galerkin method is a numerical method for solving partial differential equaitions. It's main advantages are:
+- hp-adaptivity
+- parallelization
+- easy to use on unstructured grids
+- high precision
+
+## Some background
+The main thought here is that we approximate the unknown function as a linear combination of some polynomials. I will be using the Legender polynomials, although the lareger family of Jacobi polynomials is implemented for future...
 
 # Modules
+This particular solver consists of multiple scripts, their function and mathematical background is explained below.
 
 ## JacobiP.hpp
 This script evaluates the Jacobi polynomial at a point or for all elements of a vector.
