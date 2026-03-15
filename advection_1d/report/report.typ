@@ -10,6 +10,21 @@
 #title()
 
 This text is mainly inspired by #cite(<hesthaven2008nodal>).
+
+= TODO:
+- [ ] more general formulation
+- [ ] unstructured mesh
+- [ ] nonlinear equation
+- [ ] system of equations
+- [ ] nonlinear systems
+
+= Symbols
+
+- $u_h$ - approximate solution obtained on a mesh with step $h$
+- $(dot.op, dot.op)_(L^2)$ - scalar product in $L^2$
+- $P_k (I_j)$ - space of polynomoials of up to order $k$ on an interval $I_j$
+- $phi_i$ - $i$-th basis function
+
 = Problem overview
 The linear advection equation is of the following form:
 $ (partial u)/(partial t) + a (partial u)/(partial x) = 0 $
@@ -42,7 +57,7 @@ Now we have to define $u_h (x_(i plus 1/2))$, to do that we define suitable nume
 $ u_h (x_(x plus 1/2)) = hat(u)_h (x_(x plus 1/2)) $
 One such numerical flux could be the well known upwind ($a > 0$)
 $ hat(u) (x_(x plus 1/2)) = u_h^- (x_(x plus 1/2)) = limits(lim)_(x arrow x_(j + 1/2)) u_h(x) $
-#pagebreak()
+
 The integral equation then becomes
 $ integral_(I_j) (partial u_h)/(partial t) v dif x - integral_(I_j) (partial v)/(partial x) u_h dif x + [ a hat(u)_h (x_(j - 1/2)) v (x_(j - 1/2)) - a hat(u)_h (x_(j + 1/2)) v (x_(j + 1/2))] = 0 $
 If we sum over all the elements we get the following equation
@@ -165,6 +180,7 @@ M_(i j) = integral_(-1)^1 (cal(V)^T)_(i n)^(-1) phi_n (r) (cal(V)^T)_(j m)^(-1) 
 $
 Thus
 $ M^k = h_k/2 M = h_k/2 (cal(V) cal(V)^T)^(-1) $
+
 === Stiffness matrix
 The local stiffness matrix is given as
 $ S_(i j)^k = integral_(x_l^k)^(x_r^k) l_i^k (x) dif/(dif x) l_j^k (x) dif x = integral_(-1)^1 l_i (r) dif/(dif r) l_j (r) dif r = S_(i j) $
@@ -180,29 +196,10 @@ The entries of the differentiation matrix can be found directly
 $ D = cal(V)_r cal(V)^(-1), $
 where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials. 
 
-== Mesh
-
-/// idk co s tímhle no
-/*
-== Setting up discretizied system
-
-We expect the approximation on element $I_j$ to be a linear combination of the basis functions:
-$
-u_h (x,t) bar.v_(I_j) = limits(sum)_(m=0)^k U_j^m (t) phi_j^m (x),
-$
-where $U_j^m$ is a vector of coefficients of the approximate solution on element $I_j$.
-
-We also expect the test function to be of the same form, their vector of coefficients is $V_j^m$
-
-Now we can discretize our equation in the weak formulation:
-+ $ integral_(I_j) (partial u_h)/(partial t) v dif x = integral_(I_j) partial/(partial t)(U_j^m phi_j^m) V_j^n phi_j^n dif x = integral_(I_j) (dif U_j^m)/(dif t) V_j^n phi_j^m phi_j^n dif x = ((dif U_j)/(dif t))^T M V_j $
-+ $ integral_(I_j) -a u_h (partial v)/(partial x) dif x = -a integral_(I_j) U_j^m phi_j^m (partial V_j^n phi_j^n)/(partial x) dif x = -a integral_(I_j) U_j^m V_j^n phi_j^m (dif phi_j^n)/(dif x) dif x = -a U_j C V_j $
-+ $ a hat(u)_h (x_(j+1/2)) v(x_(j+1/2)) - a hat(u)_h (x_(j-1/2)) v(x_(j-1/2)) = B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) $
-
-Thus we get the following matrix equation
-$ ((dif U_j)/(dif t))^T M V_j -a U_j C V_j + B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) = 0 $
-$ ((dif U_j)/(dif t))^T M  -a U_j C + B mat(- a hat(u)_h (x_(j-1/2));a hat(u)_h (x_(j+1/2))) = 0 $
-*/
+=== Surface integral
+This operator is responsible of extracting the surface terms of the form
+$ integral.cont_(-1)^1 hat(bold(n)) dot.op (u_h - u^*) l_i (r) dif r = (u_h - u^*) bar.v_(r_n) bold(e)_n - (u_h - u^*) bar.v_(r_1) bold(e)_1, $
+where $bold(e)_i$ is a zero vector with $1$ at index $i$.
 
 == Time discretization
 
@@ -216,11 +213,16 @@ $
 &u_h^(n+1) = u_h^n + 1/6 Delta t (k_1 + k_2 + k_3 + k_4)
 $
 
+= Mesh
+
+Unsturctured mesh was chosen as the type of spatial discretization.
+
+
 = Example problem
 
 We are given the following problem
 $
-diff_t u + 2 pi diff_x u = 0, quad x in chevron.l 0, 2 pi chevron.r\
+partial_u + 2 pi partial_u = 0, quad x in chevron.l 0, 2 pi chevron.r\
 u(x,0) = sin(x)\
 u(0,t) = -sin(2 pi t)
 $
