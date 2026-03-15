@@ -1,7 +1,13 @@
 #set text(font: "New Computer Modern", lang: "en")
+#show link: set text(fill: blue)
+#set page(
+  paper: "a4",
+  number-align: center,
+  numbering: "— 1 —",
+)
 #set heading(numbering: "1.")
 #set document(
-  title: [#align(center)[GD method for the 1D linear advection equation]],
+  title: [#align(center)[DG method for the 1D advection equation]],
   author: "Jachym Smid",
   date: auto
 )
@@ -9,67 +15,82 @@
 
 #title()
 
-This text is mainly inspired by #cite(<hesthaven2008nodal>).
+This text was mainly inspired by #cite(<hesthaven2008nodal>). Code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
 
-= TODO:
-- [ ] more general formulation
-- [ ] unstructured mesh
-- [ ] nonlinear equation
-- [ ] system of equations
-- [ ] nonlinear systems
-
-= Symbols
+#heading(level: 1, numbering: none, "Symbols")
 
 - $u_h$ - approximate solution obtained on a mesh with step $h$
 - $(dot.op, dot.op)_(L^2)$ - scalar product in $L^2$
 - $P_k (I_j)$ - space of polynomoials of up to order $k$ on an interval $I_j$
 - $phi_i$ - $i$-th basis function
+- $bold(f)^*$ - numerical flux
+- $brace.l.double f brace.r.double = (u^- + u^+)/2$
+- $bracket.l.stroked f bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
+- $hat(u)$ - vector of coefficients
+- $l_i(x)$ - Lagrange polynomoial
 
 = Problem overview
-The linear advection equation is of the following form:
-$ (partial u)/(partial t) + a (partial u)/(partial x) = 0 $
-where $a$ is the advection speed and $u = u(x,t)$ is the unknown scalar function.
+The general one dimensional advection equation is of the following form:
+$ (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) = 0 $
+where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$ is the physical flux and $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$ is the unknown vector valued function.
 This equation is hyperbolic.
 
-For the initial conditions problem we have to specify the initial conditions $u(x,t) bar.v_(t = 0) = u_0 (x)$, this can be solved analytically using the method of charcteristics.
-We will be solving this problem on an interval $I = chevron.l 0, L chevron.r$, with the boundary condition on the left border (assuming $a>0$) $u(x,t) bar.v_(x = 0) = alpha(t)$.
+For this problem to be well defined we need to impose initial and boundary conditions.
+$
+bold(u)(x, 0) = bold(u)_0 (x)\
+cal(B)_L bold(u)(L, t) = bold(g)_1 (t) " at " x = L\
+cal(B)_R bold(u)(R, t) = bold(g)_2 (t) " at " x = R
+$
+where the sum of the ranks of the boundary operators $cal(B)_L,cal(B)_R$ equals the number of the required inflow conditions.
+
+== Weak formulation of the problem
+
+To obtain the weak formulation we multiply the equation by a test function $bold(v)_h in V_h^k$ and integrate over $I^j$.
+$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = 0. $
+Using per-partes on the second integral we obtain
+$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = 0 $
 
 = Discontinous Galerkin Method
 
 == Spatial discretization
 
-We split our domain (interval $I$) into $N$ elements $I_j = chevron.l x_(j-2/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element. We will use constant spatial step $h = L/N$,
-that means that $x_i = i h$. In each element we will be trying to approximate the solution with a polynomial of degree $k.$
-
-We define a function space
+We split our domain (interval $I = chevron.l L, R chevron.r$) into $N$ elements $D^k= chevron.l x_(j-2/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element.
+We now formulate the local weak formulation
 $
-V_h^k = {v in L^2(I) thick : thick v bar.v_(I_j) in P_k (I_j), thick j = 1,2,dots,N},
+integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x = -bracket.l bold(v)^T bold(f) (bold(u)) bracket.r_(x_(j-1/2))^(x_(j+1/2)) = integral_(partial D^k) hat(bold(n)) dot.op bold(f)^*(bold(u)) bold(v) dif x
 $
-where $P_k (I_j)$ is a space of polynomials of at most degree $k$ on the interval $I_j$.
-
-== Weak formulation of the problem
-
-To obtain the weak formulation we multiply the equation by a test function $v in V_h^k$ and integrate over the interval $I_j$.
-$ integral_(I_j) (partial u_h)/(partial t) v dif x + integral_(I_j) (partial u_h)/(partial x) v dif x = 0. $
-Using per-partes on the second integral we obtain
-$ integral_(I_j) (partial u_h)/(partial t) v dif x - integral_(I_j) (partial v)/(partial x) u_h dif x + bracket.l a u_h v bracket.r_(x_(j - 1/2))^(x_(j + 1/2)) = 0 $
-Now we have to define $u_h (x_(i plus 1/2))$, to do that we define suitable numerical flux.
-$ u_h (x_(x plus 1/2)) = hat(u)_h (x_(x plus 1/2)) $
-One such numerical flux could be the well known upwind ($a > 0$)
-$ hat(u) (x_(x plus 1/2)) = u_h^- (x_(x plus 1/2)) = limits(lim)_(x arrow x_(j + 1/2)) u_h(x) $
-
-The integral equation then becomes
-$ integral_(I_j) (partial u_h)/(partial t) v dif x - integral_(I_j) (partial v)/(partial x) u_h dif x + [ a hat(u)_h (x_(j - 1/2)) v (x_(j - 1/2)) - a hat(u)_h (x_(j + 1/2)) v (x_(j + 1/2))] = 0 $
-If we sum over all the elements we get the following equation
-$ sum_(j = 1)^N (integral_(I_j) (partial u_h)/(partial t) v dif x - integral_(I_j) (partial v)/(partial x) u_h dif x + [ a hat(u)_h (x_(j - 1/2)) v (x_(j - 1/2)) - a hat(u)_h (x_(j + 1/2)) v (x_(j + 1/2))]) = 0 $
+We now have to define $bold(f)(bold(u)(x_(j-1/2), t))$, because the function is multivalued at the element interfaces.
+To do that we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The flux must be consistent i.e. $bold(f)^* (a,a) = bold(f) (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
+$
+bold(f)^* = brace.l.double bold(f)(bold(u)) brace.r.double = C/2 bracket.l.stroked bold(u) bracket.r.stroked
+$
+where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the flux Jacobian
+$
+C = max_i lambda_i = rho (bold(f)_(bold(u))) = rho ((partial bold(f))/(partial bold(u)))
+$
 
 == Basis functions
 
-We assume the local solutions to be of the form
+We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solution of degree $K$
 $
-x in I_j quad : quad u_h^j = sum_(n)^N U_n^j (t) phi_n (x) = sum_j^N u_h^k (x_i, t) l_i (x),
+bold(u) (x,t) approx bold(u)_h (x,t) = plus.o.big_(k=1)^K bold(u)_h^k (x^k, t)
 $
-where the first expression is said to be modal representation and the second nodal.
+We define a function space
+$
+V_h^k = {phi in L^2(I) thick : thick phi bar.v_(D^k) in P_k (D^k), thick j = 1,2,dots,N},
+$
+where $P_k (D^k)$ is a space of polynomials of at most degree $k$ on the interval $I_j$.
+
+Now we can express the local approximate solution in the basis of the space $V_h^k$
+$
+x in D^k quad : quad u_h^k = sum_(n)^N hat(bold(u))_n^k (t) phi_n (x) = sum_j^N bold(u)_h^k (x_i, t) l_i (x),
+$
+where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the Lagrange polynomial. The first expression is said to be modal representation and the second nodal.
+
+Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations
+$
+integral_(D^k) phi_i partial/(partial t) (sum_(j=0)^N hat(bold(u))_j^k phi_j) dif x - integral_(D^k) (partial phi_i)/(partial x) bold(f) (bold(u)_h^k) dif x + integral_(partial D^k) hat(bold(n)) dot.op phi_i bold(f)^* dif x = 0
+$
 
 When choosing the basis functions for the space $V_h^k$ we have many options, the easiest one is the *monomial* basis.
 
@@ -132,36 +153,36 @@ $
 
 == Nodal representation
 
-Now we need to compute the $U_n$, which is given as
-$ U_n = (u, phi_n)_(L^2) $
-This identity follows from residual orthonormality.
-$
-(u-u_h, phi_n)_(L^2) = 0\
-(u, phi_n)_(L^2) - (u_h, phi_n)_(L^2) = 0\
-(u,phi_n)_(L^2) = (U_m phi_m, phi_n)_(L^2) = U_m (phi_m, phi_n)_(L^2) = U_m delta_(m n) = U_n\
-(u, phi_n)_(L^2) = U_n
-$
-For a general function this integral is nontrivial, we therefor approximate it with a sum. In particular we use the Gaussian quadrature.
-$
-U_n = sum_i^N u(r_i) phi_n (r_i) w_i,
-$
-where $r_i$ are suitably chosen points and $w_i$ are weights. This quadrature is exact for polynomials of order $2 N -1$.
+//Now we need to compute the $U_n$, which is given as
+//$ U_n = (u, phi_n)_(L^2) $
+//This identity follows from residual orthonormality.
+//$
+//(u-u_h, phi_n)_(L^2) = 0\
+//(u, phi_n)_(L^2) - (u_h, phi_n)_(L^2) = 0\
+//(u,phi_n)_(L^2) = (U_m phi_m, phi_n)_(L^2) = U_m (phi_m, phi_n)_(L^2) = U_m delta_(m n) = U_n\
+//(u, phi_n)_(L^2) = U_n
+//$
+//For a general function this integral is nontrivial, we therefor approximate it with a sum. In particular we use the Gaussian quadrature.
+//$
+//U_n = sum_i^N u(r_i) phi_n (r_i) w_i,
+//$
+//where $r_i$ are suitably chosen points and $w_i$ are weights. This quadrature is exact for polynomials of order $2 N -1$.
 
-But for later generalization we define $U_n$ such that the approximation is interpolatory. Meaning
+We define $hat(bold(u))_n$ such that the approximation is interpolatory. Meaning
 $
-u(xi_i) = sum U_n psi_n (xi_i),
+u(xi_i) = sum hat(bold(u))_n psi_n (xi_i),
 $
 where $xi_i$ represents distinct grid nodes. We can now write
-$ u = cal(V) U, $
+$ bold(u) = cal(V) hat(bold(u)), $
 where $cal(V)_(i j) = phi_j (xi_i)$ is the Vandermonde matrix and $u_i = u(xi_i)$. This matrix connects the modes $U$ and nodal values $u(xi_i)$. We would like the matrix to be well conditioned. We already chose the basis polynomials, so only the nodes $xi_i$ are left to define the Vandermonde matrix.
 
 We first recognize that if
-$ u(r) approx u_h(r) j= sum U_n phi_n $
-is an interpolant ($u(xi_i)=u_h (xi_i)$), then we can write it as
-$ u(r) approx u_h(r) = sum u(xi_i) l_i (r), $
-where $l_i(r)$ are the Lagrange polynomials.
+$ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
+is an interpolant ($bold(u)(xi_i) = bold(u)_h (xi_i)$), then we can write it as
+$ bold(u)(r) approx bold(u)_h (r) = sum bold(u)(xi_i) l_i (r), $
+where $l_i (r)$ are the Lagrange polynomials.
 
-Without other comments the Legender-Gauss-Lobatto nodes will be chosen.
+Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
 == Local operators
 Up till now we were developing a sensible local representation of the approximate solution. We should now discuss the various local operators.
@@ -215,7 +236,8 @@ $
 
 = Mesh
 
-Unsturctured mesh was chosen as the type of spatial discretization.
+Unsturctured mesh was chosen as the type of spatial discretization representation.
+I opted for the mesh structure from #link("https://tnl-project.org/")[TNL]
 
 
 = Example problem
