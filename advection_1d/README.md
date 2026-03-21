@@ -2,49 +2,147 @@
 
 This solver was written along the book Nodal Discontinuous Galerkin Methods by Hesthaven and Warburton.
 
-# DGM
-The Discontinuous Galerkin method is a numerical method for solving partial differential equaitions. It's main advantages are:
-- hp-adaptivity
-- parallelization
-- easy to use on unstructured grids
-- high precision
+## MeshConfig.hpp
+This is a config struct for the TNL::Meshes::Mesh constructor. It inherits from the TNL::Meshes::Mesh::DefaultConfig, that has these templates:
+- Topology = TNL::Meshes::Topologies::Edge
+- Dimension = 1
+- GlobalIndex = int
+- LocalIndex = short
 
-## Some background
-The main thought here is that we approximate the unknown function as a linear combination of some polynomials. I will be using the Legender polynomials, although the lareger family of Jacobi polynomials is implemented for future...
+We also set a alias for the mesh
+```cpp
+using TNLMesh1D = TNL::Meshes::Mesh<Mesh1DConfig<Real, Index, short>, Device>;
+```
+Where `Real`, `Index` and `Device` are templated.
 
-# Modules
-This particular solver consists of multiple scripts, their function and mathematical background is explained below.
+## DGMesh.hpp
+This is a mesh class for the DGM. It is templated with `Real`, `Index` and `Device`. It contains
+- `numK_` : number of elements in the mesh
+- `vertCoods_` : coordinates of the vertices of the elements
+- `mesh_` : the underlying TNL mesh
 
-## JacobiP.hpp
-This script evaluates the Jacobi polynomial at a point or for all elements of a vector.
-The three term recurrence formula is used for the construction.
-
-``` math
-\begin{align*}
-P_{n+1}^{\alpha,\beta}(x) &= [(b_n+c_n x)P_n^{\alpha,\beta}-d_n P_{n-1}^{\alpha,\beta}]/a_n \\
-&a_n = 2(n+1)(n+\alpha+\beta+1)(2n+\alpha+\beta), \\
-&b_n = (2n+\alpha+\beta+1)(\alpha^2-\beta^2), \\
-&c_n = (2n+\alpha+\beta)(2n+\alpha+\beta+1)(2n+\alpha+\beta+2) \\
-&d_n = 2(n+\alpha)(n+\beta)(2n+\alpha+\beta+2)
-\end{align*}
+### Constructors
+This class has three constructors
+- Constructor from an already built mesh
+```cpp
+DG1DMesh(MeshType mesh);
+```
+- Constructor that creates a mesh with uniform steps
+```cpp
+DG1DMesh uniform(Real a, Real b, Index K)
+```
+- Constructor that reads a VTK file a creates the mesh
+```cpp
+TODO
 ```
 
-To initialize the recurrence we need to know the first two terms, they are given as
+### Public methods
+- `numElements()` : returns the number of elements of the mesh
+- `numFaces()` : returns the number of faces of all elements (should be numElements + 1 in 1D)
+- `leftVertex(Index k)` : returns the coordinate of the left vertex of k-th element
+- `rightVertex(Index k)` : returns the coordinate of the right vertex of k-th element
+- `elementSize(Index k)` : returns the size of the k-th element
+- `jacobian(Index k)` : returns the Jacobian of the k-th element
+- `leftCellOfFace(Index f)` : returns the index of the cell to the left of the f-th face, if the face is the left boundary a -1 is returned
+- `rightCellOfFace(Index f)` : returns the index of the cell to the right of the f-th face, if the face is the right boundary a -1 is returned
+- `leftNormal()` : returns the left normal (its just -1 in 1D)
+- `rightNormal()` : returns the right normal (its just 1 in 1D)
+- `isBoundaryFace(Index f)` : checks whether the face with index f is a boundary or not
+- `faceCoord(Index f)` : returns the coordinate of the f-th face
+- `tnlMesh()` : returns the underlying TNL mesh
 
-``` math
-\begin{align*}
-&P_0^{\alpha,\beta} = 0 \\
-&P_1^{\alpha,\beta} = [\alpha-\beta+(\alpha+\beta+2)x]/2
-\end{align*}
+### Private methods
+- `buildDerivedData_()` :
+    - sets the number of elements
+    - computes the coordinates of the vertices
+
+## ReferenceElement.hpp
+This is a class that holds the data about a reference element. It comprises
+- `N_` : the polynomial order of the approximation
+- `Np_` : number of degrees of freedom
+- `r_` : LGL nodes
+- `w_` : LGL weights
+- `V_` : the Vandermonde matrix
+- `Dr_` : the derivative matrix
+- `LIFT_` : the lift
+
+### Public methods
+- `order()` : returns the polynomial order of the approximation
+- `numDOF()` : returns the number of degrees of freedom
+- `nodes()` : returns the coordinates of the LGL nodes on the reference element
+- `weights()` : returns the coordinates of the LGL weights on the reference element
+- `V()` : returns the Vandermonde matrix
+- `Dr()` : returns the derivative matrix
+- `LIFT()` : returns the LIFT matrix
+- `legendreP(Index n, Real x)` : evaluates the Legendre polynomial of order 'n' at coordinate 'x'
+- `legendrePderiv(Index n, Real x)` : evaluates the derivative of the Legendre polynomial of order 'n' at coordinate 'x'
+
+### Private methods
+- `computeGLL_(Vector& r, Vector& w)` : computes the GLL nodes and weights
+- `buildVandermonde_(const Vector& r)` : builds the Vandermonde matrix from the LGL nodes
+- `buildDerivVandermonde(const Vector& r)` : builds the derivative of the Vandermonde matrix
+- `invertMatrix_(const Matri& A)` : inverts the matrix A using the Gauss-Jordan elimination
+- `buildDMatrix_(const Matrix& V)` : builds the derivative matrix
+- `buildLIFT_(const Matrix& V)` : builds the LIFT matrix
+
+## FiledVector.hpp
+This is a class that stores
+- `data_` : vector of the data
+- `K_` : number of elements
+- `Np_` : number of degrees of freedom
+
+It has two constructors
+- default constructor
+- constructor if the 'K' and 'Np' are specified
+```cpp
+FiledVector(Index K, Index Np);
 ```
-## JacobiGassQuadrature.hpp
-This script computes the nodes and weights for the Gauss quadrature.
-``` math
-\begin{align*}
-\int_a^b f(x)\ dx \approx \sum_{i=1}^N w_i g(x_i)
-\end{align*}
+
+### Public methods
+- `numElements()` : returns the number of elements
+- `numDOF()` : returns the number of degrees of freedom
+- `totalSize()` : returns the total number of data points
+- `elementPtr(Index k)` : returns a pointer to the first element of the k-th element
+- `data()` : returns the data vector
+- `copyFrom(const FiledVector& other)` : deep copy
+
+## NumericalFlux.hpp
+This is a general struct that computes the numerical flux from $u^+$, $u^-$ and $\mathbf{n}$
+There are two numerical fluxes that inherit from the general struct
+
+### Upwind
+```math
+begin{align*}
+f^* = f(u^-) \text{ for } \mathbf{n} > 0\\
+f^* = f(u^+) \text{ for } \mathbf{n} < 0\\
+end{align*}
 ```
-The algorithm used is the one presented in [Calculation of Gauss Quadrature Rules](https://web.stanford.edu/class/cme335/spr11/S0025-5718-69-99647-1.pdf) by Golub and Welsh. Although there have been many improvments since, both in precision and speed (see [FAST AND ACCURATE COMPUTATION OF GAUSS–LEGENDRE
-AND GAUSS–JACOBI QUADRATURE NODES AND WEIGHTS](https://epubs.siam.org/doi/10.1137/120889873)), I opted for the simpler GW algorithm.
 
+### Lax-Friedrichs
+```math
+f^* = 0.5(f(u^-) + f(u^+)) - 0.5 C (u^+ - u^-)
+```
+## Operator.hpp
+This class computes the RHS for the semi-discrete form of the equation. It comprises
+- `mesh_` : the mesh class
+- `ref_` : the reference element class
+- `flux_` : the numerical flux struct
+- `physFlux_` : the physical flux function
 
+It has only one member function `computeRHS(const Field& u, Field& res)` that computes the RHS and saves it into 'res'.
+
+## RK4Integrator.hpp
+This class features the 4 step order Runge-Kutta methods for numerical integration. It comprises
+- `K_` : number of elements
+- `Np_` : number of degrees of freedom
+- `callback_` : callback function
+- `k1_`,`k2_`,`k3_`,`k4_` : the four derivatives
+- `tmp_` : temporary field
+- `lastStepCount_` : last step count
+- `currentTime_` : current time
+
+## IO.hpp
+This is a compilation of functions that work as input output for the solver.
+
+- `writeToVTK(const Mesh mesh, const Ref ref, const string filename, const string fieldname, Real t)` : writes the data to a VTK file
+- `writeTimeSeriesVTK(const Mesh mesh, const Ref ref, const string base_name, int frameIndex, Real t, const string fieldname)` : outputs multiple VTK files
