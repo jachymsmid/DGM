@@ -18,121 +18,136 @@ template
 class Mesh
 {
 public:
-    using MeshType = TNLMesh<Real, Device, Index>; // my alias from MeshConfig.hpp
-    using RealArray = TNL::Containers::Array<Real,  Device, Index>;
-    using IndexArray = TNL::Containers::Array<Index, Device, Index>;
+  using TNLMeshType = TNLMesh<Real, Device, Index>; // my alias from MeshConfig.hpp
+  using RealArray = TNL::Containers::Array<Real,  Device, Index>;
+  using IndexArray = TNL::Containers::Array<Index, Device, Index>;
 
-    // Sentinel for boundary faces (no right/left neighbour)
-    static constexpr Index BOUNDARY_FACE = -1;
+  // Sentinel for boundary faces (no right/left neighbour)
+  static constexpr Index BOUNDARY_FACE = -1;
 
-    // ------------------------------------------------------------------ //
-    //  Construction from an already-built TNL mesh
-    // ------------------------------------------------------------------ //
-    explicit Mesh(MeshType mesh)
-        : mesh_(std::move(mesh))
-    {
-        buildDerivedData_();
+  //  Construction from a TNL mesh
+  explicit Mesh(TNLMeshType mesh)
+      : mesh_(std::move(mesh))
+  {
+    buildDerivedData_();
+  }
+
+  //  Factory: uniform mesh on [a,b] with K elements
+  static Mesh uniform(Real a, Real b, Index K)
+  {
+    if (K < 1) throw std::invalid_argument("K must be >= 1");
+    using Builder = TNL::Meshes::MeshBuilder<TNLMeshType>;
+    Builder builder;
+    builder.setEntitiesCount(K + 1, K);   // K+1 vertices, K cells
+
+    const Real h = (b - a) / K;
+
+    for (Index i = 0; i <= K; ++i)
+      builder.setPoint(i, TNL::Containers::StaticVector<1,Real>{a + i * h});
+
+    for (Index k = 0; k < K; ++k) {
+      builder.getCellSeed(k).setCornerId(0, k);
+      builder.getCellSeed(k).setCornerId(1, k + 1);
     }
+    TNLMeshType m;
+    builder.build(m);
+    return Mesh(std::move(m));
+  }
 
-    // ------------------------------------------------------------------ //
-    //  Factory: uniform mesh on [a,b] with K elements
-    // ------------------------------------------------------------------ //
-    static Mesh uniform(Real a, Real b, Index K)
-    {
-        if (K < 1) throw std::invalid_argument("K must be >= 1");
-        using Builder = TNL::Meshes::MeshBuilder<MeshType>;
-        Builder builder;
-        builder.setEntitiesCount(K + 1, K);   // K+1 vertices, K cells
+  // ------------------------------------------------------------------ //
+  //  VTK Reader: construct mesh from a VTK file
+  // ------------------------------------------------------------------ //
 
-        const Real h = (b - a) / K;
-        for (Index i = 0; i <= K; ++i)
-            builder.setPoint(i, TNL::Containers::StaticVector<1,Real>{a + i * h});
+  static Mesh readVTK(const std::string& filename)
+  {
+    using TNLMeshType = typename Mesh<Real, Device, Index>::TNLMeshType;
 
-        for (Index k = 0; k < K; ++k) {
-            builder.getCellSeed(k).setCornerId(0, k);
-            builder.getCellSeed(k).setCornerId(1, k + 1);
-        }
-        MeshType m;
-        builder.build(m);
-        return Mesh(std::move(m));
-    }
+    TNL::Meshes::Readers::VTKReader reader(filename);
+    reader.detectMesh();
 
-    // ------------------------------------------------------------------ //
-    //  VTK Reader: construct mesh from a VTK file
-    // ------------------------------------------------------------------ //
+    // Sanity checks: must be a 1D mesh of line segments
+    if (reader.getMeshDimension() != 1)
+      throw std::runtime_error(
+        "readMeshFromVTK: file '" + filename +
+        "' has mesh dimension " +
+        std::to_string(reader.getMeshDimension()) +
+        ", expected 1.");
 
-    static Mesh readVTK(const std::string& filename)
-    {
-        using MeshType = typename Mesh<Real, Device, Index>::MeshType;
+    TNLMeshType tnlMesh;
+    reader.loadMesh(tnlMesh);
 
-        TNL::Meshes::Readers::VTKReader reader(filename);
-        reader.detectMesh();
-
-        // Sanity checks: must be a 1D mesh of line segments
-        if (reader.getMeshDimension() != 1)
-            throw std::runtime_error(
-                "readMeshFromVTK: file '" + filename +
-                "' has mesh dimension " +
-                std::to_string(reader.getMeshDimension()) +
-                ", expected 1.");
-
-        MeshType tnlMesh;
-        reader.loadMesh(tnlMesh);
-
-        return Mesh<Real, Device, Index>(std::move(tnlMesh));
-    }
+    return Mesh<Real, Device, Index>(std::move(tnlMesh));
+  }
 
 
-    // ------------------------------------------------------------------ //
-    //  Getters
-    // ------------------------------------------------------------------ //
-    Index numElements() const { return numK_; }
-    Index numFaces()  const { return numK_ + 1; } // K+1 vertices in 1D
+  // ------------------------------------------------------------------ //
+  //  Getters
+  // ------------------------------------------------------------------ //
+  Index numElements() const { return numK_; }
+  Index numFaces()  const { return numK_ + 1; } // K+1 vertices in 1D
 
-    // Physical vertex coordinates of element k: [x_L, x_R]
-    Real leftVertex (Index k) const { return vertCoords_[k];     }
-    Real rightVertex(Index k) const { return vertCoords_[k + 1]; }
-    Real elementSize(Index k) const { return rightVertex(k) - leftVertex(k); }
+  // Physical vertex coordinates of element k: [x_L, x_R]
+  Real leftVertex (Index k) const { return vertCoords_[k];     }
+  Real rightVertex(Index k) const { return vertCoords_[k + 1]; }
+  Real elementSize(Index k) const { return rightVertex(k) - leftVertex(k); }
+  Real minElementSize() const { return min_h_; }
+  Real maxElementSize() const { return max_h_; }
 
-    // Jacobian of the affine map r -> x:  x = x_L + (r+1)/2 * h_k
-    Real jacobian(Index k) const { return elementSize(k) * Real(0.5); }
+  // Jacobian of the affine map r -> x:  x = x_L + (r+1)/2 * h_k
+  Real jacobian(Index k) const { return elementSize(k) * Real(0.5); }
 
-    // Left/right cell indices sharing face f (BOUNDARY_FACE if none)
-    // Face f = vertex f.  Faces 0..K:
-    //   face 0 is the left  boundary (only right cell k=0 exists)
-    //   face K is the right boundary (only left  cell k=K-1 exists)
-    //   face f (0 < f < K): left cell = f-1, right cell = f
-    Index leftCellOfFace(Index f) const { return (f == 0) ? BOUNDARY_FACE : f - 1; }
-    Index rightCellOfFace(Index f) const { return (f == numK_) ? BOUNDARY_FACE : f; }
+  // Left/right cell indices sharing face f (BOUNDARY_FACE if none)
+  // Face f = vertex f.  Faces 0..K:
+  //   face 0 is the left  boundary (only right cell k=0 exists)
+  //   face K is the right boundary (only left  cell k=K-1 exists)
+  //   face f (0 < f < K): left cell = f-1, right cell = f
+  Index leftCellOfFace(Index f) const { return (f == 0) ? BOUNDARY_FACE : f - 1; }
+  Index rightCellOfFace(Index f) const { return (f == numK_) ? BOUNDARY_FACE : f; }
 
-    // Outward normal of cell k at its left face (-1) and right face (+1)
-    static constexpr Real leftNormal() { return Real(-1); }
-    static constexpr Real rightNormal() { return Real(+1); }
+  // Outward normal of cell k at its left face (-1) and right face (+1)
+  static constexpr Real leftNormal() { return Real(-1); }
+  static constexpr Real rightNormal() { return Real(+1); }
 
-    // Is face f on the domain boundary?
-    bool isBoundaryFace(Index f) const { return f == 0 || f == numK_; }
+  // Is face f on the domain boundary?
+  bool isBoundaryFace(Index f) const { return f == 0 || f == numK_; }
 
-    // Physical coordinate of face f
-    Real faceCoord(Index f) const { return vertCoords_[f]; }
+  // Physical coordinate of face f
+  Real faceCoord(Index f) const { return vertCoords_[f]; }
 
-    // The underlying TNL mesh (for VTK I/O etc.)
-    const MeshType& tnlMesh() const { return mesh_; }
+  // The underlying TNL mesh (for VTK I/O etc.)
+  const TNLMeshType& tnlMesh() const { return mesh_; }
 
 private:
-    void buildDerivedData_()
+  void buildDerivedData_()
+  {
+    // number of cells in a TNL mesh
+    numK_ = mesh_.template getEntitiesCount<1>();
+
+    // number of vertices
+    vertCoords_.setSize(numK_ + 1);
+
+    Real h = 0;
+    Real vertCoordPrev;
+
+    // for every mesh cell
+    // set coordinates of the vertices, get max and min spatial step
+    for (Index i = 0; i <= numK_; ++i)
     {
-        numK_ = mesh_.template getEntitiesCount<1>(); // number of cells (segments)
-        vertCoords_.setSize(numK_ + 1);
-
-        for (Index i = 0; i <= numK_; ++i) {
-            auto pt = mesh_.template getEntity<0>(i).getPoint();
-            vertCoords_[i] = pt[0];
-        }
+      auto pt = mesh_.template getEntity<0>(i).getPoint();
+      vertCoords_[i] = pt[0];
+      vertCoordPrev = pt[0];
+      if (i == 0) continue;
+      h = vertCoords_[i] - vertCoordPrev;
+      max_h_ = std::max(h, max_h_);
+      min_h_ = std::min(h, min_h_);
     }
+  }
 
-    MeshType  mesh_;
-    Index     numK_{0};
-    RealArray vertCoords_;   // x_0, x_1, ..., x_K
+  TNLMeshType  mesh_;
+  Index numK_{0};
+  Real max_h_ = 0.0;
+  Real min_h_ = 100.0;
+  RealArray vertCoords_;   // x_0, x_1, ..., x_K
 };
 
 } // namespace DG
