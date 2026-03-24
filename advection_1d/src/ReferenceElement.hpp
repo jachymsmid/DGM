@@ -8,7 +8,9 @@
 #include <TNL/Matrices/MatrixBase.h>
 #include <cmath>
 #include <Eigen/Dense>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 
 namespace DG {
 
@@ -29,7 +31,7 @@ public:
   {
     r_.setSize(Np_);
     w_.setSize(Np_);
-    computeGLL_(r_, w_);  // Gauss–Lobatto–Legendre nodes & weights
+    computeGLL_(r_, w_, Np_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
     Vr_ = buildDerivVandermonde_(r_);
@@ -87,7 +89,7 @@ public:
     Real norm, p2;
     for (Index k = 1; k < n; ++k)
     {
-      p2 = ((2*k+1)*x*p1 - k*p0) / (k+1);
+      p2 = ((2*k-1)*x*p1 - (k-1)*p0) / k;
       p0 = p1; p1 = p2;
     }
     return p2;
@@ -103,19 +105,69 @@ public:
     return norm * (( n + 1 ) * legendreP(n-1,x) + x * legendrePDeriv(n-1,x));
   }
 
+  static Real legendrePDerivNN(Index n, Real x)
+  {
+    if (n == 0) return Real(0);
+    if (n == 1) return Real(1);
+    return n*(legendrePNN(n-1,x) - x*legendrePNN(n,x))/(1-x*x);
+  }
+
+  // Evalueate the second derivative of P_n at x
+  // Recursion formula
+  static Real legendrePDeriv2(Index n, Real x)
+  {
+    if (n < 2) return Real(0);
+    Real norm = std::sqrt(Real(2*n+1) / 2);
+    return norm * (- n * ( n + 1 ) * legendreP(n,x) + 2 * x * legendrePDeriv(n,x))/(1 - x*x);
+  }
+
+  static Real legendrePDeriv2NN(Index n, Real x)
+  {
+    if (n < 2) return Real(0);
+    return (2*x*legendrePDerivNN(n, x)-n*(n+1)*legendrePNN(n,x))/(1-x*x);
+  }
+  
+  static Real legendrePDeriv3NN(Index n, Real x)
+  {
+    if (n < 3) return Real(0);
+    return (4*x*legendrePDeriv2NN(n, x)-(n*(n+1)-2)*legendrePDerivNN(n,x))/(1-x*x);
+  }
+  void compute_printGLL(Vector& r, Vector& w, const int n)
+  {
+    for (int i = 2; i < n; i++)
+    {
+      r.setSize(i);
+      w.setSize(i);
+      computeGLL_(r,w,i);
+      std::cout << "Nodes and weights for n = " << i << std::endl;
+      std::cout << r << std::endl;
+      std::cout << w << std::endl;
+      std::cout << std::endl;
+    }
+  }
+
 private:
   // Gauss–Lobatto–Legendre nodes: endpoints ±1 and interior zeros of dP_{N}(x)
   // TODO: hardcode the points for low N
-  void computeGLL_(Vector& r, Vector& w)
+  void computeGLL_(Vector& r, Vector& w, const int n)
   {
-    const int n = Np_;
+    if (n < 2)
+    {
+      throw std::runtime_error("Polynomial order must be at least 2");
+    }
     // endpoints
     r[0]   = Real(-1);
     r[n-1] = Real(+1);
-    w[0]   = Real(2) / (N_ * (N_ + 1));
+    w[0]   = Real(2) / (n * (n - 1));
     w[n-1] = w[0];
 
-    // Interior nodes via Newton iteration on P'_{N}(x) = 0
+    if (n == 4)
+    {
+      r[1] = - std::sqrt(1.0/5.0);
+      r[3]
+    }
+
+    // Interior nodes via Halley's method iteration on P'_{N}(x) = 0
     for (Index k = 1; k < n - 1; k++)
     {
       // Initial guess: Chebyshev-like
@@ -123,20 +175,17 @@ private:
       Real x = - std::cos(pi * k / N_);
       for (int iter = 0; iter < 30; iter++)
       {
-        // P'_N and P''_N
-        Real Pn   = legendrePNN(N_, x);
-        Real Pnm1 = legendrePNN(N_-1, x);
-        // P'_N(x) = N*(P_{N-1}(x) - x*P_N(x))/(1-x^2)
-        Real dPn  = N_ * (Pnm1 - x * Pn) / (1 - x*x + 1e-16);
-        Real ddPn = (2*x*dPn - N_*(N_+1)*Pn) / (1 - x*x + 1e-16);
-        Real dx   = -dPn / ddPn;
+        Real Pn   = legendrePDerivNN(n-1, x);
+        Real dPn  = legendrePDeriv2NN(n-1, x);
+        Real ddPn = legendrePDeriv3NN(n-1, x);
+        Real dx   = 2 * Pn * dPn / (2 * dPn * dPn - Pn * ddPn);
         x += dx;
         if (std::abs(dx) < 1e-15) break;
       }
 
       r[k] = x;
-      Real Pn = legendrePNN(N_, x);
-      w[k] = Real(2) / (N_ * (N_+1) * Pn * Pn);
+      Real Pn = legendrePNN(n-1, x);
+      w[k] = Real(2) / (n * (n - 1) * Pn * Pn);
     }
   }
 

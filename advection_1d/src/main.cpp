@@ -2,6 +2,7 @@
 #include "Mesh.hpp"
 #include "NumericalFlux.hpp"
 #include "RK4Integrator.hpp"
+#include <TNL/Containers/Vector.h>
 #include <iostream>
 #include <cmath>
 
@@ -78,13 +79,8 @@ int main(int argc, char* argv[])
       {
         std::cout << "h_min = " << h_min << "  dt = " << dt << "\n\n";
 
-        std::cout << "GLL nodes:   ";
-        for (int i = 0; i < Np; ++i) std::cout << ref.nodes()[i] << " ";
-        std::cout << "\n";
-
-        std::cout << "GLL weights: ";
-        for (int i = 0; i < Np; ++i) std::cout << ref.weights()[i] << " ";
-        std::cout << "\n";
+        TNL::Containers::Vector< Real, TNL::Devices::Host, int > r,w;
+        ref.compute_printGLL(r, w, 10);
 
         // sum of weights should equal 2.0 (length of [-1,1])
         Real wsum = 0;
