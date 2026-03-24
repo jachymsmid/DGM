@@ -32,11 +32,14 @@ public:
     computeGLL_(r_, w_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
-    Dr_ = buildDMatrix_(); // Dr = V * (dV/dr)^{-1} ... actually D = Vr * inv(V)
+    Vr_ = buildDerivVandermonde_(r_);
+    Dr_ = buildDMatrix_(V_, Vr_); // Dr  Vr * inv(V)
     LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
 
     std::cout << "Vandermonde matrix:" << std::endl;
     std::cout << V_ << std::endl;
+    std::cout << "Derivative of the Vandermonde matrix:" << std::endl;
+    std::cout << Vr_ << std::endl;
     std::cout << "LIFT matrix:" << std::endl;
     std::cout << LIFT_ << std::endl;
     std::cout << "Derivation matrix:" << std::endl;
@@ -87,7 +90,7 @@ public:
     return p2;
   }
 
-    // Evalueate the derivative of P_n at x
+  // Evalueate the derivative of P_n at x
   // Recursion formula
   static Real legendrePDeriv(Index n, Real x)
   {
@@ -206,11 +209,9 @@ private:
   }
 
   // D = dV * inv(V)
-  Matrix buildDMatrix_() const
+  Matrix buildDMatrix_(const Matrix& V, const Matrix& dV) const
   {
-    Matrix dV = buildDerivVandermonde_(r_);
-
-    Eigen::MatrixXd eV  = tnlToEigen(V_);
+    Eigen::MatrixXd eV  = tnlToEigen(V);
     Eigen::MatrixXd edV = tnlToEigen(dV);
 
     // verify V is not degenerate before inverting
@@ -218,13 +219,6 @@ private:
     std::cout << "det(V) = " << detV << std::endl;
 
     Eigen::MatrixXd eVinv = eV.inverse();
-
-    Eigen::MatrixXd eVT = eV.transpose();
-    Eigen::MatrixXd tem = eV * eVT;
-    std::cout << "Transpose of the Vandermonde matrix" << std::endl;
-    std::cout << eVT << std::endl;
-    std::cout << "(V * V^T)" << std::endl;
-    std::cout << tem << std::endl;
 
     Eigen::MatrixXd eD = edV * eVinv;
     return eigenToTnl(eD);
@@ -245,7 +239,7 @@ private:
 
   Index  N_, Np_;
   Vector r_, w_;
-  Matrix V_, Dr_, LIFT_;
+  Matrix V_, Vr_, Dr_, LIFT_;
 };
 
 } // namespace DG
