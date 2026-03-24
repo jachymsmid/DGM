@@ -8,6 +8,7 @@
 #include <TNL/Matrices/MatrixBase.h>
 #include <cmath>
 #include <Eigen/Dense>
+#include <iostream>
 
 namespace DG {
 
@@ -31,8 +32,15 @@ public:
     computeGLL_(r_, w_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
-    Dr_ = buildDMatrix_(V_); // Dr = V * (dV/dr)^{-1} ... actually D = Vr * inv(V)
+    Dr_ = buildDMatrix_(); // Dr = V * (dV/dr)^{-1} ... actually D = Vr * inv(V)
     LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
+
+    std::cout << "Vandermonde matrix:" << std::endl;
+    std::cout << V_ << std::endl;
+    std::cout << "LIFT matrix:" << std::endl;
+    std::cout << LIFT_ << std::endl;
+    std::cout << "Derivation matrix:" << std::endl;
+    std::cout << Dr_ << std::endl;
   }
 
   // Getters
@@ -42,6 +50,7 @@ public:
   const Vector& nodes() const { return r_; }
   const Vector& weights() const { return w_; }
   const Matrix& V() const { return V_; }
+  const Matrix Vinv() const { return invertMatrix_(V_); }
   const Matrix& Dr() const { return Dr_; }
   const Matrix& LIFT() const { return LIFT_; }
 
@@ -49,9 +58,27 @@ public:
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
   static Real legendreP(Index n, Real x)
   {
-    if (n == 0) return Real(1);
-    if (n == 1) return x;
-    Real p0 = 1, p1 = x, p2 = 0;
+    Real p0 = 1.0/std::sqrt(2);
+    if (n == 0) return p0;
+    Real p1 = std::sqrt(3.0/2.0)*x;
+    if (n == 1) return p1;
+    Real norm, p2;
+    for (Index k = 1; k < n; ++k)
+    {
+      norm = std::sqrt(Real(2*k+1) / 2);
+      p2 = norm * ((2*k+1)*x*p1 - k*p0) / (k+1);
+      p0 = p1; p1 = p2;
+    }
+    return p2;
+  }
+
+  static Real legendrePNN(Index n, Real x)
+  {
+    Real p0 = 1.0;
+    if (n == 0) return p0;
+    Real p1 = x;
+    if (n == 1) return p1;
+    Real norm, p2;
     for (Index k = 1; k < n; ++k)
     {
       p2 = ((2*k+1)*x*p1 - k*p0) / (k+1);
@@ -60,13 +87,13 @@ public:
     return p2;
   }
 
-  // Evalueate the derivative of P_n at x
+    // Evalueate the derivative of P_n at x
   // Recursion formula
   static Real legendrePDeriv(Index n, Real x)
   {
     if (n == 0) return Real(0);
-    if (n == 1) return Real(1);
-    return ( n + 1 ) * legendreP(n,x) + x * legendrePDeriv(n,x);
+    if (n == 1) return std::sqrt(3.0/2.0);
+    return ( n + 1 ) * legendreP(n-1,x) + x * legendrePDeriv(n-1,x);
   }
 
 private:
@@ -90,8 +117,8 @@ private:
       for (int iter = 0; iter < 30; iter++)
       {
         // P'_N and P''_N
-        Real Pn   = legendreP(N_, x);
-        Real Pnm1 = legendreP(N_-1, x);
+        Real Pn   = legendrePNN(N_, x);
+        Real Pnm1 = legendrePNN(N_-1, x);
         // P'_N(x) = N*(P_{N-1}(x) - x*P_N(x))/(1-x^2)
         Real dPn  = N_ * (Pnm1 - x * Pn) / (1 - x*x + 1e-16);
         Real ddPn = (2*x*dPn - N_*(N_+1)*Pn) / (1 - x*x + 1e-16);
@@ -101,7 +128,7 @@ private:
       }
 
       r[k] = x;
-      Real Pn = legendreP(N_, x);
+      Real Pn = legendrePNN(N_, x);
       w[k] = Real(2) / (N_ * (N_+1) * Pn * Pn);
     }
   }
@@ -111,12 +138,12 @@ private:
   Matrix buildVandermonde_(const Vector& r) const
   {
     Matrix V(Np_, Np_);
+    V.setDimensions(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        Real norm = std::sqrt(Real(2*j+1) / 2);
-        V(i,j) = norm * legendreP(j, r[i]);
+        V(i,j) = legendreP(j, r[i]);
       }
     }
     return V;
@@ -126,12 +153,12 @@ private:
   Matrix buildDerivVandermonde_(const Vector& r) const
   {
     Matrix dV(Np_, Np_);
+    dV.setDimensions(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        Real norm = std::sqrt(Real(2*j+1) / 2);
-        dV(i,j) = norm * legendrePDeriv(j, r[i]);
+        dV(i,j) = legendrePDeriv(j, r[i]);
       }
     }
     return dV;
@@ -139,10 +166,12 @@ private:
 
   // helper functions for matrix inversion - not optimal
   // Convert TNL DenseMatrix to Eigen MatrixXd
-  Eigen::MatrixXd tnlToEigen(const Matrix& A)
+  Eigen::MatrixXd tnlToEigen(const Matrix& A) const
   {
     int rows = A.getRows();
     int cols = A.getColumns();
+    if (rows == 0 || cols == 0)
+      throw std::runtime_error("tnlToEigen: matrix has zero dimensions");
     Eigen::MatrixXd E(rows, cols);
     for (int i = 0; i < rows; i++)
     {
@@ -155,9 +184,10 @@ private:
   }
 
   // Convert Eigen MatrixXd to TNL DenseMatrix
-  Matrix eigenToTnl(const Eigen::MatrixXd& E)
+  Matrix eigenToTnl(const Eigen::MatrixXd& E) const
   {
-    Matrix A(E.rows(), E.cols());
+    Matrix A;
+    A.setDimensions(E.rows(), E.cols());   // must come before any setElement
     for (int i = 0; i < E.rows(); i++)
     {
       for (int j = 0; j < E.cols(); j++)
@@ -167,7 +197,6 @@ private:
     }
     return A;
   }
-
   // Compute the inverse of a square DenseMatrix
   Matrix invertMatrix_(const Matrix& A) const
   {
@@ -177,42 +206,40 @@ private:
   }
 
   // D = dV * inv(V)
-  Matrix buildDMatrix_(const Matrix& V) const
+  Matrix buildDMatrix_() const
   {
-    Matrix dV  = buildDerivVandermonde_(r_);
-    Matrix Vinv = invertMatrix_(V);
+    Matrix dV = buildDerivVandermonde_(r_);
 
-    // D = dV * Vinv
-    Matrix D(Np_, Np_);
-    for (Index i = 0; i < Np_; ++i)
-    {
-      for (Index j = 0; j < Np_; ++j)
-      {
-        Real s = Real(0);
-        for (Index k = 0; k < Np_; ++k)
-        {
-          s += dV(i, k) * Vinv(k, j);
-        }
-        D.setElement(i, j, s);
-      }
-    }
-    return D;
+    Eigen::MatrixXd eV  = tnlToEigen(V_);
+    Eigen::MatrixXd edV = tnlToEigen(dV);
+
+    // verify V is not degenerate before inverting
+    Real detV = eV.determinant();
+    std::cout << "det(V) = " << detV << std::endl;
+
+    Eigen::MatrixXd eVinv = eV.inverse();
+
+    Eigen::MatrixXd eVT = eV.transpose();
+    Eigen::MatrixXd tem = eV * eVT;
+    std::cout << "Transpose of the Vandermonde matrix" << std::endl;
+    std::cout << eVT << std::endl;
+    std::cout << "(V * V^T)" << std::endl;
+    std::cout << tem << std::endl;
+
+    Eigen::MatrixXd eD = edV * eVinv;
+    return eigenToTnl(eD);
   }
 
   Matrix buildLIFT_(const Matrix& V) const
   {
-    Matrix E(Np_, 2);
-    Matrix L(Np_, Np_);
-    for (Index i = 1; i < Np_ - 1; i++)
-    {
-      E.setElement(i, 0, Real(0));
-      E.setElement(i, 1, Real(0));
+    Matrix L;
+    L.setDimensions(Np_, 2);
+    for (Index i = 0; i < Np_; ++i) {
+        L.setElement(i, 0, Real(0));
+        L.setElement(i, 1, Real(0));
     }
-
-    E.setElement(0, 0, Real(1));
-    E.setElement(Np_ - 1, Np_ - 1, Real(1));
-    getMatrixProduct(L, V.getInPlaceTransposition(), E);
-    getMatrixProduct(L , V, L);
+    L.setElement(0,      0, Real(1));
+    L.setElement(Np_-1,  1, Real(1));
     return L;
   }
 

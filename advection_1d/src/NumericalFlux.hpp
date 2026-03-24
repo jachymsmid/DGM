@@ -17,11 +17,13 @@ struct NumericalFlux
 template< class Real >
 struct UpwindFlux : NumericalFlux< Real >
 {
+  // constructor
   explicit UpwindFlux(Real a) : a_(a) {}
+
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
     Real an = a_ * n_outward;
-    return (an > 0) ? a_ * u_minus : a_ * u_plus;
+    return (an < 0) ? a_ * u_minus : a_ * u_plus;
   }
   Real a_;
 };

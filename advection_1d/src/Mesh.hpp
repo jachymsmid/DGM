@@ -135,18 +135,22 @@ private:
     {
       auto pt = mesh_.template getEntity<0>(i).getPoint();
       vertCoords_[i] = pt[0];
-      vertCoordPrev = pt[0];
-      if (i == 0) continue;
+      if (i == 0)
+      {
+        vertCoordPrev = pt[0];
+        continue;
+      }
       h = vertCoords_[i] - vertCoordPrev;
       max_h_ = std::max(h, max_h_);
       min_h_ = std::min(h, min_h_);
+      vertCoordPrev = pt[0];
     }
   }
 
   TNLMeshType  mesh_;
   Index numK_{0};
-  Real max_h_ = 0.0;
-  Real min_h_ = 100.0;
+  Real max_h_{0.0};
+  Real min_h_{100.0};
   RealArray vertCoords_;   // x_0, x_1, ..., x_K
 };
 

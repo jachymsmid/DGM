@@ -1,5 +1,5 @@
-// DG1DMeshConfig.hpp
 #pragma once
+
 #include <TNL/Meshes/DefaultConfig.h>
 #include <TNL/Meshes/Topologies/Edge.h>
 #include <TNL/Meshes/Mesh.h>
@@ -8,7 +8,6 @@
 
 namespace DG {
 
-// 1D, real-valued coordinates, int indices, store cell vertex links only.
 // inherits from DefaultConfig
 template
 <

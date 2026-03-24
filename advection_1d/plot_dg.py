@@ -86,13 +86,7 @@ def read_vtk(filename):
 def split_elements(x, u, K, Np):
     x2 = x.reshape(K, Np)
     u2 = u.reshape(K, Np)
-    # sort nodes within each element by physical x position
-    # (GLL nodes are not stored in spatial order)
-    idx = np.argsort(x2, axis=1)
-    x2 = np.take_along_axis(x2, idx, axis=1)
-    u2 = np.take_along_axis(u2, idx, axis=1)
     return x2, u2
-
 # ─────────────────────────────────────────────────────────────────────────────
 #  Plotting helpers
 # ─────────────────────────────────────────────────────────────────────────────
@@ -191,7 +185,7 @@ def main():
 
         fig, ax = plt.subplots(figsize=(9, 4))
         ax.set_xlim(x0.min(), x0.max())
-        ax.set_ylim(u_min - pad, u_max + pad)
+        # ax.set_ylim(u_min - pad, u_max + pad)
         ax.set_xlabel('x')
         ax.set_ylabel('u')
 
