@@ -57,8 +57,9 @@ public:
   const Matrix& Dr() const { return Dr_; }
   const Matrix& LIFT() const { return LIFT_; }
 
-  // Evaluate Legendre polynomial P_n at x using three term recurrence
+  // Evaluate normalized Legendre polynomial P_n at x using three term recurrence
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
+  // normalization n_n = \sqrt{(2n+1)/2}
   static Real legendreP(Index n, Real x)
   {
     Real p0 = 1.0/std::sqrt(2);
@@ -75,6 +76,8 @@ public:
     return p2;
   }
 
+  // evaluate the unnormalized Legendre polynomials at x
+  // Bonnet's formula
   static Real legendrePNN(Index n, Real x)
   {
     Real p0 = 1.0;
@@ -96,7 +99,8 @@ public:
   {
     if (n == 0) return Real(0);
     if (n == 1) return std::sqrt(3.0/2.0);
-    return ( n + 1 ) * legendreP(n-1,x) + x * legendrePDeriv(n-1,x);
+    Real norm = std::sqrt(Real(2*n+1) / 2);
+    return norm * (( n + 1 ) * legendreP(n-1,x) + x * legendrePDeriv(n-1,x));
   }
 
 private:
