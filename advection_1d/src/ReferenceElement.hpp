@@ -73,7 +73,8 @@ public:
     {
       norm = std::sqrt(Real(2*k+1) / 2);
       p2 = norm * ((2*k+1)*x*p1 - k*p0) / (k+1);
-      p0 = p1; p1 = p2;
+      p0 = p1;
+      p1 = p2;
     }
     return p2;
   }
@@ -89,8 +90,9 @@ public:
     Real norm, p2;
     for (Index k = 1; k < n; ++k)
     {
-      p2 = ((2*k-1)*x*p1 - (k-1)*p0) / k;
-      p0 = p1; p1 = p2;
+      p2 = ((2*k+1)*x*p1 - k*p0) / (k+1);
+      p0 = p1;
+      p1 = p2;
     }
     return p2;
   }
