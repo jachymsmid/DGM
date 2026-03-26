@@ -13,7 +13,7 @@ struct NumericalFlux
   virtual Real compute(Real u_minus, Real u_plus, Real n_outward) const = 0;
 };
 
-// Upwind flux for scalar advection: f(u) = a*u
+// Upwind flux for scalar advection: f*(u) = f(u-)
 template< class Real >
 struct UpwindFlux : NumericalFlux< Real >
 {
