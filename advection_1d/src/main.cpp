@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
     // write initial condition
     int frame = 0;
-    DG::writeTimeSeriesVTK(mesh, ref, u, "output", frame++, Real(0));
+    DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Real(0));
 
     // Time stepping with output every 20 steps
     Real h_min = mesh.minElementSize();
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
     {
-      DG::writeTimeSeriesVTK(mesh, ref, uh, "output", frame++, t);
+      DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
 
       // --- diagnostics ---
       if (step == 20)
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
         std::cout << "h_min = " << h_min << "  dt = " << dt << "\n\n";
 
         TNL::Containers::Vector< Real, TNL::Devices::Host, int > r,w;
-        ref.compute_printGLL(r, w, 10);
+        // ref.compute_printGLL(r, w, 10);
 
         // sum of weights should equal 2.0 (length of [-1,1])
         Real wsum = 0;
@@ -132,6 +132,6 @@ int main(int argc, char* argv[])
     rk.integrate(u, 0.0, Tf, dt);
 
     // Write final state
-    DG::writeTimeSeriesVTK(mesh, ref, u, "output", frame++, Tf);
+    DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
     std::cout << "Done. Written " << frame << " frames.\n";
 }
