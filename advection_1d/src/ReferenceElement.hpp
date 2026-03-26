@@ -44,8 +44,7 @@ public:
     std::cout << Vr_ << std::endl;
     std::cout << "LIFT matrix:" << std::endl;
     std::cout << LIFT_ << std::endl;
-    std::cout << "Derivation matrix:" << std::endl;
-    std::cout << Dr_ << std::endl;
+    std::cout << "Derivation matrix:" << std::endl; std::cout << Dr_ << std::endl;
   }
 
   // Getters
@@ -59,29 +58,9 @@ public:
   const Matrix& Dr() const { return Dr_; }
   const Matrix& LIFT() const { return LIFT_; }
 
-  // Evaluate normalized Legendre polynomial P_n at x using three term recurrence
+  // evaluate the Legendre polynomials at x
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
-  // normalization n_n = \sqrt{(2n+1)/2}
   static Real legendreP(Index n, Real x)
-  {
-    Real p0 = 1.0/std::sqrt(2);
-    if (n == 0) return p0;
-    Real p1 = std::sqrt(3.0/2.0)*x;
-    if (n == 1) return p1;
-    Real norm, p2;
-    for (Index k = 1; k < n; ++k)
-    {
-      norm = std::sqrt(Real(2*k+1) / 2);
-      p2 = norm * ((2*k+1)*x*p1 - k*p0) / (k+1);
-      p0 = p1;
-      p1 = p2;
-    }
-    return p2;
-  }
-
-  // evaluate the unnormalized Legendre polynomials at x
-  // Bonnet's formula
-  static Real legendrePNN(Index n, Real x)
   {
     Real p0 = 1.0;
     if (n == 0) return p0;
@@ -97,21 +76,29 @@ public:
     return p2;
   }
 
-  // Evalueate the derivative of P_n at x
+  // normalize the Legendre polynomial
+  // normalization n_n = \sqrt{(2n+1)/2}
+  static Real legendrePN(Index n, Real x)
+  {
+    Real norm = std::sqrt(Real(2*n+1) / 2);
+    return norm * legendreP(n,x);
+  }
+
+  // Evalueate the derivative of the Legendre derivative at x
   // Recursion formula
   static Real legendrePDeriv(Index n, Real x)
   {
     if (n == 0) return Real(0);
-    if (n == 1) return std::sqrt(3.0/2.0);
-    Real norm = std::sqrt(Real(2*n+1) / 2);
-    return norm * (( n + 1 ) * legendreP(n-1,x) + x * legendrePDeriv(n-1,x));
+    if (n == 1) return Real(1);
+    return n*(legendreP(n-1,x) - x*legendreP(n,x))/(1-x*x);
   }
 
-  static Real legendrePDerivNN(Index n, Real x)
+  // normalize the derivative of P_n(x)
+  // normalization n_n = \sqrt{(2n+1)/2}
+  static Real legendrePDerivN(Index n, Real x)
   {
-    if (n == 0) return Real(0);
-    if (n == 1) return Real(1);
-    return n*(legendrePNN(n-1,x) - x*legendrePNN(n,x))/(1-x*x);
+    Real norm = std::sqrt(Real(2*n+1) / 2);
+    return norm * legendrePDeriv(n,x);
   }
 
   // Evalueate the second derivative of P_n at x
@@ -119,21 +106,21 @@ public:
   static Real legendrePDeriv2(Index n, Real x)
   {
     if (n < 2) return Real(0);
-    Real norm = std::sqrt(Real(2*n+1) / 2);
-    return norm * (- n * ( n + 1 ) * legendreP(n,x) + 2 * x * legendrePDeriv(n,x))/(1 - x*x);
+    return (- n * ( n + 1 ) * legendreP(n,x) + 2 * x * legendrePDeriv(n,x))/(1 - x*x);
   }
 
-  static Real legendrePDeriv2NN(Index n, Real x)
-  {
-    if (n < 2) return Real(0);
-    return (2*x*legendrePDerivNN(n, x)-n*(n+1)*legendrePNN(n,x))/(1-x*x);
-  }
+  // static Real legendrePDeriv2(Index n, Real x)
+  // {
+  //   if (n < 2) return Real(0);
+  //   return (2*x*legendrePDerivNN(n, x)-n*(n+1)*legendrePNN(n,x))/(1-x*x);
+  // }
   
-  static Real legendrePDeriv3NN(Index n, Real x)
-  {
-    if (n < 3) return Real(0);
-    return (4*x*legendrePDeriv2NN(n, x)-(n*(n+1)-2)*legendrePDerivNN(n,x))/(1-x*x);
-  }
+  // static Real legendrePDeriv3NN(Index n, Real x)
+  // {
+  //   if (n < 3) return Real(0);
+  //   return (4*x*legendrePDeriv2NN(n, x)-(n*(n+1)-2)*legendrePDerivNN(n,x))/(1-x*x);
+  // }
+
   void compute_printGLL(Vector& r, Vector& w, const int n)
   {
     for (int i = 2; i < n; i++)
@@ -149,7 +136,7 @@ public:
   }
 
 private:
-  // Gauss–Lobatto–Legendre nodes: endpoints ±1 and interior zeros of dP_{N}(x)
+  // Gauss–Lobatto–Legendre nodes: endpoints +-1 and interior zeros of dP_{N}(x)
   // TODO: hardcode the points for low N
   void computeGLL_(Vector& r, Vector& w, const int n)
   {
@@ -177,16 +164,16 @@ private:
       Real x = - std::cos(pi * k / N_);
       for (int iter = 0; iter < 30; iter++)
       {
-        Real Pn   = legendrePDerivNN(n-1, x);
-        Real dPn  = legendrePDeriv2NN(n-1, x);
-        Real ddPn = legendrePDeriv3NN(n-1, x);
+        Real Pn   = legendrePDeriv(n-1, x);
+        Real dPn  = legendrePDeriv2(n-1, x);
+        Real ddPn = legendrePDeriv3(n-1, x);
         Real dx   = 2 * Pn * dPn / (2 * dPn * dPn - Pn * ddPn);
         x += dx;
         if (std::abs(dx) < 1e-15) break;
       }
 
       r[k] = x;
-      Real Pn = legendrePNN(n-1, x);
+      Real Pn = legendreP(n-1, x);
       w[k] = Real(2) / (n * (n - 1) * Pn * Pn);
     }
   }
