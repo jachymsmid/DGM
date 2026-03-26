@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 ####################################
 #               EXACT              #
@@ -66,11 +67,29 @@ def exact_deriv(n, x):
 
 
 def normalized_exact(n, x):
-    return sqrt((2*n+1)/2)*exact(n,x)
+    return np.sqrt((2*n+1)/2)*exact(n,x)
 
 
 def normalized_exact_deriv(n, x):
-    return sqrt((2*n+1)/2)*exact_deriv(n,x)
+    return np.sqrt((2*n+1)/2)*exact_deriv(n,x)
+
+def vandermonde():
+    v = np.zeros((5,5))
+    x = [ -1, -0.654654, 0, 0.654654, 1 ]
+    for i in range(5):
+        for j in range(5):
+            v[i,j] = exact(j,x[i])
+
+    return v
+
+def deriv_vandermonde():
+    v = np.zeros((5,5))
+    x = [ -1, -0.654654, 0, 0.654654, 1 ]
+    for i in range(5):
+        for j in range(5):
+            v[i,j] = exact_deriv(j,x[i])
+
+    return v
 
 
 ####################################
@@ -134,7 +153,7 @@ def spectral(n, x):
 
 
 def main():
-    x = 1.0
+    x = 0.654654
     eps = 1e-15
     max_err = 0.0
 
@@ -181,7 +200,7 @@ def main():
     max_err = 0.0
     print("- Wiki")
     for i in range(11):
-        max_err = max(exact(i,x) - bonnet(i,x), max_err)
+        max_err = max(exact_deriv(i,x) - bonnet_deriv(i,x), max_err)
     if max_err < eps:
         print("\tOK")
     else:
@@ -190,11 +209,14 @@ def main():
     max_err = 0.0
     print("- jpynb")
     for i in range(11):
-        max_err = max(exact(i,x) - bonnet(i,x), max_err)
+        max_err = max(exact_deriv(i,x) - my_deriv(i,x), max_err)
     if max_err < eps:
         print("\tOK")
     else:
         print(f"\tERROR: maximal err = {max_err}")
+
+    print(f"\n\nVandermonde matrix: \n {vandermonde()}")
+    print(f"\n\nDerivative of the Vandermonde matrix: \n {deriv_vandermonde()}")
 
 if __name__ == "__main__":
     main()
