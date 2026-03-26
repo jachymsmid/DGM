@@ -151,6 +151,11 @@ $
 M = (phi_i, phi_j)_(L^2) = II
 $
 
+==== Important properties
++ $P_n (-x) = (-1)^n P_n (x)$
++ $integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m$
++ $integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1$
+
 == Nodal representation
 
 //Now we need to compute the $U_n$, which is given as
