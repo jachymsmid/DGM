@@ -31,20 +31,33 @@ public:
   {
     r_.setSize(Np_);
     w_.setSize(Np_);
-    computeGLL_(r_, w_, Np_);  // Gauss–Lobatto–Legendre nodes & weights
+    computeGLL_(r_, w_, N_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
     Vr_ = buildDerivVandermonde_(r_);
     Dr_ = buildDMatrix_(V_, Vr_); // Dr  Vr * inv(V)
     LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
 
+    std::cout << "Nodes:" << std::endl;
+    std::cout << r_ << std::endl;
+
+    std::cout << "Weights:" << std::endl;
+    std::cout << w_ << std::endl;
+
     std::cout << "Vandermonde matrix:" << std::endl;
     std::cout << V_ << std::endl;
+
+    std::cout << "Mass matrix:" << std::endl;
+    std::cout << massMatrix_(V_) << std::endl;
+
     std::cout << "Derivative of the Vandermonde matrix:" << std::endl;
     std::cout << Vr_ << std::endl;
+
     std::cout << "LIFT matrix:" << std::endl;
     std::cout << LIFT_ << std::endl;
-    std::cout << "Derivation matrix:" << std::endl; std::cout << Dr_ << std::endl;
+
+    std::cout << "Derivation matrix:" << std::endl;
+    std::cout << Dr_ << std::endl;
   }
 
   // Getters
@@ -62,6 +75,10 @@ public:
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
   static Real legendreP(Index n, Real x)
   {
+    if ( n < 0 )
+    {
+      throw std::invalid_argument("The order of the Legendre polynomial must be non-negative ( n >= 0 )");
+    }
     Real p0 = 1.0;
     if (n == 0) return p0;
     Real p1 = x;
@@ -69,7 +86,7 @@ public:
     Real norm, p2;
     for (Index k = 1; k < n; ++k)
     {
-      p2 = ((2*k+1)*x*p1 - k*p0) / (k+1);
+      p2 = ((2 * k + 1) * x * p1 - k * p0) / (k + 1);
       p0 = p1;
       p1 = p2;
     }
@@ -84,16 +101,26 @@ public:
     return norm * legendreP(n,x);
   }
 
-  // Evalueate the derivative of the Legendre derivative at x
-  // Recursion formula
+  // Evaluate the derivative of the Legendre derivative at x
+  // recursion formula, doesn't work for {-1, 1}
   static Real legendrePDeriv(Index n, Real x)
   {
     if (n == 0) return Real(0);
     if (n == 1) return Real(1);
+
+    if (x >= 1 - 1e-16)
+    {
+      return Real(n) * (Real(n) + 1) / 2.0;
+    }
+    else if (x <= -1 + 1e-16)
+    {
+      return - 1.0 * Real(n) * (Real(n) + 1) / 2.0;
+    }
+
     return n*(legendreP(n-1,x) - x*legendreP(n,x))/(1-x*x);
   }
 
-  // normalize the derivative of P_n(x)
+  // normalize the derivative of the Legendre polynomial
   // normalization n_n = \sqrt{(2n+1)/2}
   static Real legendrePDerivN(Index n, Real x)
   {
@@ -101,34 +128,44 @@ public:
     return norm * legendrePDeriv(n,x);
   }
 
-  // Evalueate the second derivative of P_n at x
-  // Recursion formula
+  // Evalueate the second derivative of the Legendre polynomial
+  // recursion formula, doesn't work for {-1, 1}
+  // add source
   static Real legendrePDeriv2(Index n, Real x)
   {
+    if (std::abs(x) >= 1 - 1e-16)
+    {
+      std::cout << x << std::endl;
+      throw std::invalid_argument("Division by zero in legendrePDeriv2()");
+    }
+
     if (n < 2) return Real(0);
     return (- n * ( n + 1 ) * legendreP(n,x) + 2 * x * legendrePDeriv(n,x))/(1 - x*x);
   }
 
-  // static Real legendrePDeriv2(Index n, Real x)
-  // {
-  //   if (n < 2) return Real(0);
-  //   return (2*x*legendrePDerivNN(n, x)-n*(n+1)*legendrePNN(n,x))/(1-x*x);
-  // }
-  
-  // static Real legendrePDeriv3NN(Index n, Real x)
-  // {
-  //   if (n < 3) return Real(0);
-  //   return (4*x*legendrePDeriv2NN(n, x)-(n*(n+1)-2)*legendrePDerivNN(n,x))/(1-x*x);
-  // }
+  // evalueate the third derivative of the Legendre polynomial
+  // recursion formula, doesn't work for {-1, 1}
+  // add source
+  static Real legendrePDeriv3(Index n, Real x)
+  {
+    if (std::abs(x) >= 1 - 1e-16)
+    {
+      throw std::invalid_argument("Division by zero in legendrePDeriv3()");
+    }
 
+    if (n < 3) return Real(0);
+    return (4*x*legendrePDeriv2(n, x)-(n*(n+1)-2)*legendrePDeriv(n,x))/(1-x*x);
+  }
+
+  // function for debugging
   void compute_printGLL(Vector& r, Vector& w, const int n)
   {
     for (int i = 2; i < n; i++)
     {
-      r.setSize(i);
-      w.setSize(i);
+      std::cout << "Nodes and weights for order n = " << i << std::endl;
+      r.setSize(i+1);
+      w.setSize(i+1);
       computeGLL_(r,w,i);
-      std::cout << "Nodes and weights for n = " << i << std::endl;
       std::cout << r << std::endl;
       std::cout << w << std::endl;
       std::cout << std::endl;
@@ -136,45 +173,56 @@ public:
   }
 
 private:
-  // Gauss–Lobatto–Legendre nodes: endpoints +-1 and interior zeros of dP_{N}(x)
+  // Gauss–Lobatto–Legendre nodes: endpoints +-1 and interior zeros of dP_N(x)
   // TODO: hardcode the points for low N
-  void computeGLL_(Vector& r, Vector& w, const int n)
+  // @param N   polynomial order of the approximation
+  void computeGLL_(Vector& r, Vector& w, const int N)
   {
-    if (n < 2)
+    if (N < 2)
     {
-      throw std::runtime_error("Polynomial order must be at least 2");
+      throw std::invalid_argument("Polynomial order must be at least 1");
     }
+    else if ( r.getSize() != N + 1 || w.getSize() != N + 1)
+    {
+      throw std::invalid_argument("Invalid size of array r || w in function computeGLL_()");
+    }
+
     // endpoints
-    r[0]   = Real(-1);
-    r[n-1] = Real(+1);
-    w[0]   = Real(2) / (n * (n - 1));
-    w[n-1] = w[0];
+    r[0] = Real(-1);
+    r[N] = Real(+1);
+    w[0] = Real(2) / (N * (N + 1));
+    w[N] = w[0];
 
-    if (n == 4)
-    {
-      r[1] = - std::sqrt(1.0/5.0);
-      r[3]
-    }
 
-    // Interior nodes via Halley's method iteration on P'_{N}(x) = 0
-    for (Index k = 1; k < n - 1; k++)
+    // TODO: complete this
+    // also verify this!
+    // switch (n)
+    // {
+    //   case 3:
+    //     r[1] = 0.0;
+    //     w[1] = 4.0/3.0;
+    //     break;
+    // }
+
+    // TODO: verify this code
+    // Interior nodes via Newton-Raphson method
+    for (Index k = 1; k < N ; k++)
     {
       // Initial guess: Chebyshev-like
       constexpr Real pi = std::acos(Real(-1));
-      Real x = - std::cos(pi * k / N_);
+      Real x = - std::cos(pi * k / N);
       for (int iter = 0; iter < 30; iter++)
       {
-        Real Pn   = legendrePDeriv(n-1, x);
-        Real dPn  = legendrePDeriv2(n-1, x);
-        Real ddPn = legendrePDeriv3(n-1, x);
-        Real dx   = 2 * Pn * dPn / (2 * dPn * dPn - Pn * ddPn);
-        x += dx;
+        Real dPn   = legendrePDeriv(N, x);
+        Real ddPn  = legendrePDeriv2(N, x);
+        Real dx = dPn / ddPn;
+        x -= dx;
         if (std::abs(dx) < 1e-15) break;
       }
 
       r[k] = x;
-      Real Pn = legendreP(n-1, x);
-      w[k] = Real(2) / (n * (n - 1) * Pn * Pn);
+      Real Pn = legendreP(N, x);
+      w[k] = Real(2) / (N * (N + 1) * Pn * Pn);
     }
   }
 
@@ -194,11 +242,11 @@ private:
     return V;
   }
 
-  // Derivative Vandermonde: dV_{ij} = sqrt((2j+1)/2) * P'_j(r_i)
+  // derivative of the Vandermonde matrix (normalized)
+  // dV_{ij} = sqrt((2j+1)/2) * P'_j(r_i)
   Matrix buildDerivVandermonde_(const Vector& r) const
   {
     Matrix dV(Np_, Np_);
-    dV.setDimensions(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
@@ -209,14 +257,11 @@ private:
     return dV;
   }
 
-  // helper functions for matrix inversion - not optimal
   // Convert TNL DenseMatrix to Eigen MatrixXd
   Eigen::MatrixXd tnlToEigen(const Matrix& A) const
   {
     int rows = A.getRows();
     int cols = A.getColumns();
-    if (rows == 0 || cols == 0)
-      throw std::runtime_error("tnlToEigen: matrix has zero dimensions");
     Eigen::MatrixXd E(rows, cols);
     for (int i = 0; i < rows; i++)
     {
@@ -242,7 +287,8 @@ private:
     }
     return A;
   }
-  // Compute the inverse of a square DenseMatrix
+
+  // Compute the inverse of a square DenseMatrix using Eigen
   Matrix invertMatrix_(const Matrix& A) const
   {
     Eigen::MatrixXd E = tnlToEigen(A);
@@ -250,6 +296,7 @@ private:
     return eigenToTnl(E);
   }
 
+  // build the differentiation matrix
   // D = dV * inv(V)
   Matrix buildDMatrix_(const Matrix& V, const Matrix& dV) const
   {
@@ -266,16 +313,27 @@ private:
     return eigenToTnl(eD);
   }
 
+  Matrix massMatrix_(const Matrix& V) const
+  {
+    Eigen::MatrixXd eV  = tnlToEigen(V);
+    Eigen::MatrixXd eVT = eV.transpose();
+    Eigen::MatrixXd eD = eV * eVT;
+    eD = eD.inverse();
+    return eigenToTnl(eD);
+
+  }
+
+  // build the LIFT matrix
   Matrix buildLIFT_(const Matrix& V) const
   {
-    Matrix L;
-    L.setDimensions(Np_, 2);
-    for (Index i = 0; i < Np_; ++i) {
-        L.setElement(i, 0, Real(0));
-        L.setElement(i, 1, Real(0));
+    Matrix L(Np_, 2);
+    for (Index i = 0; i < Np_; ++i)
+    {
+      L.setElement(i, 0, Real(0));
+      L.setElement(i, 1, Real(0));
     }
-    L.setElement(0,      0, Real(1));
-    L.setElement(Np_-1,  1, Real(1));
+    L.setElement(0, 0, Real(1));
+    L.setElement(Np_-1, 1, Real(1));
     return L;
   }
 
