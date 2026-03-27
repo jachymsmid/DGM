@@ -58,6 +58,23 @@ public:
 
     std::cout << "Derivation matrix:" << std::endl;
     std::cout << Dr_ << std::endl;
+
+    // Print V*V^T — should be M^{-1} = diag(1/w) for GLL nodes
+    Eigen::MatrixXd eV = tnlToEigen(V_);
+    Eigen::MatrixXd VVT = eV * eV.transpose();
+    std::cout << "\nV * V^T (should be diag(1/w) = diag(10, 1.837, 1.407, 1.837, 10)):\n";
+    for (int i = 0; i < Np_; ++i)
+    {
+        for (int j = 0; j < Np_; ++j)
+            std::cout << VVT(i,j) << "\t";
+        std::cout << "\n";
+    }
+
+    // Also print diag(1/w) for comparison
+    std::cout << "\nExpected diagonal (1/w_i):\n";
+    for (int i = 0; i < Np_; ++i)
+        std::cout << "  1/w[" << i << "] = " << 1.0/w_[i] << "\n";
+
   }
 
   // Getters
@@ -114,7 +131,14 @@ public:
     }
     else if (x <= -1 + 1e-16)
     {
-      return - 1.0 * Real(n) * (Real(n) + 1) / 2.0;
+      if (n % 2 == 0)
+      {
+        return -1.0 * Real(n) * (Real(n) + 1) / 2.0;
+      }
+      else
+      {
+        return Real(n) * (Real(n) + 1) / 2.0;
+      }
     }
 
     return n*(legendreP(n-1,x) - x*legendreP(n,x))/(1-x*x);
@@ -236,7 +260,7 @@ private:
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        V(i,j) = legendreP(j, r[i]);
+        V(i,j) = legendrePN(j, r[i]);
       }
     }
     return V;
@@ -251,7 +275,7 @@ private:
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        dV(i,j) = legendrePDeriv(j, r[i]);
+        dV(i,j) = legendrePDerivN(j, r[i]);
       }
     }
     return dV;
@@ -317,7 +341,11 @@ private:
   {
     Eigen::MatrixXd eV  = tnlToEigen(V);
     Eigen::MatrixXd eVT = eV.transpose();
+    std::cout << "Transpose of the Vandermonde matrix :" << std::endl << eVT << std::endl;
     Eigen::MatrixXd eD = eV * eVT;
+    std::cout << "V*V^T = " << std::endl << eD << std::endl;
+    Eigen::MatrixXd eD1 = eVT * eV;
+    std::cout << "V^T * V = " << std::endl << eD1 << std::endl;
     eD = eD.inverse();
     return eigenToTnl(eD);
 
@@ -326,14 +354,18 @@ private:
   // build the LIFT matrix
   Matrix buildLIFT_(const Matrix& V) const
   {
-    Matrix L(Np_, 2);
+    Matrix VVT(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
-    {
-      L.setElement(i, 0, Real(0));
-      L.setElement(i, 1, Real(0));
+      for (Index j = 0; j < Np_; ++j) {
+        Real s = Real(0);
+        for (Index k = 0; k < Np_; ++k) s += V(i,k) * V(j,k);
+        VVT(i,j) = s;
+      }
+    Matrix L(Np_, 2);
+    for (Index i = 0; i < Np_; ++i) {
+      L(i,0) = VVT(i, 0);
+      L(i,1) = VVT(i, Np_-1);
     }
-    L.setElement(0, 0, Real(1));
-    L.setElement(Np_-1, 1, Real(1));
     return L;
   }
 

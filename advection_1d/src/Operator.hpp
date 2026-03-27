@@ -29,8 +29,8 @@ public:
       : mesh_(mesh), ref_(ref), flux_(flux), physFlux_(physFlux)
   {}
 
-  // compute rhs = du/dt into 'res' given current state 'u'.
-  void computeRHS(const Field& u, Field& res) const
+  // compute rhs = du/dt into 'res' given current state 'u' and 'time'
+  void computeRHS(const Field& u, Field& res, const Real& time) const
   {
     const Index K  = mesh_.numElements();
     const Index Np = ref_.numDOF();
@@ -56,18 +56,18 @@ public:
         Real s = 0;
         for (Index j = 0; j < Np; ++j)
         {
-          s += Dr(i,j) * flocal[j];
+          s += Dr(j,i) * uk[j];
         }
         vol[i] = s;
       }
 
       // --- surface term ---
-      // left face 
+      // left face
       {
         // current element's value at left face
-        Real u_int = uk[0]; 
+        Real u_int = uk[0];
         // neighbour's face value
-        Real u_ext; 
+        Real u_ext;
         // periodic BC
         // TODO: implement different BC
         if (mesh_.isBoundaryFace(k))
@@ -117,7 +117,7 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
-        rk[i] = Jinv * (-vol[i] + lift);
+        rk[i] = Jinv * (- 1 * vol[i] + lift);
       }
     }
   }

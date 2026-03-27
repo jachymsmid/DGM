@@ -95,6 +95,10 @@ public:
 
   // Jacobian of the affine map r -> x:  x = x_L + (r+1)/2 * h_k
   Real jacobian(Index k) const { return elementSize(k) * Real(0.5); }
+  // min(J_i)
+  Real minJacobian() const { return Real(0.5) * minElementSize(); }
+  // max(J_i)
+  Real maxJacobian() const { return Real(0.5) * maxElementSize(); }
 
   // Left/right cell indices sharing face f (BOUNDARY_FACE if none)
   // Face f = vertex f.  Faces 0..K:

@@ -36,6 +36,7 @@ int main(int argc, char* argv[])
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
 
     int Np = ref.numDOF();
+    std::cout << "Number of DOFs = " << Np << std::endl;
 
     // initial condition u(x,0) = sin(x)
     for (int k = 0; k < mesh.numElements(); ++k) {
@@ -47,6 +48,17 @@ int main(int argc, char* argv[])
         uk[i]  = std::sin(xL + (r + 1.0) * 0.5 * h);
       }
     }
+
+    Real r_min = 1.0;
+    for (int k = 0; k < mesh.numElements(); k++)
+    {
+      for (int i = 1; i < ref.numDOF(); i++)
+      {
+        r_min = std::min(r_min, ref.nodes()[i] - ref.nodes()[i-1]);
+      }
+    }
+
+    Real x_min = r_min * mesh.minJacobian();
 
     auto energy = [&](const DG::FieldVector<Real>& v) {
       Real E = 0;
@@ -66,7 +78,9 @@ int main(int argc, char* argv[])
     // Time stepping with output every 20 steps
     Real h_min = mesh.minElementSize();
     std::cout << "min(h) = " << h_min << std::endl;
-    Real dt = DG::Integrator<Real>::computeDt(h_min, a, N);
+    std::cout << "min(delta x) = " << x_min << std::endl;
+    // Real dt = DG::Integrator<Real>::computeDt(h_min, a, N);
+    Real dt = 0.3 / a * x_min;
     std::cout << "Time step for intergation:  " << dt << std::endl;
     std::cout << "Energy at t = 0 :" << energy(u) << std::endl;
 
@@ -75,56 +89,56 @@ int main(int argc, char* argv[])
       DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
 
       // --- diagnostics ---
-      if (step == 20)
-      {
-        std::cout << "h_min = " << h_min << "  dt = " << dt << "\n\n";
+      // if (step == 20)
+      // {
+      //   std::cout << "h_min = " << h_min << "  dt = " << dt << "\n\n";
 
-        TNL::Containers::Vector< Real, TNL::Devices::Host, int > r,w;
-        // ref.compute_printGLL(r, w, 10);
+      //   TNL::Containers::Vector< Real, TNL::Devices::Host, int > r,w;
+      //   // ref.compute_printGLL(r, w, 10);
 
-        // sum of weights should equal 2.0 (length of [-1,1])
-        Real wsum = 0;
-        for (int i = 0; i < Np; ++i) wsum += ref.weights()[i];
-        std::cout << "sum(weights) = " << wsum << "  (should be 2.0)\n\n";
+      //   // sum of weights should equal 2.0 (length of [-1,1])
+      //   Real wsum = 0;
+      //   for (int i = 0; i < Np; ++i) wsum += ref.weights()[i];
+      //   std::cout << "sum(weights) = " << wsum << "  (should be 2.0)\n\n";
 
-        // D matrix: D*ones should be zero (derivative of constant = 0)
-        std::cout << "D * ones (should all be ~0):\n";
-        for (int i = 0; i < Np; ++i) {
-            Real s = 0;
-            for (int j = 0; j < Np; ++j) s += ref.Dr()(i,j);
-            std::cout << "  row " << i << ": " << s << "\n";
-        }
+      //   // D matrix: D*ones should be zero (derivative of constant = 0)
+      //   std::cout << "D * ones (should all be ~0):\n";
+      //   for (int i = 0; i < Np; ++i) {
+      //       Real s = 0;
+      //       for (int j = 0; j < Np; ++j) s += ref.Dr()(i,j);
+      //       std::cout << "  row " << i << ": " << s << "\n";
+      //   }
 
-        // D matrix: D*r should be ones (derivative of identity = 1)
-        std::cout << "D * r (should all be ~1.0):\n";
-        for (int i = 0; i < Np; ++i) {
-            Real s = 0;
-            for (int j = 0; j < Np; ++j) s += ref.Dr()(i,j) * ref.nodes()[j];
-            std::cout << "  row " << i << ": " << s << "\n";
-        }
+      //   // D matrix: D*r should be ones (derivative of identity = 1)
+      //   std::cout << "D * r (should all be ~1.0):\n";
+      //   for (int i = 0; i < Np; ++i) {
+      //       Real s = 0;
+      //       for (int j = 0; j < Np; ++j) s += ref.Dr()(i,j) * ref.nodes()[j];
+      //       std::cout << "  row " << i << ": " << s << "\n";
+      //   }
 
-        // LIFT: columns should sum to Np (surface-to-volume consistency)
-        std::cout << "\nLIFT col 0 (left face):  ";
-        Real lsum0 = 0;
-        for (int i = 0; i < Np; ++i) { std::cout << ref.LIFT()(i,0) << " "; lsum0 += ref.LIFT()(i,0); }
-        std::cout << "\n  sum = " << lsum0 << "\n";
+      //   // LIFT: columns should sum to Np (surface-to-volume consistency)
+      //   std::cout << "\nLIFT col 0 (left face):  ";
+      //   Real lsum0 = 0;
+      //   for (int i = 0; i < Np; ++i) { std::cout << ref.LIFT()(i,0) << " "; lsum0 += ref.LIFT()(i,0); }
+      //   std::cout << "\n  sum = " << lsum0 << "\n";
 
-        std::cout << "LIFT col 1 (right face): ";
-        Real lsum1 = 0;
-        for (int i = 0; i < Np; ++i) { std::cout << ref.LIFT()(i,1) << " "; lsum1 += ref.LIFT()(i,1); }
-        std::cout << "\n  sum = " << lsum1 << "\n";
+      //   std::cout << "LIFT col 1 (right face): ";
+      //   Real lsum1 = 0;
+      //   for (int i = 0; i < Np; ++i) { std::cout << ref.LIFT()(i,1) << " "; lsum1 += ref.LIFT()(i,1); }
+      //   std::cout << "\n  sum = " << lsum1 << "\n";
 
-        std::cout << "Energy at t = 20 :" << energy(u) << std::endl;
+      //   std::cout << "Energy at t = 20 :" << energy(u) << std::endl;
 
-        std::cout << "\nJumps at internal faces after 20 steps:\n";
-        for (int f = 1; f < mesh.numElements(); ++f) {
-          Real* ul = u.elementPtr(f);
-          Real* ur = u.elementPtr(f-1);
-            Real jump = ul[0] - ur[Np-1];
-            std::cout << "  face " << f << ": jump = " << jump << "\n";
-        }
+      //   std::cout << "\nJumps at internal faces after 20 steps:\n";
+      //   for (int f = 1; f < mesh.numElements(); ++f) {
+      //     Real* ul = u.elementPtr(f);
+      //     Real* ur = u.elementPtr(f-1);
+      //       Real jump = ul[0] - ur[Np-1];
+      //       std::cout << "  face " << f << ": jump = " << jump << "\n";
+      //   }
 
-      }
+      // }
       return true;
     };
 

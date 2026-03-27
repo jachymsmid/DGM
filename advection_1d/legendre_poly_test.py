@@ -47,15 +47,15 @@ def exact_deriv(n, x):
         case 1:
             return 1.0
         case 2:
-            return 1/2*(6*x)
+            return 1/2*(2*6*x)
         case 3:
-            return 1/2*(15*x**2 - 3)
+            return 1/2*(3*5*x**2 - 3)
         case 4:
-            return 1/8*(140*x**3 - 60*x)
+            return 1/8*(4*35*x**3 - 2*30*x)
         case 5:
-            return 1/8*(315*x**4 - 210*x**2 + 15)
+            return 1/8*(5*63*x**4 - 3*70*x**2 + 15)
         case 6:
-            return 1/16*(1386*x**5 - 1260*x**3 + 210*x)
+            return 1/16*(6*231*x**5 - 4*315*x**3 + 2*105*x)
         case 7:
             return 1/16*(7*429*x**6 - 5*693*x**4 + 3*315*x**2 - 35)
         case 8:
@@ -78,6 +78,7 @@ def vandermonde():
     x = [ -1, -0.654654, 0, 0.654654, 1 ]
     for i in range(5):
         for j in range(5):
+            # v[i,j] = normalized_exact(j,x[i])
             v[i,j] = exact(j,x[i])
 
     return v
@@ -87,8 +88,8 @@ def deriv_vandermonde():
     x = [ -1, -0.654654, 0, 0.654654, 1 ]
     for i in range(5):
         for j in range(5):
+            # v[i,j] = normalized_exact_deriv(j,x[i])
             v[i,j] = exact_deriv(j,x[i])
-
     return v
 
 
@@ -197,26 +198,32 @@ def main():
 
     print(f"\nTesting the evaluation of the derivative of the Legendre polynomial at x = {x}")
 
-    max_err = 0.0
-    print("- Wiki")
-    for i in range(11):
-        max_err = max(exact_deriv(i,x) - bonnet_deriv(i,x), max_err)
-    if max_err < eps:
-        print("\tOK")
-    else:
-        print(f"\tERROR: maximal err = {max_err}")
+    # max_err = 0.0
+    # print("- Wiki")
+    # for i in range(11):
+    #     max_err = max(exact_deriv(i,x) - bonnet_deriv(i,x), max_err)
+    # if max_err < eps:
+    #     print("\tOK")
+    # else:
+    #     print(f"\tERROR: maximal err = {max_err}")
 
-    max_err = 0.0
-    print("- jpynb")
-    for i in range(11):
-        max_err = max(exact_deriv(i,x) - my_deriv(i,x), max_err)
-    if max_err < eps:
-        print("\tOK")
-    else:
-        print(f"\tERROR: maximal err = {max_err}")
+    # max_err = 0.0
+    # print("- jpynb")
+    # for i in range(11):
+    #     max_err = max(exact_deriv(i,x) - my_deriv(i,x), max_err)
+    # if max_err < eps:
+    #     print("\tOK")
+    # else:
+    #     print(f"\tERROR: maximal err = {max_err}")
 
     print(f"\n\nVandermonde matrix: \n {vandermonde()}")
     print(f"\n\nDerivative of the Vandermonde matrix: \n {deriv_vandermonde()}")
+
+    v_mat = np.matrix(vandermonde())
+    v_trans = v_mat.transpose()
+    m  = v_mat * v_trans
+    print(f"V * V^T:\n{m}")
+    print(f"V^T * V:\n{v_trans * v_mat}")
 
 if __name__ == "__main__":
     main()

@@ -68,32 +68,31 @@ public:
     //  t_in is the time at the start of this step (only used for the
     //  callback; the operator itself is autonomous and does not need t).
     // ------------------------------------------------------------------ //
-    void step(Field& u, Real dt, Real t_in = Real(0))
+    void step(Field& u, Real dt, Real t_in)
     {
       if (dt <= Real(0))
         throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
 
-      // --- stage 1: k1 = dt * L(u^n) ---
-      op_.computeRHS(u, k1_);
-      scaleField_(k1_, dt);                       // k1 *= dt
+      // k1 = L(u^n, t_n)
+      op_.computeRHS(u, k1_, t_in + 0.5 * dt);
 
-      // --- stage 2: k2 = dt * L(u^n + k1/2) ---
-      addScaled_(u, k1_, Real(0.5), tmp_);        // tmp = u + 0.5*k1
-      op_.computeRHS(tmp_, k2_);
-      scaleField_(k2_, dt);                       // k2 *= dt
+      // k2 = L(u^n + 1/2 dt k1, t_n + 1/2 dt)
+      // tmp = u + 0.5*dt*k1
+      addScaled_(u, k1_, 0.5 * dt, tmp_);
+      op_.computeRHS(tmp_, k2_, t_in + 0.5 * dt);
 
-      // --- stage 3: k3 = dt * L(u^n + k2/2) ---
-      addScaled_(u, k2_, Real(0.5), tmp_);        // tmp = u + 0.5*k2
-      op_.computeRHS(tmp_, k3_);
-      scaleField_(k3_, dt);                       // k3 *= dt
+      // k3 = L(u^n + 1/2 dt k2, t_n + 1/2 dt)
+      // tmp = u + 0.5*dt*k2
+      addScaled_(u, k2_, 0.5 * dt, tmp_);
+      op_.computeRHS(tmp_, k3_, t_in + 0.5 * dt);
 
-      // --- stage 4: k4 = dt * L(u^n + k3) ---
-      addScaled_(u, k3_, Real(1.0), tmp_);        // tmp = u + k3
-      op_.computeRHS(tmp_, k4_);
-      scaleField_(k4_, dt);                       // k4 *= dt
+      // k4 = L(u^n + dt k3, t_n + dt)
+      // tmp = u + dt * k3
+      addScaled_(u, k3_, dt, tmp_);
+      op_.computeRHS(tmp_, k4_, t_in + dt );
 
       // --- combine: u += (k1 + 2*k2 + 2*k3 + k4) / 6 ---
-      combine_(u, k1_, k2_, k3_, k4_);
+      combine_(u, k1_, k2_, k3_, k4_, dt);
     }
 
     // ------------------------------------------------------------------ //
@@ -114,7 +113,7 @@ public:
       Real t = t0;
       Index nstep = 0;
 
-      while (t < t_end - Real(1e-12) * std::abs(t_end))
+      while (t < t_end - Real(1e-12))
       {
         // clip the last step to reach t_end exactly
         Real dt_actual = std::min(dt, t_end - t);
@@ -142,7 +141,7 @@ public:
     {
         if (max_wave_speed <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * h_min / (max_wave_speed * std::pow(Real(1 * poly_order + 1), Real(2)));
+        return cfl * h_min / (max_wave_speed * std::pow(Real(2 * poly_order + 1), Real(2)));
         // return cfl * h_min / max_wave_speed;
     }
 
@@ -183,7 +182,8 @@ private:
                   const Field& k1,
                   const Field& k2,
                   const Field& k3,
-                  const Field& k4) const
+                  const Field& k4,
+                  const Real& dt) const
     {
         const Index total = K_ * Np_;
         Real* pu = u.data().getData();
@@ -193,7 +193,7 @@ private:
         const Real* p4 = k4.data().getData();
         const Real sixth = Real(1) / Real(6);
         for (Index i = 0; i < total; ++i)
-            pu[i] += sixth * (p1[i] + Real(2)*p2[i] + Real(2)*p3[i] + p4[i]);
+            pu[i] += dt * sixth * (p1[i] + Real(2)*p2[i] + Real(2)*p3[i] + p4[i]);
     }
 
     const OperatorType& op_; // reference to the spatial residual
