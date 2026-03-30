@@ -164,7 +164,7 @@ private:
   // @param N   polynomial order of the approximation
   void computeGLL_(Vector& r, Vector& w, const int N)
   {
-    if (N < 2)
+    if (N < 1)
     {
       throw std::invalid_argument("Polynomial order must be at least 1");
     }
@@ -293,7 +293,7 @@ private:
     Real detV = eV.determinant();
     if (detV <= 0)
     {
-      throw std::invalid_argument("Cannot invert matrix whose determinant is less than or equal to zero")
+      throw std::invalid_argument("Cannot invert matrix whose determinant is less than or equal to zero");
     }
 
     Eigen::MatrixXd eVinv = eV.inverse();
