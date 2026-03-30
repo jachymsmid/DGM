@@ -146,3 +146,33 @@ This is a compilation of functions that work as input output for the solver.
 
 - `writeToVTK(const Mesh mesh, const Ref ref, const string filename, const string fieldname, Real t)` : writes the data to a VTK file
 - `writeTimeSeriesVTK(const Mesh mesh, const Ref ref, const string base_name, int frameIndex, Real t, const string fieldname)` : outputs multiple VTK files
+
+# Compilation notes
+**Configure with tests enabled (default)**
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+```
+**Build everything**
+```bash
+cmake --build build --parallel
+```
+
+**Run all tests**
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+**Run just one test binary directly (shows individual test names)**
+```bash
+./build/tests/test_reference_element
+```
+
+**Run tests matching a pattern**
+```bash
+./build/tests/test_reference_element --gtest_filter="*DMatrix*"
+```
+
+**Verbose output**
+```bash
+ctest --test-dir build --output-on-failure -V
+```
