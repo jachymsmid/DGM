@@ -1,7 +1,7 @@
-#include "IO.hpp"
-#include "Mesh.hpp"
-#include "NumericalFlux.hpp"
-#include "RK4Integrator.hpp"
+#include "../headers/IO.hpp"
+#include "../headers/Mesh.hpp"
+#include "../headers/NumericalFlux.hpp"
+#include "../headers/RK4Integrator.hpp"
 #include <TNL/Containers/Vector.h>
 #include <iostream>
 #include <cmath>
