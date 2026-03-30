@@ -1,3 +1,4 @@
 /build
 *.pdf
 /output
+cmake_test_discovery*.json
