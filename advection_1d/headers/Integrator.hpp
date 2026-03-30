@@ -5,6 +5,7 @@
 #include <functional>
 #include <stdexcept>
 #include <cmath>
+#include <vector>
 
 namespace DG {
 
@@ -69,7 +70,8 @@ protected:
 };
 
 
-// ------------------------------- RKSS ---------------------------------------
+// ------------------------------- ERK ---------------------------------------
+// simple explicit four stage Runge-Kutta
 template<typename Real   = double,
          typename Device = TNL::Devices::Host,
          typename Index  = int>
@@ -83,7 +85,7 @@ public:
     // op       – spatial residual (must outlive this integrator)
     // K, Np    – element count and nodes-per-element (needed to size scratch)
     // callback – optional: called after every step, return false to stop early
-    explicit RKSS(const OperatorType& op,
+    explicit ERK(const OperatorType& op,
                            Index K, Index Np,
                            Callback callback = nullptr)
         : op_(op)
@@ -194,6 +196,137 @@ private:
     // callback function
     Callback callback_;
 
+    // diagnostics variables, updated by step()
+    Index lastStepCount_{ 0 };
+    Real currentTime_{ 0 };
+};
+
+// ------------------------------- LSERK ---------------------------------------
+// low storage explicit five stage Runge-Kutta
+template<typename Real   = double,
+         typename Device = TNL::Devices::Host,
+         typename Index  = int>
+class LSERK : Integrator< Real, Device, Index > // inherit protected methods
+{
+public:
+    using Field = FieldVector<Real, Device, Index>;
+    using OperatorType = Operator<Real, Device, Index>;
+    using Callback = StepCallback<Real, Device, Index>;
+
+    // op       – spatial residual (must outlive this integrator)
+    // K, Np    – element count and nodes-per-element (needed to size scratch)
+    // callback – optional: called after every step, return false to stop early
+    explicit LSERK(const OperatorType& op,
+                           Index K, Index Np,
+                           Callback callback = nullptr)
+        : op_(op)
+        , K_(K), Np_(Np)
+        , callback_(std::move(callback))
+        , k1_(K, Np), k2_(K, Np), p1_(K, Np), p2_(K, Np)
+        , tmp_(K, Np) {}
+
+    // single step
+    void step(Field& u, Real dt, Real t_in) override
+    {
+      if (dt <= Real(0))
+        throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
+
+      // p_1 = u
+      for (int i = 0; i < K_ * Np_; i++)
+        p1_[i] = u[i];
+
+      for (int i = 0; i < 5; i++)
+      {
+        // tmp = L(p1, t_n + c_i dt)
+        op_.computeRHS(p1_, tmp_, t_in + c_[i] * dt);
+        // k_i = a_i k_(i-1) + tmp
+        this -> addScaled_(tmp_, k1_, a_[i], k2_);
+        // p_i = p_(i-1) + b_i * k_i
+        this -> addScaled_(p1_, k2_, b_[i], p2_);
+      }
+
+      // u = p_5
+      for (int i = 0; i < K_ * Np_; i++)
+        u[i] = p2_[i];
+    }
+
+    // integrate: perform multiple steps
+    Index integrate(Field& u, Real t0, Real t_end, Real dt) override
+    {
+      if (t_end <= t0)
+        throw std::invalid_argument("Integrator::integrate: t_end must be > t0");
+
+      Real t = t0;
+      Index nstep = 0;
+
+      while (t < t_end - Real(1e-12))
+      {
+        // clip the last step to reach t_end exactly
+        Real dt_actual = std::min(dt, t_end - t);
+
+        step(u, dt_actual, t);
+        t += dt_actual;
+        nstep += 1;
+
+        // Invoke optional callback; stop early if it returns false
+        if (callback_ && !callback_(t, u, nstep))
+            break;
+      }
+
+      return nstep;
+    }
+
+    // max dt from the Hesthaven book
+    static Real computeDt(Real x_min, Real max_wave_speed, Real cfl = Real(0.4))
+    {
+        if (max_wave_speed <= Real(0))
+            throw std::invalid_argument("max_wave_speed must be positive");
+        return cfl * x_min / max_wave_speed;
+    }
+
+    // getters
+    Index numSteps() const override { return lastStepCount_; }
+    Real currentTime() const override { return currentTime_; }
+    Index numPoints() const override { return K_ * Np_; }
+
+private:
+    
+    // RHS operator
+    const OperatorType& op_;
+
+    // number of cells and nodes
+    Index K_, Np_;
+
+    // the four stages
+    Field k1_, k2_, p1_, p2_;
+    Field tmp_;
+
+    // callback function
+    Callback callback_;
+
+    // coefficients, Hesthaven p. 64
+    std::vector<Real> a_ = {
+      0.f,
+      -567301805773/1357537059087,
+      -2404267990393/2016746695238,
+      -3550918686646/2091501179385,
+      -1275806237668/842570457699
+    };
+    std::vector<Real> b_ = {
+      1432997174477/9575080441755,
+      5161836677717/13612068292357,
+      1720146321549/2090206949498,
+      3134564353537/4481467310338,
+      2277821191437/14882151754819
+    };
+    std::vector<Real> c_ = {
+      0.f,
+      1432997174477/9575080441755,
+      2526269341429/6820363962896,
+      2006345519317/3224310063776,
+      2802321613138/2924317926251
+    };
+    
     // diagnostics variables, updated by step()
     Index lastStepCount_{ 0 };
     Real currentTime_{ 0 };
