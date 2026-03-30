@@ -15,7 +15,7 @@ find_package(Eigen3 REQUIRED)
 add_executable(dg_solver src/main.cpp)
 
 # DGM headers live in headers/
-target_include_directories(dg1d PRIVATE headers)
+target_include_directories(dg_solver PRIVATE headers)
 
 # link TNL and Eigen3
 target_link_libraries(dg_solver PRIVATE TNL::TNL Eigen3::Eigen)
