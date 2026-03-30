@@ -38,43 +38,6 @@ public:
     Dr_ = buildDMatrix_(V_, Vr_); // Dr  Vr * inv(V)
     LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
 
-    std::cout << "Nodes:" << std::endl;
-    std::cout << r_ << std::endl;
-
-    std::cout << "Weights:" << std::endl;
-    std::cout << w_ << std::endl;
-
-    std::cout << "Vandermonde matrix:" << std::endl;
-    std::cout << V_ << std::endl;
-
-    std::cout << "Mass matrix:" << std::endl;
-    std::cout << massMatrix_(V_) << std::endl;
-
-    std::cout << "Derivative of the Vandermonde matrix:" << std::endl;
-    std::cout << Vr_ << std::endl;
-
-    std::cout << "LIFT matrix:" << std::endl;
-    std::cout << LIFT_ << std::endl;
-
-    std::cout << "Derivation matrix:" << std::endl;
-    std::cout << Dr_ << std::endl;
-
-    // Print V*V^T — should be M^{-1} = diag(1/w) for GLL nodes
-    Eigen::MatrixXd eV = tnlToEigen(V_);
-    Eigen::MatrixXd VVT = eV * eV.transpose();
-    std::cout << "\nV * V^T (should be diag(1/w) = diag(10, 1.837, 1.407, 1.837, 10)):\n";
-    for (int i = 0; i < Np_; ++i)
-    {
-        for (int j = 0; j < Np_; ++j)
-            std::cout << VVT(i,j) << "\t";
-        std::cout << "\n";
-    }
-
-    // Also print diag(1/w) for comparison
-    std::cout << "\nExpected diagonal (1/w_i):\n";
-    for (int i = 0; i < Np_; ++i)
-        std::cout << "  1/w[" << i << "] = " << 1.0/w_[i] << "\n";
-
   }
 
   // Getters
@@ -159,7 +122,6 @@ public:
   {
     if (std::abs(x) >= 1 - 1e-16)
     {
-      std::cout << x << std::endl;
       throw std::invalid_argument("Division by zero in legendrePDeriv2()");
     }
 
@@ -329,7 +291,10 @@ private:
 
     // verify V is not degenerate before inverting
     Real detV = eV.determinant();
-    std::cout << "det(V) = " << detV << std::endl;
+    if (detV <= 0)
+    {
+      throw std::invalid_argument("Cannot invert matrix whose determinant is less than or equal to zero")
+    }
 
     Eigen::MatrixXd eVinv = eV.inverse();
 
@@ -341,11 +306,7 @@ private:
   {
     Eigen::MatrixXd eV  = tnlToEigen(V);
     Eigen::MatrixXd eVT = eV.transpose();
-    std::cout << "Transpose of the Vandermonde matrix :" << std::endl << eVT << std::endl;
     Eigen::MatrixXd eD = eV * eVT;
-    std::cout << "V*V^T = " << std::endl << eD << std::endl;
-    Eigen::MatrixXd eD1 = eVT * eV;
-    std::cout << "V^T * V = " << std::endl << eD1 << std::endl;
     eD = eD.inverse();
     return eigenToTnl(eD);
 
