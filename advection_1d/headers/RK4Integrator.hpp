@@ -8,35 +8,17 @@
 
 namespace DG {
 
-// ----------------------------------------------------------------------------
-//  Callback type: called after every accepted step with (t, u, step_index).
-//  Use it for output, diagnostics, or early stopping (return false to halt).
-// ----------------------------------------------------------------------------
+//  callback type: called after every accepted step with (t, u, step_index).
 template<typename Real, typename Device, typename Index>
 using StepCallback = std::function< bool(Real t, const FieldVector<Real,Device,Index>& u, Index step) >;
 
-// ----------------------------------------------------------------------------
-//  RK4Integrator
-//
-//  Advances a DGFieldVector in time using the classical 4-stage, 4th-order
-//  Runge-Kutta method, i.e. the "RK4" formula from every ODE textbook:
-//
-//      k1 = dt * L(u^n)
-//      k2 = dt * L(u^n + k1/2)
-//      k3 = dt * L(u^n + k2/2)
-//      k4 = dt * L(u^n + k3)
-//      u^{n+1} = u^n + (k1 + 2*k2 + 2*k3 + k4) / 6
-//
-//  where L = DGOperator::computeRHS is the spatial residual.
-//
-//  Template parameters mirror DGFieldVector and DGOperator:
-//    Real   – floating-point type (double or float)
-//    Device – TNL device (TNL::Devices::Host or TNL::Devices::Cuda)
-//    Index  – integer type for element/DOF counts
-// ----------------------------------------------------------------------------
-template<typename Real   = double,
-         typename Device = TNL::Devices::Host,
-         typename Index  = int>
+// generic integrator class
+template
+<
+  typename Real   = double,
+  typename Device = TNL::Devices::Host,
+  typename Index  = int
+>
 class Integrator
 {
 public:
@@ -44,31 +26,74 @@ public:
     using OperatorType = Operator<Real, Device, Index>;
     using Callback = StepCallback<Real, Device, Index>;
 
-    // ------------------------------------------------------------------ //
-    //  Construction
-    // ------------------------------------------------------------------ //
+    virtual ~Integrator() = default;
+
+    // single step
+    virtual void step(Field& u, Real dt, Real t_in) = 0;
+
+    // integrate, multiple steps
+    virtual Index integrate(Field& u, Real t0, Real t_end, Real dt) = 0;
+
+    // getters
+    virtual Index numSteps() const = 0;
+    virtual Index numPoints() const = 0;
+    virtual Real currentTime() const = 0;
+
+protected:
+    // scale a field by a scalar
+    void scaleField_(Field& f, Real s) const
+    {
+        const Index total = numPoints();
+        Real* data = f.data().getData();
+        for (Index i = 0; i < total; ++i)
+        {
+          data[i] *= s;
+        }
+    }
+
+    // res = base + alpha * delta
+    void addScaled_(const Field& base,
+                    const Field& delta,
+                    Real alpha,
+                    Field& out) const
+    {
+      const Index total = numPoints();
+      const Real* b = base.data().getData();
+      const Real* d = delta.data().getData();
+      Real* o = out.data().getData();
+      for (Index i = 0; i < total; ++i)
+      {
+        o[i] = b[i] + alpha * d[i];
+      }
+    }
+};
+
+
+// ------------------------------- RKSS ---------------------------------------
+template<typename Real   = double,
+         typename Device = TNL::Devices::Host,
+         typename Index  = int>
+class RKSS : Integrator< Real, Device, Index > // inherit protected methods
+{
+public:
+    using Field = FieldVector<Real, Device, Index>;
+    using OperatorType = Operator<Real, Device, Index>;
+    using Callback = StepCallback<Real, Device, Index>;
 
     // op       – spatial residual (must outlive this integrator)
     // K, Np    – element count and nodes-per-element (needed to size scratch)
     // callback – optional: called after every step, return false to stop early
-    explicit Integrator(const OperatorType& op,
+    explicit RKSS(const OperatorType& op,
                            Index K, Index Np,
                            Callback callback = nullptr)
         : op_(op)
         , K_(K), Np_(Np)
         , callback_(std::move(callback))
         , k1_(K, Np), k2_(K, Np), k3_(K, Np), k4_(K, Np)
-        , tmp_(K, Np)
-    {}
+        , tmp_(K, Np) {}
 
-    // ------------------------------------------------------------------ //
-    //  Single step:  u ← u + RK4(u, dt)
-    //
-    //  Advances the solution in-place by one time step of size dt.
-    //  t_in is the time at the start of this step (only used for the
-    //  callback; the operator itself is autonomous and does not need t).
-    // ------------------------------------------------------------------ //
-    void step(Field& u, Real dt, Real t_in)
+    // single step
+    void step(Field& u, Real dt, Real t_in) override
     {
       if (dt <= Real(0))
         throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
@@ -78,37 +103,28 @@ public:
 
       // k2 = L(u^n + 1/2 dt k1, t_n + 1/2 dt)
       // tmp = u + 0.5*dt*k1
-      addScaled_(u, k1_, 0.5 * dt, tmp_);
+      this -> addScaled_(u, k1_, 0.5 * dt, tmp_);
       op_.computeRHS(tmp_, k2_, t_in + 0.5 * dt);
 
       // k3 = L(u^n + 1/2 dt k2, t_n + 1/2 dt)
       // tmp = u + 0.5*dt*k2
-      addScaled_(u, k2_, 0.5 * dt, tmp_);
+      this -> addScaled_(u, k2_, 0.5 * dt, tmp_);
       op_.computeRHS(tmp_, k3_, t_in + 0.5 * dt);
 
       // k4 = L(u^n + dt k3, t_n + dt)
       // tmp = u + dt * k3
-      addScaled_(u, k3_, dt, tmp_);
+      this -> addScaled_(u, k3_, dt, tmp_);
       op_.computeRHS(tmp_, k4_, t_in + dt );
 
-      // --- combine: u += (k1 + 2*k2 + 2*k3 + k4) / 6 ---
+      // combine: u += (k1 + 2*k2 + 2*k3 + k4) / 6
       combine_(u, k1_, k2_, k3_, k4_, dt);
     }
 
-    // ------------------------------------------------------------------ //
-    //  Time integration loop: integrate from t0 to t_end with step dt.
-    //
-    //  The last step is clipped to land exactly on t_end (avoids
-    //  overshooting due to floating-point remainder).
-    //
-    //  Returns the number of steps taken.
-    // ------------------------------------------------------------------ //
-    Index integrate(Field& u, Real t0, Real t_end, Real dt)
+    // integrate: perform multiple steps
+    Index integrate(Field& u, Real t0, Real t_end, Real dt) override
     {
       if (t_end <= t0)
         throw std::invalid_argument("Integrator::integrate: t_end must be > t0");
-      if (dt <= Real(0))
-        throw std::invalid_argument("Integrator::integrate: dt must be > 0");
 
       Real t = t0;
       Index nstep = 0;
@@ -130,53 +146,20 @@ public:
       return nstep;
     }
 
-    // ------------------------------------------------------------------ //
-    //  Uses the standard DG CFL estimate:
-    //      dt = CFL * h_min / (|a| * (2N+1)^2)
-    //
-    //  cfl should be in (0, 1]; 0.4 is a safe default for RK4 + DG.
-    // ------------------------------------------------------------------ //
-    static Real computeDt(Real h_min, Real max_wave_speed,
-                          Index poly_order, Real cfl = Real(0.4))
+    // max dt from the Hesthaven book
+    static Real computeDt(Real x_min, Real max_wave_speed, Real cfl = Real(0.4))
     {
         if (max_wave_speed <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * h_min / (max_wave_speed * std::pow(Real(2 * poly_order + 1), Real(2)));
-        // return cfl * h_min / max_wave_speed;
+        return cfl * x_min / max_wave_speed;
     }
 
     // getters
-    Index numSteps()    const { return lastStepCount_; }
-    Real  currentTime() const { return currentTime_;   }
+    Index numSteps() const override { return lastStepCount_; }
+    Real currentTime() const override { return currentTime_; }
+    Index numPoints() const override { return K_ * Np_; }
 
 private:
-    // scale a field by a scalar
-    void scaleField_(Field& f, Real s) const
-    {
-        const Index total = K_ * Np_;
-        Real* data = f.data().getData();
-        for (Index i = 0; i < total; ++i)
-        {
-          data[i] *= s;
-        }
-    }
-
-    // res = base + alpha * delta
-    void addScaled_(const Field& base,
-                    const Field& delta,
-                    Real alpha,
-                    Field& out) const
-    {
-        const Index total = K_ * Np_;
-        const Real* b = base.data().getData();
-        const Real* d = delta.data().getData();
-        Real* o = out.data().getData();
-        for (Index i = 0; i < total; ++i)
-        {
-          o[i] = b[i] + alpha * d[i];
-        }
-    }
-
     // combine all the stages
     void combine_(Field& u,
                   const Field& k1,
@@ -185,28 +168,35 @@ private:
                   const Field& k4,
                   const Real& dt) const
     {
-        const Index total = K_ * Np_;
-        Real* pu = u.data().getData();
-        const Real* p1 = k1.data().getData();
-        const Real* p2 = k2.data().getData();
-        const Real* p3 = k3.data().getData();
-        const Real* p4 = k4.data().getData();
-        const Real sixth = Real(1) / Real(6);
-        for (Index i = 0; i < total; ++i)
-            pu[i] += dt * sixth * (p1[i] + Real(2)*p2[i] + Real(2)*p3[i] + p4[i]);
+      const Index total = K_ * Np_;
+      Real* pu = u.data().getData();
+      const Real* p1 = k1.data().getData();
+      const Real* p2 = k2.data().getData();
+      const Real* p3 = k3.data().getData();
+      const Real* p4 = k4.data().getData();
+      const Real sixth = Real(1) / Real(6);
+      for (Index i = 0; i < total; ++i)
+      {
+        pu[i] += dt * sixth * (p1[i] + Real(2)*p2[i] + Real(2)*p3[i] + p4[i]);
+      }
     }
 
-    const OperatorType& op_; // reference to the spatial residual
-    Index K_, Np_; // mesh and basis sizes
-    Callback callback_; // optional post-step hook
+    // RHS operator
+    const OperatorType& op_;
 
-    // scratch fields
-    Field k1_, k2_, k3_, k4_; // the four RK4 stage derivatives
-    Field tmp_; // temporary u + alpha*k_i
+    // number of cells and nodes
+    Index K_, Np_;
 
-    // Diagnostics (updated by integrate())
+    // the four stages
+    Field k1_, k2_, k3_, k4_;
+    Field tmp_;
+
+    // callback function
+    Callback callback_;
+
+    // diagnostics variables, updated by step()
     Index lastStepCount_{ 0 };
-    Real currentTime_  { 0 };
+    Real currentTime_{ 0 };
 };
 
 } // namespace DG
