@@ -21,18 +21,22 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). Code supporting th
 
 - $u_h$ - approximate solution obtained on a mesh with step $h$
 - $(dot.op, dot.op)_(L^2)$ - scalar product in $L^2$
-- $P_k (I_j)$ - space of polynomoials of up to order $k$ on an interval $I_j$
-- $phi_i$ - $i$-th basis function
-- $bold(f)^*$ - numerical flux
-- $brace.l.double f brace.r.double = (u^- + u^+)/2$
-- $bracket.l.stroked f bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
-- $hat(u)$ - vector of coefficients
-- $l_i(x)$ - Lagrange polynomoial
+- $P_j (D^k)$ - space of polynomoials of up to order $j$ on an interval $D^k$
+- $phi_i, psi_i$ - $i$-th basis function
+- $f^* = f^* (u^-, u^+)$ - numerical flux
+- $u^-$ - limit of $u$ when approaching the boundary of an element from the left
+- $u^+$ - limit of $u$ when approaching the boundary of an element from the right
+- $hat(bold(n))$ - outward unit normal
+- $brace.l.stroked u brace.r.stroked = (u^- + u^+)/2$
+- $bracket.l.stroked u bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
+- $l_i (x)$ - $i$-th Lagrange polynomoial
+- $N$ - order of polynomial approximation
+- $N_p = N + 1$ - number of points in each element (number of degrees of freedom)
 
 = Problem overview
 The general one dimensional advection equation is of the following form:
-$ (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) = 0 $
-where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$ is the physical flux and $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$ is the unknown vector valued function.
+$ (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) = bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+ $
+where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$ is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$ is the unknown vector valued function and $bold(s)(x,t)$ is the source term.
 This equation is hyperbolic.
 
 For this problem to be well defined we need to impose initial and boundary conditions.
@@ -45,137 +49,107 @@ where the sum of the ranks of the boundary operators $cal(B)_L,cal(B)_R$ equals 
 
 == Weak formulation of the problem
 
-To obtain the weak formulation we multiply the equation by a test function $bold(v)_h in V_h^k$ and integrate over $I^j$.
-$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = 0. $
+To obtain the weak formulation we multiply the equation by a test function $bold(v) in V$ and integrate over the domain $Omega$.
+$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x. $
 Using per-partes on the second integral we obtain
-$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = 0 $
+$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x, $
+$hat(bold(n))$ here is a unit outward normal. Notice that we express the term $[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$, this will later help us formulate the semi-discrete form.
 
 = Discontinous Galerkin Method
 
 == Spatial discretization
 
-We split our domain (interval $I = chevron.l L, R chevron.r$) into $N$ elements $D^k= chevron.l x_(j-2/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element.
+We split our domain ($Omega = chevron.l L, R chevron.r$) into $N$ elements $D^j= chevron.l x_(j-1/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element and $x_(1/2) = L$, $x_(N+1/2) = R$.
 We now formulate the local weak formulation
 $
-integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x = -bracket.l bold(v)^T bold(f) (bold(u)) bracket.r_(x_(j-1/2))^(x_(j+1/2)) = integral_(partial D^k) hat(bold(n)) dot.op bold(f)^*(bold(u)) bold(v) dif x
+integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
 $
-We now have to define $bold(f)(bold(u)(x_(j-1/2), t))$, because the function is multivalued at the element interfaces.
-To do that we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The flux must be consistent i.e. $bold(f)^* (a,a) = bold(f) (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
+But now we have a problem, because $u$ is double valued at the boundaries. To solve this we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The equation then becomes
 $
-bold(f)^* = brace.l.double bold(f)(bold(u)) brace.r.double = C/2 bracket.l.stroked bold(u) bracket.r.stroked
+integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)^*(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
 $
-where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the flux Jacobian
+The flux must be consistent i.e. $bold(f)^* (a,a) = bold(f) (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
+$
+bold(f)^* = brace.l.stroked bold(f)(bold(u)) brace.r.stroked = C/2 bracket.l.stroked bold(u) bracket.r.stroked
+$
+where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
 $
 C = max_i lambda_i = rho (bold(f)_(bold(u))) = rho ((partial bold(f))/(partial bold(u)))
 $
 
 == Basis functions
 
-We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solution of degree $K$
+We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions of degree $K$
 $
 bold(u) (x,t) approx bold(u)_h (x,t) = plus.o.big_(k=1)^K bold(u)_h^k (x^k, t)
 $
-We define a function space
+We define a broken function space
 $
-V_h^k = {phi in L^2(I) thick : thick phi bar.v_(D^k) in P_k (D^k), thick j = 1,2,dots,N},
+V_h^k = {phi in L^2(I) thick : thick phi bar.v_(D^j) in P_k (D^j), thick j = 1,2,dots,N},
 $
-where $P_k (D^k)$ is a space of polynomials of at most degree $k$ on the interval $I_j$.
+where $P_k (D^j)$ is a space of polynomials of at most degree $k$ on the interval $D^j.$
 
 Now we can express the local approximate solution in the basis of the space $V_h^k$
 $
-x in D^k quad : quad u_h^k = sum_(n)^N hat(bold(u))_n^k (t) phi_n (x) = sum_j^N bold(u)_h^k (x_i, t) l_i (x),
+x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(bold(u))_n^k (t) phi_n (x) = sum_i^(N_p) bold(u)_h^k (x_i, t) l_i (x),
 $
-where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the Lagrange polynomial. The first expression is said to be modal representation and the second nodal.
+where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation here.
 
-Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations
+#line(length: 100%)
+*NOTE:* only linear problems without source term for now
+
+*TODO:* theory for nonlinear problems, add source term
+#line(length: 100%)
+
+Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations for each element
 $
-integral_(D^k) phi_i partial/(partial t) (sum_(j=0)^N hat(bold(u))_j^k phi_j) dif x - integral_(D^k) (partial phi_i)/(partial x) bold(f) (bold(u)_h^k) dif x + integral_(partial D^k) hat(bold(n)) dot.op phi_i bold(f)^* dif x = 0
+integral_(D^k) l_i (x) (partial u_h (x_j, t) l_j (x))/(partial t) dif x = integral_(D^k) a u_h (x_i, t) l_i (x) (dif l_j (x))/(dif x) dif x - integral_(partial D^k) l_i f^* dif x\
+sum_(j=1)^N_p u_h (x_j, t) integral_(D^k) l_i (x) (partial l_j (x))/(partial t) dif x = a integral_(D^k) l_i (dif l_j (x))/(dif x) dif x - integral_(partial D^k) l_i f^* dif x\
+i = 1,2,dots,N+1\
 $
 
-When choosing the basis functions for the space $V_h^k$ we have many options, the easiest one is the *monomial* basis.
-
-=== Monomial basis
-
-For easier computation we construct our basis on a refrence element $hat(I) = chevron.l -1, 1 chevron.r$
-and then we map it onto each element $I_j$ using an affine transformation. Which is given by
-$ x = x_j + (1+xi)/2 h_j, $
-where $xi in hat(I)$ is a local variable on $hat(I)$.
-The monomial basis then is
-$ hat(phi)^(m) (xi) = xi^m, quad m = 1, 2, dots k $ 
-For the solver itself we need to evaluate integrals of a product of two basis functions on $I_j$, we do that by substituting onto the reference interval
-$
-integral_(I_j) phi_j^m phi_j^n dif x = integral_(-1)^1 hat(phi)^m hat(phi)^n h/2 dif xi =\
-= h/2 integral_(-1)^1 xi^(m+n) dif xi = cases(h/(m+n+1) quad &: quad (m+n) percent 2 = 0,0 quad &: quad (m+n) percent 2 != 0)
-$
-These form the mass matrix $M.$
-
-Next we will also need integrals involving a derivative of a basis function
-$
-integral_(I_j) phi_j^m (dif phi_j^n)/(dif x) dif x = integral_(hat(I)) hat(phi)^m (dif hat(phi)^n)/(dif xi) 2/h h/2 dif xi =\
-= integral_(hat(I)) xi^m n xi^(n-1) dif xi = cases(0 quad &: quad (m+n) percent 2 = 0,(2n)/(m+n) quad &: quad (m+n)percent 2 != 0)
-$
-These integrals form the matrix $S$.
-
-Next we need to know the values of the basis functions on the cell boundaries:
-$
-phi_j^m (x_(j-1/2)) = (-1)^m,\
-phi_j^m (x_(j+1/2)) = 1
-$
-those values will form the matrix $B$.
-
-The problem with this basis is that the mass matrix M is poorly conditioned. To solve this we employ the Gram-Schmidt process to orthonormalize the basis yielding us the Legender polynomial basis.
+When choosing the basis of the space $V_h^k$ we have many options, but only one makes sense, the Legendre polynomials, $psi_n$ is a Legendre polynomial of order $n-1$. It will come in handy that they are orthogonal, and we will also normalize them in the $L^2$ norm, but more on them later.
 
 === Legender polynomials
+... blah blah blah ...
 
-Legender polynomials are the result of orthonormalizing the monomial basis. They are a part of a larger family of polynomials called the Jacobi polynomials.
-
-An easy way to calculate the polynomials is through the three term reccurence.
+An easy way to calculate the polynomials is through the three term reccurence using the Bonnet's formula [cite]
 $
-P_(n+1)^(alpha,beta)(x) &= [(b_n+c_n x)P_n^(alpha,beta)-d_n P_(n-1)^(alpha,beta)]/a_n\
-&a_n = 2(n+1)(n+alpha+beta+1)(2n+alpha+beta),\
-&b_n = (2n+alpha+beta+1)(alpha^2-beta^2),\
-&c_n = (2n+alpha+beta)(2n+alpha+beta+1)(2n+alpha+beta+2)\
-&d_n = 2(n+alpha)(n+beta)(2n+alpha+beta+2)
+P_n = ((2 n + 1) x P_(n-1) (x) - n P_(n-2) (x)) / (n + 1);\
 $
 To start the reccurence we need the first two terms. They are given as
 $
-&P_0^(alpha,beta) = 1\
-&P_1^(alpha,beta) = [alpha-beta+(alpha+beta+2)x]/2
+P_0 (x) = 1 quad P_1 (x) = x
 $
-Now to obtain the Legender polynomials we set the two coefficients $alpha, beta$ to zero.
-
-This formula is described in #cite(<karniadakis2013spectral>) in the appendix A.
-
-Using this basis the mass matrix M becomes the identity matrix (from the orthonormal character of the polynomials) and the problem of conditioning is resolved.
+Now to obtain the normalized (in the $L^2$ norm) Legender polynomials we multiply each polynomial by an appropriate coefficient
 $
-M = (phi_i, phi_j)_(L^2) = II
+tilde(P)_n (x) = sqrt((2 n + 1)/2) P_n (x)
 $
 
-==== Important properties
-+ $P_n (-x) = (-1)^n P_n (x)$
-+ $integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m$
-+ $integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1$
+To obtain a derivative of the Legendre polynomial we use the formula [cite]
+$
+P_n^' (x) = (n (P_(n-1) (x) - x P_(n) (x)))/(1-x^2)
+$
+Notice that the formula doesn't hold for $x = plus.minus 1$, for that we use a the following property
+$
+P_n^' (1) =  (n (n+1))/2
+$
+and
+$
+P_n^' (-x) = (-1)^(2 n - 1) P_n^' (x)
+$
+
+#heading(level: 4, numbering: none, "Important properties")
++ $ P_n (-x) = (-1)^n P_n (x) $
++ $ integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m $
++ $ integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1 $
++ ...
 
 == Nodal representation
 
-//Now we need to compute the $U_n$, which is given as
-//$ U_n = (u, phi_n)_(L^2) $
-//This identity follows from residual orthonormality.
-//$
-//(u-u_h, phi_n)_(L^2) = 0\
-//(u, phi_n)_(L^2) - (u_h, phi_n)_(L^2) = 0\
-//(u,phi_n)_(L^2) = (U_m phi_m, phi_n)_(L^2) = U_m (phi_m, phi_n)_(L^2) = U_m delta_(m n) = U_n\
-//(u, phi_n)_(L^2) = U_n
-//$
-//For a general function this integral is nontrivial, we therefor approximate it with a sum. In particular we use the Gaussian quadrature.
-//$
-//U_n = sum_i^N u(r_i) phi_n (r_i) w_i,
-//$
-//where $r_i$ are suitably chosen points and $w_i$ are weights. This quadrature is exact for polynomials of order $2 N -1$.
-
-We define $hat(bold(u))_n$ such that the approximation is interpolatory. Meaning
+Let's now discuss the nodal representation in greater detail. We define $hat(bold(u))_n$ such that the approximation is interpolatory i.e.
 $
-u(xi_i) = sum hat(bold(u))_n psi_n (xi_i),
+u(x_i) = sum hat(bold(u))_n psi_n (x_i),
 $
 where $xi_i$ represents distinct grid nodes. We can now write
 $ bold(u) = cal(V) hat(bold(u)), $
@@ -185,12 +159,20 @@ We first recognize that if
 $ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
 is an interpolant ($bold(u)(xi_i) = bold(u)_h (xi_i)$), then we can write it as
 $ bold(u)(r) approx bold(u)_h (r) = sum bold(u)(xi_i) l_i (r), $
-where $l_i (r)$ are the Lagrange polynomials.
+where $l_i (r)$ are the Lagrange polynomials defined as
+$
+l_i (x) = limits(Pi)_(j=1, j != i)^N_p thick (x-x_i)/(x_i - x_j)
+$
+An important property of the Lagrange polynomial is that
+$
+l_i (x_j) = delta_(i j),
+$
+where $delta_(i j)$ is the Kronecker delta.
 
 Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
 == Local operators
-Up till now we were developing a sensible local representation of the approximate solution. We should now discuss the various local operators.
+Up till now we were developing a sensible local representation of the approximate solution. We should now discuss the various local operators in the nodal formulation of DGM.
 
 === Mass matrix
 The local mass matrix $M^k$ is given as
