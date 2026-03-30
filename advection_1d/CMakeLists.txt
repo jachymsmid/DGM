@@ -18,10 +18,7 @@ add_executable(dg_solver src/main.cpp)
 target_include_directories(dg1d PRIVATE headers)
 
 # link TNL and Eigen3
-target_link_libraries(dg_solver
-  TNL::TNL
-  Eigen3::Eigen
-)
+target_link_libraries(dg_solver PRIVATE TNL::TNL Eigen3::Eigen)
 
 # compile options: Release, Debug, Diagnostics
 target_compile_options(dg_solver PRIVATE
@@ -29,3 +26,10 @@ target_compile_options(dg_solver PRIVATE
     $<$<CONFIG:Debug>:  -O0 -g>
     $<$<CONFIG:Diagnostics>:  -O3 -march=native -DDIAGNOSTICS >
 )
+
+# tests
+option(BUILD_TESTS "Build unit tests" ON)
+if(BUILD_TESTS )
+  enable_testing()
+  add_subdirectory(tests)
+endif()
