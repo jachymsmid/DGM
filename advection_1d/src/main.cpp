@@ -1,7 +1,9 @@
-#include "../headers/IO.hpp"
-#include "../headers/Mesh.hpp"
-#include "../headers/NumericalFlux.hpp"
-#include "../headers/RK4Integrator.hpp"
+#include "FieldVector.hpp"
+#include "IO.hpp"
+#include "Mesh.hpp"
+#include "NumericalFlux.hpp"
+#include "Integrator.hpp"
+#include "Operator.hpp"
 #include <TNL/Containers/Vector.h>
 #include <iostream>
 #include <cmath>
@@ -77,7 +79,7 @@ int main(int argc, char* argv[])
 
     // Time stepping with output every 20 steps
     Real h_min = mesh.minElementSize();
-    Real dt = DG::RKSS<Real>::computeDt(x_min, a, N);
+    Real dt = DG::ERK<Real>::computeDt(x_min, a, N);
     std::cout << "Time step for intergation:  " << dt << std::endl;
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
@@ -89,8 +91,7 @@ int main(int argc, char* argv[])
       return true;
     };
 
-                                                                                                                                                                                                         
-    DG::RKSS<Real> rk(op, mesh.numElements(), ref.numDOF(), callback);
+    DG::ERK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
     rk.integrate(u, 0.0, Tf, dt);
 
     // Write final state
