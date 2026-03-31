@@ -29,6 +29,12 @@ public:
       : mesh_(mesh), ref_(ref), flux_(flux), physFlux_(physFlux)
   {}
 
+  // return the rhs operatro as a std::function
+  std::function<void(const Field&, Field&, const Real& time)> rhsFunction() const
+    {
+      return [this](const Field& u, Field& rhs, const Real& time) { computeRHS(u, rhs, time); };
+    }
+
   // compute rhs = du/dt into 'res' given current state 'u' and 'time'
   void computeRHS(const Field& u, Field& res, const Real& time) const
   {
