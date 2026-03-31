@@ -1,10 +1,10 @@
 #pragma once
 
 #include "FieldVector.hpp"
-#include "Operator.hpp"
+#include <algorithm>
 #include <functional>
 #include <stdexcept>
-#include <cmath>
+#include <utility>
 #include <vector>
 
 namespace DG {
@@ -24,7 +24,7 @@ class Integrator
 {
 public:
     using Field = FieldVector<Real, Device, Index>;
-    using OperatorType = Operator<Real, Device, Index>;
+    using RHSFunc = std::function<void(const Field&, Field&, const Real&)>;
     using Callback = StepCallback<Real, Device, Index>;
 
     virtual ~Integrator() = default;
@@ -75,24 +75,24 @@ protected:
 template<typename Real   = double,
          typename Device = TNL::Devices::Host,
          typename Index  = int>
-class RKSS : Integrator< Real, Device, Index > // inherit protected methods
+class ERK : Integrator< Real, Device, Index > // inherit protected methods
 {
 public:
     using Field = FieldVector<Real, Device, Index>;
-    using OperatorType = Operator<Real, Device, Index>;
+    using RHSFunc = std::function<void(const Field&, Field&, const Real&)>;
     using Callback = StepCallback<Real, Device, Index>;
 
     // op       – spatial residual (must outlive this integrator)
     // K, Np    – element count and nodes-per-element (needed to size scratch)
     // callback – optional: called after every step, return false to stop early
-    explicit ERK(const OperatorType& op,
-                           Index K, Index Np,
-                           Callback callback = nullptr)
-        : op_(op)
-        , K_(K), Np_(Np)
-        , callback_(std::move(callback))
-        , k1_(K, Np), k2_(K, Np), k3_(K, Np), k4_(K, Np)
-        , tmp_(K, Np) {}
+    explicit ERK(RHSFunc rhs,
+                 Index K, Index Np,
+                 Callback callback = nullptr)
+        : rhs_(std::move(rhs)),
+          K_(K), Np_(Np),
+          callback_(std::move(callback)),
+          k1_(K, Np), k2_(K, Np), k3_(K, Np), k4_(K, Np),
+          tmp_(K, Np) {}
 
     // single step
     void step(Field& u, Real dt, Real t_in) override
@@ -101,22 +101,22 @@ public:
         throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
 
       // k1 = L(u^n, t_n)
-      op_.computeRHS(u, k1_, t_in + 0.5 * dt);
+      rhs_(u, k1_, t_in + 0.5 * dt);
 
       // k2 = L(u^n + 1/2 dt k1, t_n + 1/2 dt)
       // tmp = u + 0.5*dt*k1
       this -> addScaled_(u, k1_, 0.5 * dt, tmp_);
-      op_.computeRHS(tmp_, k2_, t_in + 0.5 * dt);
+      rhs_(tmp_, k2_, t_in + 0.5 * dt);
 
       // k3 = L(u^n + 1/2 dt k2, t_n + 1/2 dt)
       // tmp = u + 0.5*dt*k2
       this -> addScaled_(u, k2_, 0.5 * dt, tmp_);
-      op_.computeRHS(tmp_, k3_, t_in + 0.5 * dt);
+      rhs_(tmp_, k3_, t_in + 0.5 * dt);
 
       // k4 = L(u^n + dt k3, t_n + dt)
       // tmp = u + dt * k3
       this -> addScaled_(u, k3_, dt, tmp_);
-      op_.computeRHS(tmp_, k4_, t_in + dt );
+      rhs_(tmp_, k4_, t_in + dt );
 
       // combine: u += (k1 + 2*k2 + 2*k3 + k4) / 6
       combine_(u, k1_, k2_, k3_, k4_, dt);
@@ -183,8 +183,8 @@ private:
       }
     }
 
-    // RHS operator
-    const OperatorType& op_;
+    // RHS operator (function)
+    RHSFunc rhs_;
 
     // number of cells and nodes
     Index K_, Np_;
@@ -210,16 +210,16 @@ class LSERK : Integrator< Real, Device, Index > // inherit protected methods
 {
 public:
     using Field = FieldVector<Real, Device, Index>;
-    using OperatorType = Operator<Real, Device, Index>;
+    using RHSFunc = std::function<void(const Field&, Field&, const Real&)>;
     using Callback = StepCallback<Real, Device, Index>;
 
     // op       – spatial residual (must outlive this integrator)
     // K, Np    – element count and nodes-per-element (needed to size scratch)
     // callback – optional: called after every step, return false to stop early
-    explicit LSERK(const OperatorType& op,
+    explicit LSERK(RHSFunc rhs,
                            Index K, Index Np,
                            Callback callback = nullptr)
-        : op_(op)
+        : rhs_(std::move(rhs))
         , K_(K), Np_(Np)
         , callback_(std::move(callback))
         , k1_(K, Np), k2_(K, Np), p1_(K, Np), p2_(K, Np)
@@ -238,7 +238,7 @@ public:
       for (int i = 0; i < 5; i++)
       {
         // tmp = L(p1, t_n + c_i dt)
-        op_.computeRHS(p1_, tmp_, t_in + c_[i] * dt);
+        rhs_(p1_, tmp_, t_in + c_[i] * dt);
         // k_i = a_i k_(i-1) + tmp
         this -> addScaled_(tmp_, k1_, a_[i], k2_);
         // p_i = p_(i-1) + b_i * k_i
@@ -291,8 +291,8 @@ public:
 
 private:
     
-    // RHS operator
-    const OperatorType& op_;
+    // RHS operator (function)
+    RHSFunc rhs_;
 
     // number of cells and nodes
     Index K_, Np_;
