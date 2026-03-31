@@ -325,7 +325,7 @@ private:
     Matrix L(Np_, 2);
     for (Index i = 0; i < Np_; ++i) {
       L(i,0) = VVT(i, 0);
-      L(i,1) = VVT(i, Np_-1);
+      L(i,1) = -1.0 * VVT(i, Np_-1);
     }
     return L;
   }

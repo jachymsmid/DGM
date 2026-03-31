@@ -86,10 +86,8 @@ public:
         }
         // numerical flux f*
         Real fStar = flux_.compute(u_ext, u_int, mesh_.leftNormal());
-        // f(u_int) = f(u+)
-        Real fLocal = physFlux_(u_int);
-        fluxJump[0]  = mesh_.leftNormal() * (fStar - fLocal);
-        // fluxJump[0]  = (fStar - fLocal);
+        // fluxJump[0]  = fStar
+        fluxJump[0]  = fStar;
       }
 
       // right face
@@ -110,10 +108,8 @@ public:
         }
         // numerical flux f*(u-, u+)
         Real fStar   = flux_.compute(u_int, u_ext, mesh_.rightNormal());
-        // f(u_int) = f(u-)
-        Real fLocal  = physFlux_(u_int);
         // contribution to rhs: n * (f* - f_local), n=+1 at right face
-        fluxJump[1]  = mesh_.rightNormal() * (fStar - fLocal);
+        fluxJump[1]  = fStar;
         // fluxJump[1]  = (fStar - fLocal);
       }
 
