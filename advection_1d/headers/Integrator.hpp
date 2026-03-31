@@ -2,6 +2,7 @@
 
 #include "FieldVector.hpp"
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <stdexcept>
 #include <utility>
@@ -203,6 +204,7 @@ private:
 
 // ------------------------------- LSERK ---------------------------------------
 // low storage explicit five stage Runge-Kutta
+// see: https://ntrs.nasa.gov/api/citations/19940028444/downloads/19940028444.pdf
 template<typename Real   = double,
          typename Device = TNL::Devices::Host,
          typename Index  = int>
@@ -222,7 +224,7 @@ public:
         : rhs_(std::move(rhs))
         , K_(K), Np_(Np)
         , callback_(std::move(callback))
-        , k1_(K, Np), k2_(K, Np), p1_(K, Np), p2_(K, Np)
+        , du_(K, Np)
         , tmp_(K, Np) {}
 
     // single step
@@ -232,23 +234,27 @@ public:
         throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
 
       // p_1 = u
-      for (int i = 0; i < K_ * Np_; i++)
-        p1_[i] = u[i];
+      Real* du_data = du_.data().getData();
+      Real* u_data = u.data().getData();
+      Real* tmp_data = tmp_.data().getData();
+
 
       for (int i = 0; i < 5; i++)
       {
-        // tmp = L(p1, t_n + c_i dt)
-        rhs_(p1_, tmp_, t_in + c_[i] * dt);
-        // k_i = a_i k_(i-1) + tmp
-        this -> addScaled_(tmp_, k1_, a_[i], k2_);
-        // p_i = p_(i-1) + b_i * k_i
-        this -> addScaled_(p1_, k2_, b_[i], p2_);
-      }
+        // tmp = L(u, t_n + c_i dt)
+        rhs_(u, tmp_, t_in + c_[i] * dt);
 
-      // u = p_5
-      for (int i = 0; i < K_ * Np_; i++)
-        u[i] = p2_[i];
+        // tmp = dt * tmp
+        this -> scaleField_(tmp_, dt);
+
+        // du_ = a_i * du_ + tmp
+        this -> addScaled_(tmp_, du_, a_[i], du_);
+
+        // u = u + b_i * du_
+        this -> addScaled_(u, du_, b_[i], u);
+      }
     }
+
 
     // integrate: perform multiple steps
     Index integrate(Field& u, Real t0, Real t_end, Real dt) override
@@ -290,7 +296,7 @@ public:
     Index numPoints() const override { return K_ * Np_; }
 
 private:
-    
+
     // RHS operator (function)
     RHSFunc rhs_;
 
@@ -298,35 +304,35 @@ private:
     Index K_, Np_;
 
     // the four stages
-    Field k1_, k2_, p1_, p2_;
+    Field du_;
     Field tmp_;
 
     // callback function
     Callback callback_;
 
-    // coefficients, Hesthaven p. 64
-    std::vector<Real> a_ = {
+    // coefficients, Hesthaven p. 64, or the NASA paper
+    std::array<Real, 5> a_ = {
       0.f,
-      -567301805773/1357537059087,
-      -2404267990393/2016746695238,
-      -3550918686646/2091501179385,
-      -1275806237668/842570457699
+      -Real(567301805773.0)/Real(1357537059087.0),
+      -Real(2404267990393.0)/Real(2016746695238.0),
+      -Real(3550918686646.0)/Real(2091501179385.0),
+      -Real(1275806237668.0)/Real(842570457699.0)
     };
-    std::vector<Real> b_ = {
-      1432997174477/9575080441755,
-      5161836677717/13612068292357,
-      1720146321549/2090206949498,
-      3134564353537/4481467310338,
-      2277821191437/14882151754819
+    std::array<Real, 5> b_ = {
+      Real(1432997174477.0)/Real(9575080441755.0),
+      Real(5161836677717.0)/Real(13612068292357.0),
+      Real(1720146321549.0)/Real(2090206949498.0),
+      Real(3134564353537.0)/Real(4481467310338.0),
+      Real(2277821191437.0)/Real(14882151754819.0)
     };
-    std::vector<Real> c_ = {
-      0.f,
-      1432997174477/9575080441755,
-      2526269341429/6820363962896,
-      2006345519317/3224310063776,
-      2802321613138/2924317926251
+    std::array<Real, 5> c_ = {
+      Real(0.f),
+      Real(1432997174477.0)/Real(9575080441755.0),
+      Real(2526269341429.0)/Real(6820363962896.0),
+      Real(2006345519317.0)/Real(3224310063776.0),
+      Real(2802321613138.0)/Real(2924317926251.0)
     };
-    
+
     // diagnostics variables, updated by step()
     Index lastStepCount_{ 0 };
     Real currentTime_{ 0 };

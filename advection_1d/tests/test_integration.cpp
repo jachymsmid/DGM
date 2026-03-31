@@ -1,109 +1,57 @@
 #include <gtest/gtest.h>
-#include "../headers/Mesh.hpp"
-#include "../headers/ReferenceElement.hpp"
-#include "../headers/FieldVector.hpp"
-#include "../headers/NumericalFlux.hpp"
-#include "../headers/Operator.hpp"
-#include "../headers/RK4Integrator.hpp"
+#include "FieldVector.hpp"
+#include "Integrator.hpp"
 #include <cmath>
 
-// this is not a good unit test, it tests the whole solver
-TEST(RK4Test, AdvectsWaveOneFullPeriod)
+// tolerance
+double TOL = 1e-4;
+
+// test on the problem y' = -y, y(0) = 1
+TEST(ERKTest, ExponentialDecay)
 {
-  // after T = 2 \pi / a = 2 \pi steps, sin(x - at) returns to sin(x).
-  // the L2 error should be small for N=4, K=10.
-  const int K = 10, N = 4;
-  const double a = 1.0;
-  const double Tf = 2.0 * M_PI;
+  double t_end = 1.0;
+  double dt = 0.01;
+  double y_0 = 1.0;
 
-  auto mesh = DG::Mesh<double>::uniform(0.0, Tf, K);
-  DG::ReferenceElement<double> ref(N);
-  DG::UpwindFlux<double> flux(a);
-  DG::Operator<double> op(mesh, ref, flux, [](double u){ return u; });
+  DG::FieldVector<double> y(1, 1);
 
-  int Np = ref.numDOF();
-  DG::FieldVector<double> u(K, Np);
+  // y(0) = 1
+  y.elementPtr(0)[0] = y_0;
 
-  // u(x,0) = sin(x)
-  for (int k = 0; k < K; ++k) {
-    double xL = mesh.leftVertex(k), h = mesh.elementSize(k);
-    for (int i = 0; i < Np; ++i) {
-      double r = ref.nodes()[i];
-      u.elementPtr(k)[i] = std::sin(xL + (r+1)*0.5*h);
-    }
-  }
-
-  double h_min = mesh.elementSize(0);
-  double dt = DG::RKSS<double>::computeDt(h_min, a, N);
-
-  DG::RKSS<double> rk(op, K, Np);
-  rk.integrate(u, 0.0, Tf, dt);
-
-  // Compute L2 error against sin(x) (exact solution at T=2π)
-  double err = 0;
-  for (int k = 0; k < K; ++k) {
-    double xL = mesh.leftVertex(k), h = mesh.elementSize(k);
-    for (int i = 0; i < Np; ++i) {
-      double r = ref.nodes()[i];
-      double x = xL + (r+1)*0.5*h;
-      double e = u.elementPtr(k)[i] - std::sin(x);
-      err += ref.weights()[i] * mesh.jacobian(k) * e * e;
-    }
-  }
-  err = std::sqrt(err);
-
-  // N=4 DG should achieve L2 error well below 1e-3 for K=10
-  // error bounds? theory
-  EXPECT_LT(err, 1e-3) << "L2 error after one period = " << err;
-}
-
-// also not a good unit test
-TEST(RK4Test, EnergyConservedOverTime)
-{
-  const int K = 10, N = 4;
-  const double a = 1.0;
-  const double Tf = 1.0;
-
-  auto mesh = DG::Mesh<double>::uniform(0.0, 2*M_PI, K);
-  DG::ReferenceElement<double> ref(N);
-  DG::UpwindFlux<double> flux(a);
-  DG::Operator<double> op(mesh, ref, flux, [](double u){ return u; });
-
-  int Np = ref.numDOF();
-  DG::FieldVector<double> u(K, Np);
-
-  for (int k = 0; k < K; ++k)
+  auto rhs = [&](const DG::FieldVector<double>& u_in,
+                       DG::FieldVector<double>& u_out,
+                 const double &time)
   {
-    double xL = mesh.leftVertex(k), h = mesh.elementSize(k);
-    for (int i = 0; i < Np; ++i)
-    {
-      double r = ref.nodes()[i];
-      u.elementPtr(k)[i] = std::sin(xL + (r + 1) * 0.5 * h);
-    }
-  }
-
-  auto energy = [&](const DG::FieldVector<double>& v) {
-      double E = 0;
-      for (int k = 0; k < K; ++k)
-      {
-        double J = mesh.jacobian(k);
-        for (int i = 0; i < Np; ++i)
-        {
-          E += ref.weights()[i] * J * v.elementPtr(k)[i] * v.elementPtr(k)[i];
-        }
-      }
-      return E;
+    u_out.elementPtr(0)[0] = -u_in.elementPtr(0)[0];
   };
 
-  double E0 = energy(u);
-  double h_min = mesh.elementSize(0);
-  double dt = DG::RKSS<double>::computeDt(h_min, a, N);
+  DG::ERK<double> rk(rhs, 1, 1);
+  rk.integrate(y, 0.0, t_end, dt);
 
-  DG::RKSS<double> rk(op, K, Np);
-  rk.integrate(u, 0.0, Tf, dt);
+  EXPECT_NEAR(y.elementPtr(0)[0], std::exp(-1), TOL);
+}
 
-  double E1 = energy(u);
+// test the low storage explicit runge-kutta
+TEST(LSERKTest, ExponentialDecay)
+{
+  double t_end = 1.0;
+  double dt = 0.1;
+  double y_0 = 1.0;
 
-  // Energy should not grow — allow small decrease from upwind dissipation
-  EXPECT_LE(E1, E0 * 1.001) << "Energy grew from " << E0 << " to " << E1;
+  DG::FieldVector<double> y(1, 1);
+
+  // y(0) = 1
+  y.elementPtr(0)[0] = y_0;
+
+  auto rhs = [&](const DG::FieldVector<double>& u_in,
+                       DG::FieldVector<double>& u_out,
+                 const double &time)
+  {
+    u_out.elementPtr(0)[0] = -u_in.elementPtr(0)[0];
+  };
+
+  DG::LSERK<double> rk(rhs, 1, 1);
+  rk.integrate(y, 0.0, t_end, dt);
+
+  EXPECT_NEAR(y.elementPtr(0)[0], std::exp(-1), TOL);
 }
