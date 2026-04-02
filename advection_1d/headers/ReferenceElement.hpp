@@ -319,7 +319,7 @@ private:
     Matrix L(Np_, 2);
     for (Index i = 0; i < Np_; ++i) {
         L(i,0) = VVT(i, 0);       // left face node (index 0)
-        L(i,1) = VVT(i, Np_-1);   // right face node (index Np-1)
+        L(i,1) = -VVT(i, Np_-1);   // right face node (index Np-1)
     }
     return L;
   }

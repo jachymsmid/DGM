@@ -38,7 +38,6 @@ int main(int argc, char* argv[])
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
 
     int Np = ref.numDOF();
-    std::cout << "Number of DOFs = " << Np << std::endl;
 
     // initial condition u(x,0) = sin(x)
     for (int k = 0; k < mesh.numElements(); ++k) {
@@ -79,8 +78,7 @@ int main(int argc, char* argv[])
 
     // Time stepping with output every 20 steps
     Real h_min = mesh.minElementSize();
-    Real dt = 0.01; // DG::ERK<Real>::computeDt(x_min, a, N);
-    std::cout << "Time step for intergation:  " << dt << std::endl;
+    Real dt = DG::ERK<Real>::computeDt(x_min, a, N);
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
     {
@@ -89,7 +87,7 @@ int main(int argc, char* argv[])
     };
 
     DG::ERK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
-    rk.integrate(u, 0.0, dt*2.0, dt);
+    rk.integrate(u, 0.0, Tf, dt);
 
     // Write final state
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);

@@ -43,6 +43,7 @@ public:
     const auto& Dr   = ref_.Dr();
     const auto& LIFT = ref_.LIFT();
 
+
     std::vector<Real> vol(Np), flocal(Np), fluxJump(2);
 
     // for every mesh element
@@ -53,7 +54,10 @@ public:
       Real* rk = res.elementPtr(k);
 
       // physical flux at all nodes of the element
-      for (Index i = 0; i < Np; ++i) flocal[i] = physFlux_(uk[i]);
+      for (Index i = 0; i < Np; ++i)
+      {
+        flocal[i] = physFlux_(uk[i]);
+      }
 
       // --- volume term ---
       // vol = Dr * flocal
@@ -62,7 +66,7 @@ public:
         Real s = 0;
         for (Index j = 0; j < Np; ++j)
         {
-          s += Dr(j,i) * uk[j];
+          s += Dr(i,j) * flocal[j];
         }
         vol[i] = s;
       }
@@ -86,7 +90,6 @@ public:
         }
         // fluxJump[0]  = fStar
         fluxJump[0]  = flux_.compute(u_ext, u_int, mesh_.leftNormal());
-        std::cout << "Left flux = " << fluxJump[0] << std::endl;
       }
 
       // right face
@@ -107,7 +110,6 @@ public:
         }
         // numerical flux f*(u-, u+)
         fluxJump[1]  = flux_.compute(u_int, u_ext, mesh_.rightNormal());
-        std::cout << "Right flux = " << fluxJump[1] << std::endl;
       }
 
       // --- assemble rhs ---
@@ -116,7 +118,7 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
-        rk[i] = Jinv * (vol[i] + lift);
+        rk[i] = Jinv * ( vol[i] + lift);
       }
     }
   }
