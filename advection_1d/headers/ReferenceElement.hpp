@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Core>
 #include <TNL/Allocators/Default.h>
 #include <TNL/Devices/Host.h>
 #include <TNL/Matrices/DenseOperations.h>
@@ -34,8 +35,9 @@ public:
     computeGLL_(r_, w_, N_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
+    M_ = massMatrix_(V_);
     Vr_ = buildDerivVandermonde_(r_);
-    Dr_ = buildDMatrix_(V_, Vr_); // Dr  Vr * inv(V)
+    Dr_ = buildDMatrix_(V_, Vr_, M_); // Dr  Vr * inv(V)
     LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
 
   }
@@ -282,23 +284,16 @@ private:
     return eigenToTnl(E);
   }
 
-  // build the differentiation matrix
-  // D = dV * inv(V)
-  Matrix buildDMatrix_(const Matrix& V, const Matrix& dV) const
+  // build the differentiation matrix for the weak formulation
+  // D = V dV^T M
+  Matrix buildDMatrix_(const Matrix& V, const Matrix& dV, const Matrix& M) const
   {
     Eigen::MatrixXd eV  = tnlToEigen(V);
+    Eigen::MatrixXd eM  = tnlToEigen(M);
     Eigen::MatrixXd edV = tnlToEigen(dV);
 
-    // verify V is not degenerate before inverting
-    Real detV = eV.determinant();
-    if (detV <= 0)
-    {
-      throw std::invalid_argument("Cannot invert matrix whose determinant is less than or equal to zero");
-    }
+    Eigen::MatrixXd eD = eV * edV.transpose() * eM;
 
-    Eigen::MatrixXd eVinv = eV.inverse();
-
-    Eigen::MatrixXd eD = edV * eVinv;
     return eigenToTnl(eD);
   }
 
@@ -307,9 +302,8 @@ private:
     Eigen::MatrixXd eV  = tnlToEigen(V);
     Eigen::MatrixXd eVT = eV.transpose();
     Eigen::MatrixXd eD = eV * eVT;
-    eD = eD.inverse();
-    return eigenToTnl(eD);
 
+    return eigenToTnl(eD.inverse());
   }
 
   // build the LIFT matrix
@@ -317,22 +311,22 @@ private:
   {
     Matrix VVT(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
-      for (Index j = 0; j < Np_; ++j) {
-        Real s = Real(0);
-        for (Index k = 0; k < Np_; ++k) s += V(i,k) * V(j,k);
-        VVT(i,j) = s;
-      }
+        for (Index j = 0; j < Np_; ++j) {
+            Real s = Real(0);
+            for (Index k = 0; k < Np_; ++k) s += V(i,k) * V(j,k);
+            VVT(i,j) = s;
+        }
     Matrix L(Np_, 2);
     for (Index i = 0; i < Np_; ++i) {
-      L(i,0) = VVT(i, 0);
-      L(i,1) = VVT(i, Np_-1);
+        L(i,0) = VVT(i, 0);       // left face node (index 0)
+        L(i,1) = -VVT(i, Np_-1);   // right face node (index Np-1)
     }
     return L;
   }
 
   Index  N_, Np_;
   Vector r_, w_;
-  Matrix V_, Vr_, Dr_, LIFT_;
+  Matrix V_, Vr_, Dr_, LIFT_, M_;
 };
 
 } // namespace DG

@@ -31,9 +31,9 @@ public:
 
   // return the rhs operatro as a std::function
   std::function<void(const Field&, Field&, const Real& time)> rhsFunction() const
-    {
-      return [this](const Field& u, Field& rhs, const Real& time) { computeRHS(u, rhs, time); };
-    }
+  {
+    return [this](const Field& u, Field& rhs, const Real& time) { computeRHS(u, rhs, time); };
+  }
 
   // compute rhs = du/dt into 'res' given current state 'u' and 'time'
   void computeRHS(const Field& u, Field& res, const Real& time) const
@@ -42,6 +42,7 @@ public:
     const Index Np = ref_.numDOF();
     const auto& Dr   = ref_.Dr();
     const auto& LIFT = ref_.LIFT();
+
 
     std::vector<Real> vol(Np), flocal(Np), fluxJump(2);
 
@@ -53,7 +54,10 @@ public:
       Real* rk = res.elementPtr(k);
 
       // physical flux at all nodes of the element
-      for (Index i = 0; i < Np; ++i) flocal[i] = physFlux_(uk[i]);
+      for (Index i = 0; i < Np; ++i)
+      {
+        flocal[i] = physFlux_(uk[i]);
+      }
 
       // --- volume term ---
       // vol = Dr * flocal
@@ -62,7 +66,7 @@ public:
         Real s = 0;
         for (Index j = 0; j < Np; ++j)
         {
-          s += Dr(j,i) * uk[j];
+          s += Dr(i,j) * flocal[j];
         }
         vol[i] = s;
       }
@@ -84,12 +88,8 @@ public:
         {
           u_ext = u.elementPtr(mesh_.leftCellOfFace(k))[Np-1];
         }
-        // numerical flux f*
-        Real fStar = flux_.compute(u_ext, u_int, mesh_.leftNormal());
-        // f(u_int) = f(u+)
-        Real fLocal = physFlux_(u_int);
-        fluxJump[0]  = mesh_.leftNormal() * (fStar - fLocal);
-        // fluxJump[0]  = (fStar - fLocal);
+        // fluxJump[0]  = fStar
+        fluxJump[0]  = flux_.compute(u_ext, u_int, mesh_.leftNormal());
       }
 
       // right face
@@ -109,12 +109,7 @@ public:
           u_ext = u.elementPtr(mesh_.rightCellOfFace(k+1))[0];
         }
         // numerical flux f*(u-, u+)
-        Real fStar   = flux_.compute(u_int, u_ext, mesh_.rightNormal());
-        // f(u_int) = f(u-)
-        Real fLocal  = physFlux_(u_int);
-        // contribution to rhs: n * (f* - f_local), n=+1 at right face
-        fluxJump[1]  = mesh_.rightNormal() * (fStar - fLocal);
-        // fluxJump[1]  = (fStar - fLocal);
+        fluxJump[1]  = flux_.compute(u_int, u_ext, mesh_.rightNormal());
       }
 
       // --- assemble rhs ---
@@ -123,7 +118,7 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
-        rk[i] = Jinv * (- 1 * vol[i] + lift);
+        rk[i] = Jinv * ( vol[i] + lift);
       }
     }
   }
