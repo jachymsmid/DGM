@@ -17,18 +17,20 @@
 
 This text was mainly inspired by #cite(<hesthaven2008nodal>). Code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
 
-#heading(level: 1, numbering: none, "Symbols")
+#heading(level: 1, numbering: none, "Symbols and definitions")
 
 - $u_h$ - approximate solution obtained on a mesh with step $h$
-- $(dot.op, dot.op)_(L^2)$ - scalar product in $L^2$
+- $(u, v)_(L^2(Omega)) = integral_Omega u v dif x$ - scalar product in $L^2$
+- $bar.v.double u bar.v.double _(L^2 (Omega))^2 = (u, u)_(L^2 (Omega))$
 - $P_j (D^k)$ - space of polynomoials of up to order $j$ on an interval $D^k$
 - $phi_i, psi_i$ - $i$-th basis function
-- $f^* = f^* (u^-, u^+)$ - numerical flux
 - $u^-$ - limit of $u$ when approaching the boundary of an element from the left
 - $u^+$ - limit of $u$ when approaching the boundary of an element from the right
+- $f^* = f^* (u^-, u^+)$ - numerical flux
 - $hat(bold(n))$ - outward unit normal
 - $brace.l.stroked u brace.r.stroked = (u^- + u^+)/2$
-- $bracket.l.stroked u bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
+- $bracket.l.stroked u bracket.r.stroked = hat(bold(n))^- u^- + hat(bold(n))^+ u^+$
+- $bracket.l.stroked bold(u) bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
 - $l_i (x)$ - $i$-th Lagrange polynomoial
 - $N$ - order of polynomial approximation
 - $N_p = N + 1$ - number of points in each element (number of degrees of freedom)
@@ -53,13 +55,14 @@ To obtain the weak formulation we multiply the equation by a test function $bold
 $ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x. $
 Using per-partes on the second integral we obtain
 $ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x, $
-$hat(bold(n))$ here is a unit outward normal. Notice that we express the term $[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$, this will later help us formulate the semi-discrete form.
+$hat(bold(n))$ here is a unit outward normal. Notice that we express the term $[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$, this will later help us when generalazing the scheme.
 
 = Discontinous Galerkin Method
 
 == Spatial discretization
 
 We split our domain ($Omega = chevron.l L, R chevron.r$) into $N$ elements $D^j= chevron.l x_(j-1/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element and $x_(1/2) = L$, $x_(N+1/2) = R$.
+$ Omega approx Omega_h = limits(union.big)_(k=1)^K D^k $
 We now formulate the local weak formulation
 $
 integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
@@ -70,7 +73,7 @@ integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (p
 $
 The flux must be consistent i.e. $bold(f)^* (a,a) = bold(f) (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
 $
-bold(f)^* = brace.l.stroked bold(f)(bold(u)) brace.r.stroked = C/2 bracket.l.stroked bold(u) bracket.r.stroked
+bold(f)^* = brace.l.stroked bold(f)(bold(u)) brace.r.stroked + C/2 bracket.l.stroked bold(u) bracket.r.stroked
 $
 where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
 $
@@ -79,21 +82,22 @@ $
 
 == Basis functions
 
-We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions of degree $K$
+We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions
 $
 bold(u) (x,t) approx bold(u)_h (x,t) = plus.o.big_(k=1)^K bold(u)_h^k (x^k, t)
 $
-We define a broken function space
+We define a local function space $V_h^k$ such that
 $
-V_h^k = {phi in L^2(I) thick : thick phi bar.v_(D^j) in P_k (D^j), thick j = 1,2,dots,N},
+V_h = plus.o.big_(k=1)^K V_h^k\
+V_h^k = {phi in L^2(D^k) thick : thick phi bar.v_(D^k) in P_j (D^k), thick j = 1,2,dots,N},
 $
-where $P_k (D^j)$ is a space of polynomials of at most degree $k$ on the interval $D^j.$
+where $P_j (D^k)$ is a space of polynomials of at most degree $k$ on the interval $D^j.$
 
 Now we can express the local approximate solution in the basis of the space $V_h^k$
 $
-x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(bold(u))_n^k (t) phi_n (x) = sum_i^(N_p) bold(u)_h^k (x_i, t) l_i (x),
+x in D^k quad : quad bold(u)_h^k = sum_(n)^(N_p) hat(bold(u))_n^k (t) phi_n (x) = sum_i^(N_p) bold(u)_h^k (x_i, t) l_i (x),
 $
-where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation here.
+where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation in this text.
 
 #line(length: 100%)
 *NOTE:* only linear problems without source term for now
@@ -121,7 +125,7 @@ To start the reccurence we need the first two terms. They are given as
 $
 P_0 (x) = 1 quad P_1 (x) = x
 $
-Now to obtain the normalized (in the $L^2$ norm) Legender polynomials we multiply each polynomial by an appropriate coefficient
+Now to obtain the normalized (in the $L^2$ norm) Legender polynomials $tilde(P)_n (x)$ we multiply each polynomial by an appropriate coefficient
 $
 tilde(P)_n (x) = sqrt((2 n + 1)/2) P_n (x)
 $
@@ -149,7 +153,7 @@ $
 
 Let's now discuss the nodal representation in greater detail. We define $hat(bold(u))_n$ such that the approximation is interpolatory i.e.
 $
-u(x_i) = sum hat(bold(u))_n psi_n (x_i),
+u(x_i) = sum hat(u)_n psi_n (x_i),
 $
 where $xi_i$ represents distinct grid nodes. We can now write
 $ bold(u) = cal(V) hat(bold(u)), $
@@ -180,7 +184,7 @@ $ M_(i j)^k = integral_(x_l^k)^(x_r^k) l_i^k (x) l_j^k (x) dif x = h_k/2 integra
 where the coefficient $h_k/2$ is a Jacobian coming from the affine transformation and $M$ is the mass matrix defined on the reference element.
 
 We know that
-$ l_i (r) = (cal(V)^T)^(-1) phi_n (r). $
+$ l_i (r) = (cal(V)^T)^(-1)_(i n) phi_n (r). $
 From which we get
 $
 M_(i j) = integral_(-1)^1 (cal(V)^T)_(i n)^(-1) phi_n (r) (cal(V)^T)_(j m)^(-1) phi_m (r) dif r= (cal(V)^T)_(i m)^(-1) (cal(V)^T)_(j m)^(-1) (phi_n, phi_m)_(L^2) =\
@@ -206,13 +210,17 @@ where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendr
 
 === Surface integral
 This operator is responsible of extracting the surface terms of the form
-$ integral.cont_(-1)^1 hat(bold(n)) dot.op (u_h - u^*) l_i (r) dif r = (u_h - u^*) bar.v_(r_n) bold(e)_n - (u_h - u^*) bar.v_(r_1) bold(e)_1, $
-where $bold(e)_i$ is a zero vector with $1$ at index $i$.
+$ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x =  f^* bar.v_(x_R) bold(e)_n - u^* bar.v_(x_L) bold(e)_1, $
+where $bold(e)_i$ is a zero vector with $1$ at index $i$. We can rewrite this using a $N_p times 2$ matrix $cal(E)$ that is zero except for upper right corener that is $1$ and the lower left corner that is $-1$ like so
+$ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x = cal(E) dot.op (f^*_R, f^*_L)^T $
 
 == Time discretization
 
-We use explicit RK4 to integrate the semidiscrete system
+Two explicit RK4 mmethods were implemented to integrate the semidiscrete system
 $ (dif u_h)/(dif t) = cal(L)_h (u_h, t) $
+
+=== ERK
+General explicit four step Runge-Kutta method.
 $
 &k_1 = cal(L)_h (u_h^n, t^n)\
 &k_2 = cal(L)_h (u_h^n + 1/2 Delta t k_1, t^n + Delta t)\
@@ -220,6 +228,9 @@ $
 &k_4 = cal(L)_h (u_h^n + 1/2 Delta t k_3, t^n + Delta t)\
 &u_h^(n+1) = u_h^n + 1/6 Delta t (k_1 + k_2 + k_3 + k_4)
 $
+
+=== LSERK
+Low storage explicit five step Runge-Kutta method.
 
 = Mesh
 
@@ -239,6 +250,14 @@ $
 We assume the solution can be approximated as
 $ u_h^k = sum_i u_h^k (x_i^k, t) l_i^k (x). $
 And that the direct sum of these solutions is an approximation to the global solution. This yields the local semidiscrete scheme
-$ M^k (dif u_h^k)/(dif t) + 2 pi S u_h^k = [l^k (x) (2 pi u_h^k - (2 pi u)^*)]_(x_l^k)^(x_r^k) $
+$
+M^k (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - [l^k (x)  (2 pi u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
+J^k M (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
+(dif u_h^k)/(dif t) = 1/J^k (2 pi M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)
+$
+
+We can employ some tricks from linear algebra so we don't have to invert the mass matrix, but I will not be describing them here.
+
+... some figures ...
 
 #bibliography("sources.bib")
