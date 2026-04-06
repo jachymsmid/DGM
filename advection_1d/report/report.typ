@@ -7,7 +7,7 @@
 )
 #set heading(numbering: "1.")
 #set document(
-  title: [#align(center)[DG method for the 1D advection equation]],
+  title: [#align(center)[Nodal DG method for the 1D advection equation]],
   author: "Jachym Smid",
   date: auto
 )
@@ -15,7 +15,7 @@
 
 #title()
 
-This text was mainly inspired by #cite(<hesthaven2008nodal>). Code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
+This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
 
 #heading(level: 1, numbering: none, "Symbols and definitions")
 
@@ -67,7 +67,7 @@ We now formulate the local weak formulation
 $
 integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
 $
-But now we have a problem, because $u$ is double valued at the boundaries. To solve this we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The equation then becomes
+But now we have a problem, because $u$ is double valued at the boundaries (of each element). To solve this we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The equation then becomes
 $
 integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)^*(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
 $
@@ -82,7 +82,7 @@ $
 
 == Basis functions
 
-We assume that the solution $bold(u) (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions
+We assume that the approximate solution $bold(u)_h (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions
 $
 bold(u) (x,t) approx bold(u)_h (x,t) = plus.o.big_(k=1)^K bold(u)_h^k (x^k, t)
 $
@@ -97,7 +97,7 @@ Now we can express the local approximate solution in the basis of the space $V_h
 $
 x in D^k quad : quad bold(u)_h^k = sum_(n)^(N_p) hat(bold(u))_n^k (t) phi_n (x) = sum_i^(N_p) bold(u)_h^k (x_i, t) l_i (x),
 $
-where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation in this text.
+where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i in D^k$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation in this text.
 
 #line(length: 100%)
 *NOTE:* only linear problems without source term for now
@@ -107,15 +107,31 @@ where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th inter
 
 Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations for each element
 $
-integral_(D^k) l_i (x) (partial u_h (x_j, t) l_j (x))/(partial t) dif x = integral_(D^k) a u_h (x_i, t) l_i (x) (dif l_j (x))/(dif x) dif x - integral_(partial D^k) l_i f^* dif x\
-sum_(j=1)^N_p u_h (x_j, t) integral_(D^k) l_i (x) (partial l_j (x))/(partial t) dif x = a integral_(D^k) l_i (dif l_j (x))/(dif x) dif x - integral_(partial D^k) l_i f^* dif x\
+integral_(D^k) l_i (x) partial/(partial t)(sum_(j=1)^N_p u_h (x_j, t)) dif x = integral_(D^k) (dif l_i (x))/(dif x) sum_(j=1)^N_p a u_h (x_j, t) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
+dif/(dif t) sum_(j=1)^N_p u_h (x_j, t) integral_(D^k) l_i (x) l_j (x) dif x = sum_(j=1)^N_p a u_h (x_j, t) integral_(D^k) (dif l_i (x))/(dif x) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
 i = 1,2,dots,N+1\
 $
+We can rewrite this equation into it's matrix form
+$
+M^k (dif bold(u)_h^k)/(dif t) = (S^k)^T bold(f)_h^k - cal(E) bold(f^k_*),
+$
+where
+$
+&M_(i j)^k = integral_(D^k) l_i (x) l_j (x) dif x " - the mass matrix"\
+&S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stifness matrix"\
+&cal(E) = cases(-1 quad &: quad "lower right corner",
+                1 quad &: quad "upper left corner",
+                0 quad &: quad "otherwise")\
+&(bold(u)_h)_j^k = u_h (x_j^k, t) " - the vector of unknowns"\
+&(bold(f)_h)_j^k " - the physical flux vector"\
+&bold(f)^k_* = (f^*(x_L^k), f^*(x_L^k))^T "- numerical flux at endpoints"
+$
+This matrix equation is the semi-discrete form of the PDE. We will discuss all the local operatros in more detail later.
 
-When choosing the basis of the space $V_h^k$ we have many options, but only one makes sense, the Legendre polynomials, $psi_n$ is a Legendre polynomial of order $n-1$. It will come in handy that they are orthogonal, and we will also normalize them in the $L^2$ norm, but more on them later.
+When choosing the basis of the space $V_h^k$ we have many options. But for the mass matrix to be well conditioned we will choose the Legendre polynomials.
 
 === Legender polynomials
-... blah blah blah ...
+Legendre polynomials are a complete set of orthogonal polynomials defined on $chevron.l -1, 1 chevron.r$
 
 An easy way to calculate the polynomials is through the three term reccurence using the Bonnet's formula [cite]
 $
@@ -123,7 +139,7 @@ P_n = ((2 n + 1) x P_(n-1) (x) - n P_(n-2) (x)) / (n + 1);\
 $
 To start the reccurence we need the first two terms. They are given as
 $
-P_0 (x) = 1 quad P_1 (x) = x
+P_0 (x) = 1, quad P_1 (x) = x
 $
 Now to obtain the normalized (in the $L^2$ norm) Legender polynomials $tilde(P)_n (x)$ we multiply each polynomial by an appropriate coefficient
 $
@@ -147,7 +163,6 @@ $
 + $ P_n (-x) = (-1)^n P_n (x) $
 + $ integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m $
 + $ integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1 $
-+ ...
 
 == Nodal representation
 
@@ -155,25 +170,30 @@ Let's now discuss the nodal representation in greater detail. We define $hat(bol
 $
 u(x_i) = sum hat(u)_n psi_n (x_i),
 $
-where $xi_i$ represents distinct grid nodes. We can now write
+where $x_i$ represents distinct grid nodes. We can now write
 $ bold(u) = cal(V) hat(bold(u)), $
-where $cal(V)_(i j) = phi_j (xi_i)$ is the Vandermonde matrix and $u_i = u(xi_i)$. This matrix connects the modes $U$ and nodal values $u(xi_i)$. We would like the matrix to be well conditioned. We already chose the basis polynomials, so only the nodes $xi_i$ are left to define the Vandermonde matrix.
+where $cal(V)_(i j) = psi_j (x_i)$ is the Vandermonde matrix and $u_i = u(x_i)$. This matrix connects the modes $hat(u)$ and nodal values $u(x_i)$. We would like the matrix to be well conditioned. We already chose the basis polynomials, so only the nodes $x_i$ are left, to define the Vandermonde matrix.
+The node's that acomplish this are the solution of
+$
+(1-x^2) dif/(dif x) P_N (x) = 0
+$
+are known as the Legendre-Gauss-Lobatto nodes. The LGL nodes will be noted by the letter $xi$. There is a $N+1$ LGL nodes for an approximation of order $N$.
 
-We first recognize that if
-$ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
-is an interpolant ($bold(u)(xi_i) = bold(u)_h (xi_i)$), then we can write it as
-$ bold(u)(r) approx bold(u)_h (r) = sum bold(u)(xi_i) l_i (r), $
-where $l_i (r)$ are the Lagrange polynomials defined as
-$
-l_i (x) = limits(Pi)_(j=1, j != i)^N_p thick (x-x_i)/(x_i - x_j)
-$
-An important property of the Lagrange polynomial is that
-$
-l_i (x_j) = delta_(i j),
-$
-where $delta_(i j)$ is the Kronecker delta.
-
-Without other comments the Legender-Gauss-Lobatto nodes were chosen.
+// Now we recognize that if
+// $ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
+// is an interpolant ($bold(u)(xi_i) = bold(u)_h (xi_i)$), then we can write it as
+// $ bold(u)(r) approx bold(u)_h (r) = sum bold(u)(xi_i) l_i (r), $
+// where $l_i (r)$ are the Lagrange polynomials defined as
+// $
+// l_i (x) = limits(Pi)_(j=1, j != i)^N_p thick (x-x_i)/(x_i - x_j)
+// $
+// An important property of the Lagrange polynomial is that
+// $
+// l_i (x_j) = delta_(i j),
+// $
+// where $delta_(i j)$ is the Kronecker delta.
+// 
+// Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
 == Local operators
 Up till now we were developing a sensible local representation of the approximate solution. We should now discuss the various local operators in the nodal formulation of DGM.
@@ -207,20 +227,37 @@ $
 The entries of the differentiation matrix can be found directly
 $ D = cal(V)_r cal(V)^(-1), $
 where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials. 
+$
+(cal(V)_r)_(i j) = psi'_j (xi_i)
+$
+
+But for the weak formulation we need $S^T$, for that we use the identity
+$
+S^T = D^T M
+$
+To recover the semi-discrete formulation we need to multiply this by the mass matrix from the left
+$
+M^(-1) S^T = M^(-1) D^T M = cal(V) cal(V)_r^T M = D_w
+$
+We call this matrix $D_w$, differentiation matrix for the weak form.
 
 === Surface integral
 This operator is responsible of extracting the surface terms of the form
 $ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x =  f^* bar.v_(x_R) bold(e)_n - u^* bar.v_(x_L) bold(e)_1, $
 where $bold(e)_i$ is a zero vector with $1$ at index $i$. We can rewrite this using a $N_p times 2$ matrix $cal(E)$ that is zero except for upper right corener that is $1$ and the lower left corner that is $-1$ like so
 $ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x = cal(E) dot.op (f^*_R, f^*_L)^T $
+Again, to recover the semi-discrete form we multiply by the inverse mass matrix from the left. We call this matrix the LIFT.
+$
+"LIFT" = M^(-1) cal(E) = cal(V) cal(V)^T cal(E)
+$
 
 == Time discretization
 
-Two explicit RK4 mmethods were implemented to integrate the semidiscrete system
-$ (dif u_h)/(dif t) = cal(L)_h (u_h, t) $
+Two explicit RK4 methods were implemented to integrate the semidiscrete system
+$ (dif u_h)/(dif t) = cal(L)_h (u_h, t) $ // = 1/J^k (D_w bold(f)^k - "LIFT" bold(f)^k_*) $
 
 === ERK
-General explicit four step Runge-Kutta method.
+General explicit four stage Runge-Kutta method.
 $
 &k_1 = cal(L)_h (u_h^n, t^n)\
 &k_2 = cal(L)_h (u_h^n + 1/2 Delta t k_1, t^n + Delta t)\
@@ -230,15 +267,9 @@ $
 $
 
 === LSERK
-Low storage explicit five step Runge-Kutta method.
+Low storage explicit five stage Runge-Kutta method.
 
-= Mesh
-
-Unsturctured mesh was chosen as the type of spatial discretization representation.
-I opted for the mesh structure from #link("https://tnl-project.org/")[TNL]
-
-
-= Example problem
+= Example linear problem
 
 We are given the following problem
 $
@@ -253,11 +284,15 @@ And that the direct sum of these solutions is an approximation to the global sol
 $
 M^k (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - [l^k (x)  (2 pi u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
 J^k M (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
-(dif u_h^k)/(dif t) = 1/J^k (2 pi M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)
+(dif u_h^k)/(dif t) = 1/J^k (2 pi M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
+(dif u_h^k)/(dif t) = 1/J^k (2 pi D_w u_h^k - "LIFT" (f^*_R, f^*_L)^T)
 $
 
-We can employ some tricks from linear algebra so we don't have to invert the mass matrix, but I will not be describing them here.
-
 ... some figures ...
+
+L2 error and such
+
+= Nonlinearity
+
 
 #bibliography("sources.bib")
