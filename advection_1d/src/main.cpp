@@ -8,9 +8,18 @@
 #include <iostream>
 #include <cmath>
 
+using Device  = TNL::Devices::Host;
+using Real = double;
+
+
+
+Real affine_mapping(Real xL, Real r, Real h)
+{
+  xL + (r + 1.0) * 0.5 * h;
+}
+
 int main(int argc, char* argv[])
 {
-    using Real = double;
     const int  K = 10; // number of elements
     const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
@@ -49,6 +58,24 @@ int main(int argc, char* argv[])
         uk[i]  = std::sin(xL + (r + 1.0) * 0.5 * h);
       }
     }
+
+    auto sin_init = [=] __cuda_callable__ ( int i ) mutable
+    {
+      Real xL = mesh.leftVertex(i);
+      Real h = mesh.elementSize(i);
+      Real r = ref.nodes()[i];
+      view[i]  = std::sin(affine_mapping(xL, r, h));
+    };
+
+    auto saw_init = [=] __cuda_callable__ ( int i ) mutable
+    {
+    };
+
+    auto cone_init = [=] __cuda_callable__ ( int i ) mutable
+    {
+    };
+
+    TNL::Algorithms::parallelFor< Device >(0, mesh.numElements(), sin_init){};
 
     Real r_min = 2.0;
     for (int k = 0; k < mesh.numElements(); k++)

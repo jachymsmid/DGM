@@ -1,4 +1,8 @@
 /build
 *.pdf
+*.png
+*.jpeg
+*.jpg
+*.avi
 /output
 cmake_test_discovery*.json
