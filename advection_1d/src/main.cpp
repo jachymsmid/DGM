@@ -4,14 +4,17 @@
 #include "NumericalFlux.hpp"
 #include "Integrator.hpp"
 #include "Operator.hpp"
+#include <TNL/Containers/StaticArray.h>
 #include <TNL/Containers/Vector.h>
 #include <iostream>
-#include <cmath>
+
+using Device  = TNL::Devices::Host;
+using Real = double;
+using Index = int;
 
 int main(int argc, char* argv[])
 {
-    using Real = double;
-    const int  K = 10; // number of elements
+    const int  K = 12; // number of elements
     const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0 * M_PI; // final time
@@ -39,16 +42,56 @@ int main(int argc, char* argv[])
 
     int Np = ref.numDOF();
 
-    // initial condition u(x,0) = sin(x)
-    for (int k = 0; k < mesh.numElements(); ++k) {
-      Real xL = mesh.leftVertex(k), h = mesh.elementSize(k);
-      Real* uk = u.elementPtr(k);
-      for (int i = 0; i < ref.numDOF(); ++i) {
-        Real r = ref.nodes()[i];
-        // maybe wrap the affine mapping in a member function
-        uk[i]  = std::sin(xL + (r + 1.0) * 0.5 * h);
+    // -------------------- initial conditions --------------------------------
+
+    // create array views
+    auto u_view = u.data().getView();
+
+    auto sin_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& i  ) mutable
+    {
+      Real xL = mesh.leftVertex(i.x());
+      Real h = mesh.elementSize(i.x());
+      Real r = ref.nodes()[i.y()];
+      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::sin(xL + (r + 1.0) * 0.5 * h);
+    };
+
+    auto saw_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx) mutable
+    {
+      if ( idx.x() < int(mesh.numElements()/3) || idx.x() > int(2 * mesh.numElements()/3) )
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 0.0;
       }
-    }
+      else
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 1.0;
+      }
+    };
+
+    auto cone_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx ) mutable
+    {
+      Real xL = mesh.leftVertex(idx.x());
+      Real h = mesh.elementSize(idx.x());
+      Real r = ref.nodes()[idx.y()];
+
+      if ( idx.x() < int(mesh.numElements()/4) )
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4) );
+      }
+      else if ( idx.x() >= int(mesh.numElements()/4) && idx.x() < int(mesh.numElements()/2) )
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = - (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4) ) + 2;
+      }
+      else
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 0.0;
+      }
+    };
+
+    TNL::Containers::StaticArray< 2, int > begin{0, 0};
+    // we expect same number of DOF on each elemnt
+    TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
+
+    TNL::Algorithms::parallelFor< Device >(begin, end, cone_init);
 
     Real r_min = 2.0;
     for (int k = 0; k < mesh.numElements(); k++)
@@ -82,7 +125,7 @@ int main(int argc, char* argv[])
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
     {
-      DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
+      // DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
       return true;
     };
 
