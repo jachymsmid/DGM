@@ -150,7 +150,7 @@ public:
     }
 
     // max dt from the Hesthaven book
-    static Real computeDt(Real x_min, Real max_wave_speed, Real cfl = Real(0.4))
+    static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
     {
         if (max_wave_speed <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
