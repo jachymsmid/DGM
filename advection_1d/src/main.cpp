@@ -15,7 +15,7 @@ using Index = int;
 int main(int argc, char* argv[])
 {
     const int  K = 12; // number of elements
-    const int N = 4; // polynomial order of approximation
+    const int N = 12; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0 * M_PI; // final time
 
@@ -23,6 +23,12 @@ int main(int argc, char* argv[])
     // DG::Mesh<Real> mesh = (argc > 1)
     //     ? DG::Mesh<Real>::readVTK(argv[1])
     //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
+
+    // Burger's equation
+    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    // Linear advection
+    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return u; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
@@ -32,10 +38,10 @@ int main(int argc, char* argv[])
 
     // construct numerical flux
     // DG::UpwindFlux<Real> flux(a);
-    DG::UpwindFlux<Real> numerical_flux(a);
+    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
-    DG::Operator<Real> op(mesh, ref, numerical_flux, [&](Real u){ return 1.0/2.0 * u * u; });
+    DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
 
     // construct field vector
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
@@ -91,7 +97,7 @@ int main(int argc, char* argv[])
     // we expect same number of DOF on each elemnt
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
-    TNL::Algorithms::parallelFor< Device >(begin, end, cone_init);
+    TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
 
     Real r_min = 2.0;
     for (int k = 0; k < mesh.numElements(); k++)
