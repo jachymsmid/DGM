@@ -3,7 +3,14 @@
 #set page(
   paper: "a4",
   number-align: center,
-  numbering: "— 1 —",
+  numbering: "1",
+  footer: context {
+  let num = page.numbering
+  if num != none {
+    set align(page.number-align.x)
+    "— " + numbering(num, ..counter(page).get()) + " —"
+  }}
+
 )
 #set heading(numbering: "1.")
 #set document(
@@ -12,11 +19,17 @@
   date: auto
 )
 
-
 #title()
+
+#pagebreak()
 
 This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
 
+
+#outline()
+
+
+#pagebreak()
 #heading(level: 1, numbering: none, "Symbols and definitions")
 
 - $u_h$ - approximate solution obtained on a mesh with step $h$
@@ -34,6 +47,7 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 - $l_i (x)$ - $i$-th Lagrange polynomoial
 - $N$ - order of polynomial approximation
 - $N_p = N + 1$ - number of points in each element (number of degrees of freedom)
+#pagebreak()
 
 = Problem overview
 The general one dimensional advection equation is of the following form:
@@ -59,32 +73,38 @@ $hat(bold(n))$ here is a unit outward normal. Notice that we express the term $[
 
 = Discontinous Galerkin Method
 
+Let's focus on linear scalar advection equation for now and generalize the scheme later.
 == Spatial discretization
 
 We split our domain ($Omega = chevron.l L, R chevron.r$) into $N$ elements $D^j= chevron.l x_(j-1/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element and $x_(1/2) = L$, $x_(N+1/2) = R$.
 $ Omega approx Omega_h = limits(union.big)_(k=1)^K D^k $
 We now formulate the local weak formulation
 $
-integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
+integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f(u) dif x // + integral_(D^k) v s (x,t) dif x
 $
-But now we have a problem, because $u$ is double valued at the boundaries (of each element). To solve this we define a numerical flux $bold(f)^* = bold(f)^* (bold(u)^-, bold(u)^+)$. The equation then becomes
+But now we have a problem, because $u$ is double valued at the boundaries (of each element). To solve this we define a numerical flux $f^* = f^* (u^-, u^+)$. The equation then becomes
 $
-integral_(D^k) bold(v)^T (partial bold(u))/(partial t) dif x = integral_(D^k) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x - integral_(partial D^k) hat(bold(n)) dot.op bold(v)^T bold(f)^*(bold(u)) dif x + integral_(D^k) bold(v)^T bold(s)(x,t) dif x
+integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f^*(u) dif x // + integral_(D^k) v (s)(x,t) dif x
 $
-The flux must be consistent i.e. $bold(f)^* (a,a) = bold(f) (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
+The flux must be consistent i.e. $f^* (a,a) = f (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
 $
-bold(f)^* = brace.l.stroked bold(f)(bold(u)) brace.r.stroked + C/2 bracket.l.stroked bold(u) bracket.r.stroked
+f^* = brace.l.stroked f(u) brace.r.stroked + C/2 bracket.l.stroked u bracket.r.stroked
 $
 where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
 $
-C = max_i lambda_i = rho (bold(f)_(bold(u))) = rho ((partial bold(f))/(partial bold(u)))
+C = max_i lambda_i = rho (f_(u)) = rho ((partial f)/(partial u))
+$
+
+Or the upwind flux
+$
+...
 $
 
 == Basis functions
 
 We assume that the approximate solution $bold(u)_h (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions
 $
-bold(u) (x,t) approx bold(u)_h (x,t) = plus.o.big_(k=1)^K bold(u)_h^k (x^k, t)
+u (x,t) approx u_h (x,t) = plus.o.big_(k=1)^K u_h^k (x^k, t)
 $
 We define a local function space $V_h^k$ such that
 $
@@ -95,15 +115,9 @@ where $P_j (D^k)$ is a space of polynomials of at most degree $k$ on the interva
 
 Now we can express the local approximate solution in the basis of the space $V_h^k$
 $
-x in D^k quad : quad bold(u)_h^k = sum_(n)^(N_p) hat(bold(u))_n^k (t) phi_n (x) = sum_i^(N_p) bold(u)_h^k (x_i, t) l_i (x),
+x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(u)_n^k (t) phi_n (x) = sum_i^(N_p) u_h^k (x_i, t) l_i (x),
 $
 where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i in D^k$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation in this text.
-
-#line(length: 100%)
-*NOTE:* only linear problems without source term for now
-
-*TODO:* theory for nonlinear problems, add source term
-#line(length: 100%)
 
 Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations for each element
 $
@@ -113,18 +127,18 @@ i = 1,2,dots,N+1\
 $
 We can rewrite this equation into it's matrix form
 $
-M^k (dif bold(u)_h^k)/(dif t) = (S^k)^T bold(f)_h^k - cal(E) bold(f^k_*),
+M^k (dif bold(u)_h^k)/(dif t) = a (S^k)^T bold(u)_h^k - cal(E) bold(f)^k_*,
 $
 where
 $
 &M_(i j)^k = integral_(D^k) l_i (x) l_j (x) dif x " - the mass matrix"\
 &S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stifness matrix"\
-&cal(E) = cases(-1 quad &: quad "lower right corner",
-                1 quad &: quad "upper left corner",
-                0 quad &: quad "otherwise")\
+&cal(E) = cases(-&1 quad : quad "lower right corner",
+                &1 quad : quad "upper left corner",
+                &0 quad : quad "otherwise")\
 &(bold(u)_h)_j^k = u_h (x_j^k, t) " - the vector of unknowns"\
 &(bold(f)_h)_j^k " - the physical flux vector"\
-&bold(f)^k_* = (f^*(x_L^k), f^*(x_L^k))^T "- numerical flux at endpoints"
+&bold(f)^k_* = (f^*(x_L^k), f^*(x_R^k))^T "- numerical flux at endpoints"
 $
 This matrix equation is the semi-discrete form of the PDE. We will discuss all the local operatros in more detail later.
 
@@ -177,7 +191,7 @@ The node's that acomplish this are the solution of
 $
 (1-x^2) dif/(dif x) P_N (x) = 0
 $
-are known as the Legendre-Gauss-Lobatto nodes. The LGL nodes will be noted by the letter $xi$. There is a $N+1$ LGL nodes for an approximation of order $N$.
+these are known as the Legendre-Gauss-Lobatto nodes. The LGL nodes will be noted by the greek letter $xi$. There are $N+1$ LGL nodes for an approximation of order $N$.
 
 // Now we recognize that if
 // $ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
@@ -269,30 +283,104 @@ $
 === LSERK
 Low storage explicit five stage Runge-Kutta method.
 
-= Example linear problem
+== Example linear problem
 
 We are given the following problem
 $
-partial_u + 2 pi partial_u = 0, quad x in chevron.l 0, 2 pi chevron.r\
-u(x,0) = sin(x)\
-u(0,t) = -sin(2 pi t)
+partial_t u + partial_x u = 0, quad x in chevron.l 0, 2 pi chevron.r\
 $
+with periodic boundary conditions.
 
 We assume the solution can be approximated as
 $ u_h^k = sum_i u_h^k (x_i^k, t) l_i^k (x). $
 And that the direct sum of these solutions is an approximation to the global solution. This yields the local semidiscrete scheme
 $
-M^k (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - [l^k (x)  (2 pi u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
-J^k M (dif u_h^k)/(dif t) - 2 pi S^T u_h^k = - cal(E) ((2 pi u)^*, (2 pi u)^*)^T\
-(dif u_h^k)/(dif t) = 1/J^k (2 pi M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
-(dif u_h^k)/(dif t) = 1/J^k (2 pi D_w u_h^k - "LIFT" (f^*_R, f^*_L)^T)
+M^k (dif u_h^k)/(dif t) - S^T u_h^k = - [l^k (x)  (u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((u)^*, (u)^*)^T\
+J^k M (dif u_h^k)/(dif t) - S^T u_h^k = - cal(E) ((u)^*, (u)^*)^T\
+(dif u_h^k)/(dif t) = 1/J^k ( M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
+(dif u_h^k)/(dif t) = 1/J^k ( D_w u_h^k - "LIFT" (f^*_R, f^*_L)^T)
 $
 
-... some figures ...
+Now let's try multiple initial conditions with different number of elemnets and polynomial order.
+First we will test non-smooth initial conditions.
+// cone advection
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/cone_12_4_initial.png", width: 100%), image("img/cone_12_4_final.png", width: 100%),
+  ),
+  caption: [ Cone with $K = 12$, $N = 4$ ],
+  numbering: none,
+)
 
-L2 error and such
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/cone_4_12_initial.png", width: 100%), image("img/cone_4_12_final.png", width: 100%),
+  ),
+  caption: [ Cone with $K = 4$, $N = 12$ ],
+  numbering: none,
+)
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/cone_12_12_initial.png", width: 100%), image("img/cone_12_12_final.png", width: 100%),
+  ),
+  caption: [ Cone with $K = 12$, $N = 12$ ],
+  numbering: none,
+)
+
+Now let us test a non-continuous initial condition.
+// step signal advection
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/saw_12_4_initial.png", width: 100%), image("img/saw_12_4_final.png", width: 100%),
+  ),
+  caption: [ Step signal with $K = 12$, $N = 4$ ],
+  numbering: none,
+)
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/saw_4_12_initial.png", width: 100%), image("img/saw_4_12_final.png", width: 100%),
+  ),
+  caption: [ Step signal with $K = 4$, $N = 12$ ],
+  numbering: none,
+)
+
+#figure(
+  grid(
+    columns: 2,
+    gutter: 1mm,
+    image("img/saw_12_12_initial.png", width: 100%), image("img/saw_12_12_final.png", width: 100%),
+  ),
+  caption: [ Step signal with $K = 12$, $N = 12$ ],
+  numbering: none,
+)
 
 = Nonlinearity
+
+== Filters
+
+== Limiters
+
+== Example nonlinear problem
+burger's equation
+
+= Systems of equations
+
+== Euler's equation
+
+=== Sod's problem
 
 
 #bibliography("sources.bib")
