@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     DG::UpwindFlux<Real> numerical_flux(a);
 
     // construct rhs operator
-    DG::Operator<Real> op(mesh, ref, numerical_flux, [&](Real u){ return a * u; });
+    DG::Operator<Real> op(mesh, ref, numerical_flux, [&](Real u){ return 1.0/2.0 * u * u; });
 
     // construct field vector
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
     {
-      // DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
+      DG::writeTimeSeriesVTK(mesh, ref, uh, "output/output", frame++, t);
       return true;
     };
 
