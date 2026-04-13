@@ -78,11 +78,13 @@ public:
         Real u_int = physFlux_(uk[0]);
         // neighbour's face value
         Real u_ext;
-        // periodic BC
-        // TODO: implement different BC
+        // BC
         if (mesh_.isBoundaryFace(k))
         {
+          // periodic
           u_ext = physFlux_(u.elementPtr(K-1)[Np-1]);
+          // ghost cell
+          // u_ext = u_int;
         }
         else
         {
@@ -95,14 +97,17 @@ public:
       // right face
       {
         // current element's value at right face
-        Real u_int  = physFlux_(uk[Np-1]);
+        Real u_int = physFlux_(uk[Np-1]);
         // neighbour's face value
         Real u_ext;
-        // periodic BC
+
+        // BC
         if (mesh_.isBoundaryFace(k+1))
         {
           // periodic: right neighbour is first element's left end
           u_ext = physFlux_(u.elementPtr(0)[0]);
+          // ghost cell: right neighbour takes its own value
+          // u_ext = u_int;
         }
         else
         {

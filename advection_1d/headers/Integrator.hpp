@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FieldVector.hpp"
+#include <TNL/Math.h>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -152,9 +153,9 @@ public:
     // max dt from the Hesthaven book
     static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
     {
-        if (max_wave_speed <= Real(0))
+        if (TNL::abs(max_wave_speed) <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * x_min / max_wave_speed;
+        return cfl * x_min / (TNL::abs(max_wave_speed) * ( 2 * poly_order + 1 ));
     }
 
     // getters
@@ -283,13 +284,12 @@ public:
     }
 
     // max dt from the Hesthaven book
-    static Real computeDt(Real x_min, Real max_wave_speed, Real cfl = Real(0.4))
+    static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
     {
-        if (max_wave_speed <= Real(0))
+        if (TNL::abs(max_wave_speed) <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * x_min / max_wave_speed;
+        return cfl * x_min / (TNL::abs(max_wave_speed) * ( 2 * poly_order + 1 ));
     }
-
     // getters
     Index numSteps() const override { return lastStepCount_; }
     Real currentTime() const override { return currentTime_; }

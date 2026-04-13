@@ -6,6 +6,7 @@
 #include "Operator.hpp"
 #include <TNL/Containers/StaticArray.h>
 #include <TNL/Containers/Vector.h>
+#include <TNL/Math.h>
 #include <iostream>
 
 using Device  = TNL::Devices::Host;
@@ -18,6 +19,7 @@ int main(int argc, char* argv[])
     const int N = 12; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0 * M_PI; // final time
+    const Real CFL = 0.2;
 
     // Build mesh: either from a VTK file or uniform
     // DG::Mesh<Real> mesh = (argc > 1)
@@ -26,9 +28,10 @@ int main(int argc, char* argv[])
 
     // Burger's equation
     // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
     auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
@@ -36,9 +39,8 @@ int main(int argc, char* argv[])
     // construct reference element
     DG::ReferenceElement<Real> ref(N);
 
-    // construct numerical flux
-    // DG::UpwindFlux<Real> flux(a);
-    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
+    // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux
+    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
@@ -97,8 +99,11 @@ int main(int argc, char* argv[])
     // we expect same number of DOF on each elemnt
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
+    // ----------------------- Initial conditions -----------------------------
+    // 2-dimensional parallel for
     TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
 
+    // find delta x_min for time step computation
     Real r_min = 2.0;
     for (int k = 0; k < mesh.numElements(); k++)
     {
@@ -110,24 +115,32 @@ int main(int argc, char* argv[])
 
     Real x_min = r_min * mesh.minJacobian();
 
-    auto energy = [&](const DG::FieldVector<Real>& v) {
-      Real E = 0;
-      for (int k = 0; k < mesh.numElements(); ++k) {
-          Real J = mesh.jacobian(k);
-          const Real* vk = v.elementPtr(k);
-          for (int i = 0; i < Np; ++i)
-              E += ref.weights()[i] * J * vk[i] * vk[i];
+    // auto energy = [&](const DG::FieldVector<Real>& v) {
+    //   Real E = 0;
+    //   for (int k = 0; k < mesh.numElements(); ++k) {
+    //       Real J = mesh.jacobian(k);
+    //       const Real* vk = v.elementPtr(k);
+    //       for (int i = 0; i < Np; ++i)
+    //           E += ref.weights()[i] * J * vk[i] * vk[i];
+    //   }
+    //   return E;
+    // };
+
+    // find max advection speed
+    Real max_speed = 0.0;
+    for (int i = 0; i < mesh.numElements(); i++)
+    {
+      for (int j = 0; j < ref.numDOF(); j++)
+      {
+        max_speed = TNL::argAbsMax(max_speed, advection_speed(u.elementPtr(i)[j]));
       }
-      return E;
-    };
+    }
+
+    Real dt = DG::ERK<Real>::computeDt(x_min, max_speed, N, CFL);
 
     // write initial condition
     int frame = 0;
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Real(0));
-
-    // Time stepping with output every 20 steps
-    Real h_min = mesh.minElementSize();
-    Real dt = DG::ERK<Real>::computeDt(x_min, a, N);
 
     auto callback = [&](Real t, const DG::FieldVector<Real>& uh, int step) -> bool
     {
@@ -138,7 +151,13 @@ int main(int argc, char* argv[])
     DG::ERK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
     rk.integrate(u, 0.0, Tf, dt);
 
-    // Write final state
+    // output
+    std::cout << "Starting simulation with: " << std::endl;
+    std::cout << "\tK = " << K << std::endl;
+    std::cout << "\tN = " << N << std::endl;
+    std::cout << "\tx_min = " << x_min << std::endl;
+    std::cout << "\tdt = " << dt << std::endl;
+    std::cout << "\tmax advection speed = " << max_speed << std::endl;
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
     std::cout << "Done. Written " << frame << " frames.\n";
 }
