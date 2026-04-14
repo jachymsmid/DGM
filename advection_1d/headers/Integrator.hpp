@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FieldVector.hpp"
+#include <TNL/Math.h>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -71,7 +72,7 @@ protected:
 };
 
 
-// ------------------------------- ERK ---------------------------------------
+// ------------------------------- ERK4 ---------------------------------------
 // simple explicit four stage Runge-Kutta
 template<typename Real   = double,
          typename Device = TNL::Devices::Host,
@@ -152,9 +153,9 @@ public:
     // max dt from the Hesthaven book
     static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
     {
-        if (max_wave_speed <= Real(0))
+        if (TNL::abs(max_wave_speed) <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * x_min / max_wave_speed;
+        return cfl * x_min / (TNL::abs(max_wave_speed) * ( 2 * poly_order + 1 ));
     }
 
     // getters
@@ -283,13 +284,12 @@ public:
     }
 
     // max dt from the Hesthaven book
-    static Real computeDt(Real x_min, Real max_wave_speed, Real cfl = Real(0.4))
+    static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
     {
-        if (max_wave_speed <= Real(0))
+        if (TNL::abs(max_wave_speed) <= Real(0))
             throw std::invalid_argument("max_wave_speed must be positive");
-        return cfl * x_min / max_wave_speed;
+        return cfl * x_min / (TNL::abs(max_wave_speed) * ( 2 * poly_order + 1 ));
     }
-
     // getters
     Index numSteps() const override { return lastStepCount_; }
     Real currentTime() const override { return currentTime_; }
@@ -332,6 +332,132 @@ private:
       Real(2006345519317.0)/Real(3224310063776.0),
       Real(2802321613138.0)/Real(2924317926251.0)
     };
+
+    // diagnostics variables, updated by step()
+    Index lastStepCount_{ 0 };
+    Real currentTime_{ 0 };
+};
+
+// ------------------------------- SSP-RK3 ---------------------------------------
+// strong stability preserving Runge-Kutta, four stage
+template<typename Real   = double,
+         typename Device = TNL::Devices::Host,
+         typename Index  = int>
+class SSPRK : Integrator< Real, Device, Index > // inherit protected methods
+{
+public:
+    using Field = FieldVector<Real, Device, Index>;
+    using RHSFunc = std::function<void(const Field&, Field&, const Real&)>;
+    using Callback = StepCallback<Real, Device, Index>;
+
+    // op       – spatial residual (must outlive this integrator)
+    // K, Np    – element count and nodes-per-element (needed to size scratch)
+    // callback – optional: called after every step, return false to stop early
+    explicit SSPRK(RHSFunc rhs,
+                 Index K, Index Np,
+                 Callback callback = nullptr)
+        : rhs_(std::move(rhs)),
+          K_(K), Np_(Np),
+          callback_(std::move(callback)),
+          k1_(K, Np), k2_(K, Np),
+          tmp_(K, Np) {}
+
+    // single step
+    void step(Field& u, Real dt, Real t_in) override
+    {
+      if (dt <= Real(0))
+        throw std::invalid_argument("DG::Integrator::step: dt must be > 0");
+
+      // k1 = u^n + 1/2 dt L(u^n, t_n)
+      // tmp = L(u^n, t_n)
+      rhs_(u, tmp_, t_in);
+      // tmp = 1/2 dt tmp
+      this -> scaleField_(tmp_, 0.5 * dt);
+      // k1 = tmp + u^n
+      this -> addScaled_(tmp_, u, 1.0, k1_);
+
+      // k2 = k1 + 1/2 dt L(k1, t_n + 1/2 dt)
+      // tmp = L(k1, t_n + 1/2 dt)
+      rhs_(k1_, tmp_, t_in + 0.5 * dt);
+      // tmp = 1/2 tmp
+      this -> scaleField_(tmp_, 0.5 * dt);
+      // k2 = tmp + u^n
+      this -> addScaled_(tmp_, k1_, 1.0, k2_);
+
+      // k3 = 2/3 u^n + 1/2 k2 + 1/6 L(k2, t^n + dt)
+      // (k3 = k1) to save storage
+      // tmp = L(k2, t^n + dt)
+      rhs_(k2_, tmp_, t_in + dt);
+      // tmp = 1/6 dt tmp
+      this -> scaleField_(tmp_, Real(1.0/6.0) * dt);
+      // tmp = tmp + 1/3 k2
+      this -> addScaled_(tmp_, k2_, Real(1.0/3.0), tmp_);
+      // k3 = tmp + 2/3 u^n
+      this -> addScaled_(tmp_, u, Real(2.0/3.0), k1_);
+
+      // u^n+1 = k3 + 1/2 dt L(k3, t^n + 1/2 dt)
+      // tmp = L(k3, t^n + 1/2 dt)
+      rhs_(k1_, tmp_, t_in + 0.5 * dt);
+      // tmp = 1/2 dt tmp
+      this -> scaleField_(tmp_, 0.5 * dt);
+      // u = tmp + k3
+      this -> addScaled_(tmp_, k1_, 1.0, u);
+
+    }
+
+    // integrate: perform multiple steps
+    Index integrate(Field& u, Real t0, Real t_end, Real dt) override
+    {
+      if (t_end <= t0)
+        throw std::invalid_argument("Integrator::integrate: t_end must be > t0");
+
+      Real t = t0;
+      Index nstep = 0;
+
+      while (t < t_end - Real(1e-12))
+      {
+        // clip the last step to reach t_end exactly
+        Real dt_actual = std::min(dt, t_end - t);
+
+        step(u, dt_actual, t);
+        t += dt_actual;
+        nstep += 1;
+
+        // Invoke optional callback; stop early if it returns false
+        if (callback_ && !callback_(t, u, nstep))
+            break;
+      }
+
+      return nstep;
+    }
+
+    // max dt from the Hesthaven book
+    static Real computeDt(Real x_min, Real max_wave_speed, int poly_order, Real cfl = Real(0.4))
+    {
+        if (TNL::abs(max_wave_speed) <= Real(0))
+            throw std::invalid_argument("max_wave_speed must be positive");
+        return cfl * x_min / (TNL::abs(max_wave_speed) * ( 2 * poly_order + 1 ));
+    }
+
+    // getters
+    Index numSteps() const override { return lastStepCount_; }
+    Real currentTime() const override { return currentTime_; }
+    Index numPoints() const override { return K_ * Np_; }
+
+private:
+
+    // RHS operator (function)
+    RHSFunc rhs_;
+
+    // number of cells and nodes
+    Index K_, Np_;
+
+    // the four stages
+    Field k1_, k2_;
+    Field tmp_;
+
+    // callback function
+    Callback callback_;
 
     // diagnostics variables, updated by step()
     Index lastStepCount_{ 0 };

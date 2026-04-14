@@ -75,18 +75,20 @@ public:
       // left face
       {
         // current element's value at left face
-        Real u_int = uk[0];
+        Real u_int = physFlux_(uk[0]);
         // neighbour's face value
         Real u_ext;
-        // periodic BC
-        // TODO: implement different BC
+        // BC
         if (mesh_.isBoundaryFace(k))
         {
-          u_ext = u.elementPtr(K-1)[Np-1];
+          // periodic
+          u_ext = physFlux_(u.elementPtr(K-1)[Np-1]);
+          // ghost cell
+          // u_ext = u_int;
         }
         else
         {
-          u_ext = u.elementPtr(mesh_.leftCellOfFace(k))[Np-1];
+          u_ext = physFlux_(u.elementPtr(mesh_.leftCellOfFace(k))[Np-1]);
         }
         // fluxJump[0]  = fStar
         fluxJump[0]  = flux_.compute(u_ext, u_int, mesh_.leftNormal());
@@ -95,18 +97,21 @@ public:
       // right face
       {
         // current element's value at right face
-        Real u_int  = uk[Np-1];
+        Real u_int = physFlux_(uk[Np-1]);
         // neighbour's face value
         Real u_ext;
-        // periodic BC
+
+        // BC
         if (mesh_.isBoundaryFace(k+1))
         {
           // periodic: right neighbour is first element's left end
-          u_ext = u.elementPtr(0)[0];
+          u_ext = physFlux_(u.elementPtr(0)[0]);
+          // ghost cell: right neighbour takes its own value
+          // u_ext = u_int;
         }
         else
         {
-          u_ext = u.elementPtr(mesh_.rightCellOfFace(k+1))[0];
+          u_ext = physFlux_(u.elementPtr(mesh_.rightCellOfFace(k+1))[0]);
         }
         // numerical flux f*(u-, u+)
         fluxJump[1]  = flux_.compute(u_int, u_ext, mesh_.rightNormal());
