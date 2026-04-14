@@ -15,11 +15,11 @@ using Index = int;
 
 int main(int argc, char* argv[])
 {
-    const int  K = 12; // number of elements
-    const int N = 12; // polynomial order of approximation
+    const int  K = 100; // number of elements
+    const int N = 2; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0 * M_PI; // final time
-    const Real CFL = 0.2;
+    const Real CFL = 0.4;
 
     // Build mesh: either from a VTK file or uniform
     // DG::Mesh<Real> mesh = (argc > 1)
@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
     // construct reference element
     DG::ReferenceElement<Real> ref(N);
 
-    // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux
-    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
+    // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
+    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
@@ -99,10 +99,10 @@ int main(int argc, char* argv[])
     // we expect same number of DOF on each elemnt
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
-    // ----------------------- Initial conditions -----------------------------
     // 2-dimensional parallel for
     TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
 
+    // -------------------------- more setup ----------------------------------
     // find delta x_min for time step computation
     Real r_min = 2.0;
     for (int k = 0; k < mesh.numElements(); k++)
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
       return true;
     };
 
-    DG::ERK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
+    DG::SSPRK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
     rk.integrate(u, 0.0, Tf, dt);
 
     // output
