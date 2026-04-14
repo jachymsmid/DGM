@@ -1,3 +1,4 @@
+#include <functional>
 #include <gtest/gtest.h>
 #include "../headers/Mesh.hpp"
 #include "../headers/ReferenceElement.hpp"
@@ -15,9 +16,14 @@ protected:
   static constexpr int K = 10, N = 4;
   static constexpr double a = 1.0;
 
+  using Real = double;
+  
+  std::function<Real(Real)> physical_flux = [&] ( Real u ) -> Real { return a * u; };
+  std::function<Real(Real)> advection_speed = [&] ( Real u ) -> Real { return a; };
+
   DG::Mesh<double> mesh  = DG::Mesh<double>::uniform(0.0, 2*M_PI, K);
   DG::ReferenceElement<double> ref = DG::ReferenceElement<double>(N);
-  DG::UpwindFlux<double> flux = DG::UpwindFlux<double>(a);
+  DG::UpwindFlux<double> flux = DG::UpwindFlux<double>( advection_speed, physical_flux );
   DG::Operator<double> op = DG::Operator<double>(mesh, ref, flux, [](double u){ return u; });
   int Np = ref.numDOF();
 };
