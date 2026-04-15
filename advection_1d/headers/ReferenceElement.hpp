@@ -18,18 +18,11 @@
 #include <TNL/Matrices/MatrixBase.h>
 #include <cmath>
 #include <Eigen/Dense>
-#include <exception>
-#include <iostream>
 #include <stdexcept>
 
 namespace DG {
 
 // Gauss-Lobatto nodes and weights (N+1 points, exact for poly deg 2N-1).
-template
-<
-  class Real = double,
-  class Index = int
->
 /**
  * @class ReferenceElement
  * @brief Reference element data: GLL nodes, Vandermonde, differentiation and LIFT matrices.
@@ -38,11 +31,18 @@ template
  * polynomial order N (Np = N+1). Public accessors expose nodes, weights,
  * Vandermonde, Dr and LIFT used by the spatial operator.
  */
+
+template
+<
+  class Real = double,
+  class Index = int
+>
 class ReferenceElement
 {
 public:
+
   using Vector = TNL::Containers::Vector< Real, TNL::Devices::Host, Index >;
-  using Matrix = TNL::Matrices::DenseMatrix< Real, TNL::Devices::Host, Index, TNL::Matrices::ElementsOrganization::RowMajorOrder >;
+  using Matrix = TNL::Matrices::DenseMatrix< Real, TNL::Devices::Host, Index>;
 
   // Constructor
   explicit ReferenceElement(Index N) : N_(N), Np_(N + 1)
@@ -52,10 +52,11 @@ public:
     computeGLL_(r_, w_, N_);  // Gauss–Lobatto–Legendre nodes & weights
 
     V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
-    M_ = massMatrix_(V_);
+    M_ = massMatrix_(V_, Vr_);
     Vr_ = buildDerivVandermonde_(r_);
-    Dr_ = buildDMatrix_(V_, Vr_, M_); // Dr  Vr * inv(V)
-    LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
+    Drw_ = buildDwMatrix_(V_, Vr_, M_); // Drw = Vr * inv(V)
+    Dr_ = buildDMatrix_(V_, Vr_);
+    LIFT_ = buildLIFT_(V_, Vr_); // LIFT = M^{-1} * Eps, Eps is size Np x 2
 
   }
 
@@ -68,6 +69,7 @@ public:
   const Matrix& V() const { return V_; }
   const Matrix Vinv() const { return invertMatrix_(V_); }
   const Matrix& Dr() const { return Dr_; }
+  const Matrix& Drw() const { return Drw_; }
   const Matrix& LIFT() const { return LIFT_; }
 
   // evaluate the Legendre polynomials at x
@@ -198,22 +200,8 @@ public:
     return (4*x*legendrePDeriv2(n, x)-(n*(n+1)-2)*legendrePDeriv(n,x))/(1-x*x);
   }
 
-  // function for debugging
-  void compute_printGLL(Vector& r, Vector& w, const int n)
-  {
-    for (int i = 2; i < n; i++)
-    {
-      std::cout << "Nodes and weights for order n = " << i << std::endl;
-      r.setSize(i+1);
-      w.setSize(i+1);
-      computeGLL_(r,w,i);
-      std::cout << r << std::endl;
-      std::cout << w << std::endl;
-      std::cout << std::endl;
-    }
-  }
-
 private:
+
   // Gauss–Lobatto–Legendre nodes: endpoints +-1 and interior zeros of dP_N(x)
   // TODO: hardcode the points for low N
   // @param N   polynomial order of the approximation
@@ -272,7 +260,6 @@ private:
   Matrix buildVandermonde_(const Vector& r) const
   {
     Matrix V(Np_, Np_);
-    V.setDimensions(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
@@ -333,40 +320,82 @@ private:
   Matrix invertMatrix_(const Matrix& A) const
   {
     Eigen::MatrixXd E = tnlToEigen(A);
-    E.inverse();
+    E = E.inverse();
     return eigenToTnl(E);
   }
 
   // build the differentiation matrix for the weak formulation
-  // D = V dV^T M
-  Matrix buildDMatrix_(const Matrix& V, const Matrix& dV, const Matrix& M) const
+  // D = V Vr^T M
+  Matrix buildDwMatrix_(const Matrix& V, const Matrix& Vr, const Matrix& M) const
   {
-    Eigen::MatrixXd eV  = tnlToEigen(V);
-    Eigen::MatrixXd eM  = tnlToEigen(M);
-    Eigen::MatrixXd edV = tnlToEigen(dV);
+    Matrix tmp;
+    tmp.setDimensions(Np_, Np_);
+    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, Vr);
+    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, tmp, M);
 
-    Eigen::MatrixXd eD = eV * edV.transpose() * eM;
-
-    return eigenToTnl(eD);
+    return tmp;
   }
 
-  Matrix massMatrix_(const Matrix& V) const
+  // build the differentiation matrix for the strong formulation
+  // D = V Vr^(-1)
+  Matrix buildDMatrix_(const Matrix& V, const Matrix& Vr) const
   {
-    Eigen::MatrixXd eV  = tnlToEigen(V);
-    Eigen::MatrixXd eVT = eV.transpose();
-    Eigen::MatrixXd eD = eV * eVT;
+    Matrix tmp;
+    tmp.setDimensions(Np_, Np_);
+    Matrix Vr_inv;
+    Vr_inv.setDimensions(Np_, Np_);
+    Vr_inv = invertMatrix_(Vr);
+    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, Vr_inv);
 
-    return eigenToTnl(eD.inverse());
+    return tmp;
+  }
+
+  // M = (V V_r^T)^{-1}
+  Matrix massMatrix_(const Matrix& V, const Matrix& Vr) const
+  {
+    Matrix tmp;
+    tmp.setDimensions(Np_, Np_);
+    Matrix VrT(Np_, Np_);
+    VrT.setDimensions(Np_, Np_);
+
+    TNL::Matrices::getTransposition<Matrix, Matrix, Real>(VrT, Vr);
+    std::cout << "Transposition worked" << std::endl;
+
+    std::cout << "Matrix dimensions in massMatrix_()" << std::endl;
+    auto print_dimensions = [&] (Matrix& matrix)
+    {
+      int cols = matrix.getColumns();
+      int rows = matrix.getRows();
+      std::cout << "\tRows: " << rows << std::endl;
+      std::cout << "\tCols: " << cols << std::endl;
+    };
+
+    std::cout << "tmp: " << std::endl;
+    print_dimensions(tmp);
+
+    std::cout << "V: " << std::endl;
+    print_dimensions(V);
+
+    std::cout << "Vr: " << std::endl;
+    print_dimensions(Vr);
+
+    std::cout << "VrT: " << std::endl;
+    print_dimensions(VrT);
+
+    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, VrT);
+    std::cout << "Matrix product worked" << std::endl;
+
+    return invertMatrix_(tmp);
   }
 
   // build the LIFT matrix
-  Matrix buildLIFT_(const Matrix& V) const
+  Matrix buildLIFT_(const Matrix& V, const Matrix& Vr) const
   {
     Matrix VVT(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
         for (Index j = 0; j < Np_; ++j) {
             Real s = Real(0);
-            for (Index k = 0; k < Np_; ++k) s += V(i,k) * V(j,k);
+            for (Index k = 0; k < Np_; ++k) s += V(i,k) * Vr(j,k);
             VVT(i,j) = s;
         }
     Matrix L(Np_, 2);
@@ -379,7 +408,7 @@ private:
 
   Index  N_, Np_;
   Vector r_, w_;
-  Matrix V_, Vr_, Dr_, LIFT_, M_;
+  Matrix V_, Vr_, Dr_, Drw_, LIFT_, M_;
 };
 
 } // namespace DG
