@@ -1,4 +1,12 @@
-// NumericalFlux.hpp
+/**
+ * @file NumericalFlux.hpp
+ * @brief Numerical flux interface and common flux implementations.
+ *
+ * Defines an abstract NumericalFlux interface and multiple concrete
+ * implementations (UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux)
+ * used to compute interface fluxes from interior/exterior states.
+ */
+
 #pragma once
 
 #include <TNL/Math.h>
@@ -8,6 +16,13 @@ namespace DG {
 // ---------------------- Base numerical flux class ---------------------------
 // Abstract base (crtp-free for simplicity; use std::function or templates)
 template< class Real >
+/**
+ * @struct NumericalFlux
+ * @brief Abstract interface for numerical flux computations at interfaces.
+ *
+ * Subclasses implement compute(u_minus,u_plus,n_outward) to return the
+ * consistent inter-element flux for the DG surface term.
+ */
 struct NumericalFlux
 {
   virtual ~NumericalFlux() = default;
@@ -19,6 +34,12 @@ struct NumericalFlux
 // -------------------------------- Upwind ------------------------------------
 // f*(u) = f(u-)
 template< class Real >
+/**
+ * @struct UpwindFlux
+ * @brief Upwind numerical flux using the sign of the advection speed.
+ *
+ * Chooses the upwind state and evaluates the physical flux there.
+ */
 struct UpwindFlux : NumericalFlux< Real >
 {
   // constructor
@@ -39,6 +60,13 @@ struct UpwindFlux : NumericalFlux< Real >
 // ----------------------------- Lax-Friedrichs -------------------------------
 // f* = 0.5*(f(u-) + f(u+)) - 0.5*C*(u+ - u-)
 template< class Real >
+/**
+ * @struct LaxFriedrichsFlux
+ * @brief Local Lax–Friedrichs (Rusanov) flux.
+ *
+ * Blends arithmetic flux with a jump penalization scaled by an estimate
+ * of the maximum wave speed.
+ */
 struct LaxFriedrichsFlux : NumericalFlux< Real >
 {
   explicit LaxFriedrichsFlux( std::function< Real( Real u ) > advection_speed, std::function< Real( Real u ) > physical_flux ) : advection_speed_(std::move(advection_speed)), physical_flux_(std::move(physical_flux)) {}
@@ -54,6 +82,10 @@ struct LaxFriedrichsFlux : NumericalFlux< Real >
 
 // -------------------------------- Godunov ------------------------------------
 template< class Real >
+/**
+ * @struct GodunovFlux
+ * @brief Godunov flux (exact Riemann solver for scalar problems).
+ */
 struct GodunovFlux : NumericalFlux< Real >
 {
   // constructor
@@ -71,6 +103,10 @@ struct GodunovFlux : NumericalFlux< Real >
 
 // -------------------------------- Roe ---------------------------------------
 template< class Real >
+/**
+ * @struct RoeFlux
+ * @brief Roe approximate Riemann solver (linearized flux).
+ */
 struct RoeFlux : NumericalFlux< Real >
 {
   // constructor

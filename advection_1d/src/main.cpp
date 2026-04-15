@@ -27,11 +27,11 @@ int main(int argc, char* argv[])
     //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
 
     // Burger's equation
-    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
-    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
-    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return a; };
+    // auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
       Real xL = mesh.leftVertex(i.x());
       Real h = mesh.elementSize(i.x());
       Real r = ref.nodes()[i.y()];
-      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::sin(xL + (r + 1.0) * 0.5 * h);
+      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::abs(TNL::sin(xL + (r + 1.0) * 0.5 * h));
     };
 
     auto saw_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx) mutable
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
     // 2-dimensional parallel for
-    TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
+    TNL::Algorithms::parallelFor< Device >(begin, end, sin_init);
 
     // -------------------------- more setup ----------------------------------
     // find delta x_min for time step computation

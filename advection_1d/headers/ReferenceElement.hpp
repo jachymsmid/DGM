@@ -1,3 +1,12 @@
+/**
+ * @file ReferenceElement.hpp
+ * @brief Reference element utilities: GLL nodes, Vandermonde and operators.
+ *
+ * Builds Gauss--Lobatto nodes and weights, the (normalized) Vandermonde
+ * matrix, differentiation matrices (Dr), mass matrix and the LIFT
+ * operator required by the nodal DG formulation.
+ */
+
 #pragma once
 
 #include <Eigen/Core>
@@ -21,6 +30,14 @@ template
   class Real = double,
   class Index = int
 >
+/**
+ * @class ReferenceElement
+ * @brief Reference element data: GLL nodes, Vandermonde, differentiation and LIFT matrices.
+ *
+ * Constructs nodal operators required by the nodal DG formulation for a
+ * polynomial order N (Np = N+1). Public accessors expose nodes, weights,
+ * Vandermonde, Dr and LIFT used by the spatial operator.
+ */
 class ReferenceElement
 {
 public:
@@ -55,6 +72,12 @@ public:
 
   // evaluate the Legendre polynomials at x
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
+  /**
+   * @brief Evaluate the (un-normalized) Legendre polynomial P_n(x).
+   * @param n polynomial order (n >= 0)
+   * @param x evaluation point in [-1,1]
+   * @return P_n(x)
+   */
   static Real legendreP(Index n, Real x)
   {
     if ( n < 0 )
@@ -77,6 +100,12 @@ public:
 
   // normalize the Legendre polynomial
   // normalization n_n = \sqrt{(2n+1)/2}
+  /**
+   * @brief Normalized Legendre polynomial used in the Vandermonde matrix.
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return normalized P_n(x)
+   */
   static Real legendrePN(Index n, Real x)
   {
     Real norm = std::sqrt(Real(2*n+1) / 2);
@@ -85,6 +114,12 @@ public:
 
   // Evaluate the derivative of the Legendre derivative at x
   // recursion formula, doesn't work for {-1, 1}
+  /**
+   * @brief Derivative of the Legendre polynomial P_n'(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return derivative P_n'(x)
+   */
   static Real legendrePDeriv(Index n, Real x)
   {
     if (n == 0) return Real(0);
@@ -111,6 +146,12 @@ public:
 
   // normalize the derivative of the Legendre polynomial
   // normalization n_n = \sqrt{(2n+1)/2}
+  /**
+   * @brief Normalized derivative of the Legendre polynomial.
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return normalized P_n'(x)
+   */
   static Real legendrePDerivN(Index n, Real x)
   {
     Real norm = std::sqrt(Real(2*n+1) / 2);
@@ -120,6 +161,12 @@ public:
   // Evalueate the second derivative of the Legendre polynomial
   // recursion formula, doesn't work for {-1, 1}
   // add source
+  /**
+   * @brief Second derivative of the Legendre polynomial P_n''(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return second derivative P_n''(x)
+   */
   static Real legendrePDeriv2(Index n, Real x)
   {
     if (std::abs(x) >= 1 - 1e-16)
@@ -134,6 +181,12 @@ public:
   // evalueate the third derivative of the Legendre polynomial
   // recursion formula, doesn't work for {-1, 1}
   // add source
+  /**
+   * @brief Third derivative of the Legendre polynomial P_n'''(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return third derivative P_n'''(x)
+   */
   static Real legendrePDeriv3(Index n, Real x)
   {
     if (std::abs(x) >= 1 - 1e-16)

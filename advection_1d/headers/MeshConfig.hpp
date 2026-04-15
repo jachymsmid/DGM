@@ -1,3 +1,11 @@
+/**
+ * @file MeshConfig.hpp
+ * @brief TNL mesh configuration and convenient alias for the 1D mesh type.
+ *
+ * Defines a MeshConfig that inherits from TNL::Meshes::DefaultConfig for
+ * 1D Edge topologies and provides the TNLMesh alias used across the codebase.
+ */
+
 #pragma once
 
 #include <TNL/Meshes/DefaultConfig.h>
@@ -9,6 +17,13 @@
 namespace DG {
 
 // inherits from DefaultConfig
+/**
+ * @struct MeshConfig
+ * @brief TNL mesh configuration for 1D Edge topology.
+ *
+ * Inherits from TNL::Meshes::DefaultConfig and enables subentity
+ * storage for the 1D mesh representation used by the DG solver.
+ */
 template
 <
   class Real = double,
@@ -26,6 +41,9 @@ struct MeshConfig
 };
 
 // alias for my mesh type
+/**
+ * @brief Alias for the TNL mesh type used in the DG codebase.
+ */
 template
 <
   class Real = double,

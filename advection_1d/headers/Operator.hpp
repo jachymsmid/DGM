@@ -1,3 +1,12 @@
+/**
+ * @file Operator.hpp
+ * @brief Spatial DG operator that computes the semi-discrete RHS.
+ *
+ * Operator assembles volume and surface contributions using the
+ * ReferenceElement data and a NumericalFlux implementation, producing
+ * the residual rhs suitable for time integration.
+ */
+
 #pragma once
 
 #include "Mesh.hpp"
@@ -21,6 +30,13 @@ public:
   using Field = FieldVector<Real, Device, Index>;
 
   // Constructor
+  /**
+   * @brief Construct an Operator assembling the semi-discrete RHS.
+   * @param mesh Mesh geometry
+   * @param ref Reference element containing operators (Dr, LIFT)
+   * @param flux Numerical flux object used at element interfaces
+   * @param physFlux Physical flux function f(u)
+   */
   Operator(
       const MeshType& mesh,
       const Ref& ref,
@@ -30,12 +46,25 @@ public:
   {}
 
   // return the rhs operatro as a std::function
+  /**
+   * @brief Return an std::function wrapper around computeRHS for use by
+   *        time integrators.
+   */
   std::function<void(const Field&, Field&, const Real& time)> rhsFunction() const
   {
     return [this](const Field& u, Field& rhs, const Real& time) { computeRHS(u, rhs, time); };
   }
 
   // compute rhs = du/dt into 'res' given current state 'u' and 'time'
+  /**
+   * @brief Compute the semi-discrete RHS (du/dt) for the DG discretization.
+   *
+   * Assembles the volume term (Dr * flux) and surface contributions via
+   * the provided numerical flux and LIFT operator into `res`.
+   * @param u input solution (element-local layout)
+   * @param res output residual (same layout as u)
+   * @param time current time (for time-dependent fluxes if any)
+   */
   void computeRHS(const Field& u, Field& res, const Real& time) const
   {
     const Index K  = mesh_.numElements();
