@@ -15,11 +15,12 @@ using Index = int;
 
 int main(int argc, char* argv[])
 {
-    const int  K = 100; // number of elements
-    const int N = 2; // polynomial order of approximation
+    const int  K = 10; // number of elements
+    const int N = 3; // polynomial order of approximation
     const Real a = 1.0; // advection speed
-    const Real Tf = 2.0 * M_PI; // final time
+    const Real Tf = 2.0; // final time
     const Real CFL = 0.4;
+    const Real PI = TNL::pi;
 
     // Build mesh: either from a VTK file or uniform
     // DG::Mesh<Real> mesh = (argc > 1)
@@ -34,13 +35,13 @@ int main(int argc, char* argv[])
     auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
-    DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
+    DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(-1.0, 1.0, K);
 
     // construct reference element
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
@@ -60,7 +61,15 @@ int main(int argc, char* argv[])
       Real xL = mesh.leftVertex(i.x());
       Real h = mesh.elementSize(i.x());
       Real r = ref.nodes()[i.y()];
-      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::sin(xL + (r + 1.0) * 0.5 * h);
+      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::sin((xL + (r + 1.0) * 0.5 * h) * PI);
+    };
+
+    auto abs_sin_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& i  ) mutable
+    {
+      Real xL = mesh.leftVertex(i.x());
+      Real h = mesh.elementSize(i.x());
+      Real r = ref.nodes()[i.y()];
+      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::abs(TNL::sin((xL + (r + 1.0) * 0.5 * h) * PI));
     };
 
     auto saw_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx) mutable

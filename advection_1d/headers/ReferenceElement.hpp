@@ -1,7 +1,17 @@
+/**
+ * @file ReferenceElement.hpp
+ * @brief Reference element utilities: GLL nodes, Vandermonde and operators.
+ *
+ * Builds Gauss--Lobatto nodes and weights, the (normalized) Vandermonde
+ * matrix, differentiation matrices (Dr), mass matrix and the LIFT
+ * operator required by the nodal DG formulation.
+ */
+
 #pragma once
 
 #include <Eigen/Core>
 #include <TNL/Allocators/Default.h>
+#include <TNL/Backend/Macros.h>
 #include <TNL/Devices/Host.h>
 #include <TNL/Matrices/DenseOperations.h>
 #include <TNL/Containers/Vector.h>
@@ -9,13 +19,20 @@
 #include <TNL/Matrices/MatrixBase.h>
 #include <cmath>
 #include <Eigen/Dense>
-#include <exception>
-#include <iostream>
 #include <stdexcept>
 
 namespace DG {
 
 // Gauss-Lobatto nodes and weights (N+1 points, exact for poly deg 2N-1).
+/**
+ * @class ReferenceElement
+ * @brief Reference element data: GLL nodes, Vandermonde, differentiation and LIFT matrices.
+ *
+ * Constructs nodal operators required by the nodal DG formulation for a
+ * polynomial order N (Np = N+1). Public accessors expose nodes, weights,
+ * Vandermonde, Dr and LIFT used by the spatial operator.
+ */
+
 template
 <
   class Real = double,
@@ -24,8 +41,9 @@ template
 class ReferenceElement
 {
 public:
+
   using Vector = TNL::Containers::Vector< Real, TNL::Devices::Host, Index >;
-  using Matrix = TNL::Matrices::DenseMatrix< Real, TNL::Devices::Host, Index, TNL::Matrices::ElementsOrganization::RowMajorOrder >;
+  using Matrix = TNL::Matrices::DenseMatrix< Real, TNL::Devices::Host, Index>;
 
   // Constructor
   explicit ReferenceElement(Index N) : N_(N), Np_(N + 1)
@@ -34,11 +52,27 @@ public:
     w_.setSize(Np_);
     computeGLL_(r_, w_, N_);  // Gauss–Lobatto–Legendre nodes & weights
 
-    V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
-    M_ = massMatrix_(V_);
+    V_ = buildVandermonde_(r_);
     Vr_ = buildDerivVandermonde_(r_);
-    Dr_ = buildDMatrix_(V_, Vr_, M_); // Dr  Vr * inv(V)
-    LIFT_ = buildLIFT_(V_); // LIFT = M^{-1} * E, size Np x 2
+    M_ = massMatrix_(V_);
+    Drw_ = buildDwMatrix_(V_, Vr_, M_); // differentiation matrix for weak formulation
+    Dr_ = buildDMatrix_(V_, Vr_);
+    LIFT_ = buildLIFT_(V_);
+
+#if DEBUG
+    std::cout << "Checking Vandermonde matrix" << std::endl;
+    checkMatrixNaN_(V_);
+    std::cout << "Checking derivative of Vandermonde matrix" << std::endl;
+    checkMatrixNaN_(Vr_);
+    std::cout << "Checking Mass matrix" << std::endl;
+    checkMatrixNaN_(M_);
+    std::cout << "Checking differentiation matrix for weak formulation" << std::endl;
+    checkMatrixNaN_(Drw_);
+    std::cout << "Checking differentiation matrix for strong formulation" << std::endl;
+    checkMatrixNaN_(Dr_);
+    std::cout << "Checking LIFT matrix" << std::endl;
+    checkMatrixNaN_(LIFT_);
+#endif
 
   }
 
@@ -51,10 +85,17 @@ public:
   const Matrix& V() const { return V_; }
   const Matrix Vinv() const { return invertMatrix_(V_); }
   const Matrix& Dr() const { return Dr_; }
+  const Matrix& Drw() const { return Drw_; }
   const Matrix& LIFT() const { return LIFT_; }
 
   // evaluate the Legendre polynomials at x
   // Bonnet's formula see: https://proofwiki.org/wiki/Bonnet%27s_Recursion_Formula
+  /**
+   * @brief Evaluate the (un-normalized) Legendre polynomial P_n(x).
+   * @param n polynomial order (n >= 0)
+   * @param x evaluation point in [-1,1]
+   * @return P_n(x)
+   */
   static Real legendreP(Index n, Real x)
   {
     if ( n < 0 )
@@ -77,6 +118,12 @@ public:
 
   // normalize the Legendre polynomial
   // normalization n_n = \sqrt{(2n+1)/2}
+  /**
+   * @brief Normalized Legendre polynomial used in the Vandermonde matrix.
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return normalized P_n(x)
+   */
   static Real legendrePN(Index n, Real x)
   {
     Real norm = std::sqrt(Real(2*n+1) / 2);
@@ -85,6 +132,12 @@ public:
 
   // Evaluate the derivative of the Legendre derivative at x
   // recursion formula, doesn't work for {-1, 1}
+  /**
+   * @brief Derivative of the Legendre polynomial P_n'(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return derivative P_n'(x)
+   */
   static Real legendrePDeriv(Index n, Real x)
   {
     if (n == 0) return Real(0);
@@ -111,6 +164,12 @@ public:
 
   // normalize the derivative of the Legendre polynomial
   // normalization n_n = \sqrt{(2n+1)/2}
+  /**
+   * @brief Normalized derivative of the Legendre polynomial.
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return normalized P_n'(x)
+   */
   static Real legendrePDerivN(Index n, Real x)
   {
     Real norm = std::sqrt(Real(2*n+1) / 2);
@@ -120,6 +179,12 @@ public:
   // Evalueate the second derivative of the Legendre polynomial
   // recursion formula, doesn't work for {-1, 1}
   // add source
+  /**
+   * @brief Second derivative of the Legendre polynomial P_n''(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return second derivative P_n''(x)
+   */
   static Real legendrePDeriv2(Index n, Real x)
   {
     if (std::abs(x) >= 1 - 1e-16)
@@ -134,6 +199,12 @@ public:
   // evalueate the third derivative of the Legendre polynomial
   // recursion formula, doesn't work for {-1, 1}
   // add source
+  /**
+   * @brief Third derivative of the Legendre polynomial P_n'''(x).
+   * @param n polynomial order
+   * @param x evaluation point
+   * @return third derivative P_n'''(x)
+   */
   static Real legendrePDeriv3(Index n, Real x)
   {
     if (std::abs(x) >= 1 - 1e-16)
@@ -145,22 +216,8 @@ public:
     return (4*x*legendrePDeriv2(n, x)-(n*(n+1)-2)*legendrePDeriv(n,x))/(1-x*x);
   }
 
-  // function for debugging
-  void compute_printGLL(Vector& r, Vector& w, const int n)
-  {
-    for (int i = 2; i < n; i++)
-    {
-      std::cout << "Nodes and weights for order n = " << i << std::endl;
-      r.setSize(i+1);
-      w.setSize(i+1);
-      computeGLL_(r,w,i);
-      std::cout << r << std::endl;
-      std::cout << w << std::endl;
-      std::cout << std::endl;
-    }
-  }
-
 private:
+
   // Gauss–Lobatto–Legendre nodes: endpoints +-1 and interior zeros of dP_N(x)
   // TODO: hardcode the points for low N
   // @param N   polynomial order of the approximation
@@ -172,7 +229,7 @@ private:
     }
     else if ( r.getSize() != N + 1 || w.getSize() != N + 1)
     {
-      throw std::invalid_argument("Invalid size of array r || w in function computeGLL_()");
+      throw std::invalid_argument("Invalid size of array r[] or w[] in function computeGLL_()");
     }
 
     // endpoints
@@ -219,10 +276,9 @@ private:
   Matrix buildVandermonde_(const Vector& r) const
   {
     Matrix V(Np_, Np_);
-    V.setDimensions(Np_, Np_);
-    for (Index i = 0; i < Np_; ++i)
+    for (Index i = 0; i < Np_; i++)
     {
-      for (Index j = 0; j < Np_; ++j)
+      for (Index j = 0; j < Np_; j++)
       {
         V(i,j) = legendrePN(j, r[i]);
       }
@@ -234,15 +290,15 @@ private:
   // dV_{ij} = sqrt((2j+1)/2) * P'_j(r_i)
   Matrix buildDerivVandermonde_(const Vector& r) const
   {
-    Matrix dV(Np_, Np_);
+    Matrix Vr(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        dV(i,j) = legendrePDerivN(j, r[i]);
+        Vr(i,j) = legendrePDerivN(j, r[i]);
       }
     }
-    return dV;
+    return Vr;
   }
 
   // Convert TNL DenseMatrix to Eigen MatrixXd
@@ -280,53 +336,73 @@ private:
   Matrix invertMatrix_(const Matrix& A) const
   {
     Eigen::MatrixXd E = tnlToEigen(A);
-    E.inverse();
+    E = E.inverse();
     return eigenToTnl(E);
   }
 
   // build the differentiation matrix for the weak formulation
-  // D = V dV^T M
-  Matrix buildDMatrix_(const Matrix& V, const Matrix& dV, const Matrix& M) const
+  // D = V Vr^T M
+  Matrix buildDwMatrix_(const Matrix& V, const Matrix& Vr, const Matrix& M) const
   {
-    Eigen::MatrixXd eV  = tnlToEigen(V);
-    Eigen::MatrixXd eM  = tnlToEigen(M);
-    Eigen::MatrixXd edV = tnlToEigen(dV);
+    Matrix tmp, tmp2, VrT;
+    VrT.getTransposition(Vr);
+    tmp.getMatrixProduct(V, VrT);
+    tmp2.getMatrixProduct(tmp, M);
 
-    Eigen::MatrixXd eD = eV * edV.transpose() * eM;
-
-    return eigenToTnl(eD);
+    return tmp2;
   }
 
+  // build the differentiation matrix for the strong formulation
+  // D = Vr V^(-1)
+  Matrix buildDMatrix_(const Matrix& V, const Matrix& Vr) const
+  {
+    Matrix tmp, V_inv;
+    V_inv.setDimensions(Np_, Np_);
+    V_inv = invertMatrix_(V);
+    tmp.getMatrixProduct(Vr, V_inv);
+
+    return tmp;
+  }
+
+  // M = (V V^T)^{-1}
   Matrix massMatrix_(const Matrix& V) const
   {
-    Eigen::MatrixXd eV  = tnlToEigen(V);
-    Eigen::MatrixXd eVT = eV.transpose();
-    Eigen::MatrixXd eD = eV * eVT;
+    Matrix VT, tmp;
+    VT.getTransposition(V);
+    tmp.getMatrixProduct(V, VT);
 
-    return eigenToTnl(eD.inverse());
+    return invertMatrix_(tmp);
   }
 
   // build the LIFT matrix
   Matrix buildLIFT_(const Matrix& V) const
   {
-    Matrix VVT(Np_, Np_);
-    for (Index i = 0; i < Np_; ++i)
-        for (Index j = 0; j < Np_; ++j) {
-            Real s = Real(0);
-            for (Index k = 0; k < Np_; ++k) s += V(i,k) * V(j,k);
-            VVT(i,j) = s;
-        }
+    Matrix tmp, VT;
+    VT.getTransposition(V);
+    tmp.getMatrixProduct(V, VT);
+
     Matrix L(Np_, 2);
-    for (Index i = 0; i < Np_; ++i) {
-        L(i,0) = VVT(i, 0);       // left face node (index 0)
-        L(i,1) = -VVT(i, Np_-1);   // right face node (index Np-1)
+    for (Index i = 0; i < Np_; i++) {
+        L(i,0) = tmp(i, 0);       // left face node (index 0)
+        L(i,1) = -tmp(i, Np_-1);   // right face node (index Np-1)
     }
     return L;
   }
 
+  void checkMatrixNaN_(const Matrix& matrix)
+  {
+    auto check = [=] __cuda_callable__ (int rowIdx, int columnIdx, int globalIdx, const double& value)
+    {
+      if ( std::isnan(value) ) throw std::invalid_argument("NaN encountered in matrix");
+    };
+
+    auto matrixView = matrix.getConstView();
+    matrixView.forAllElements(check);
+  }
+
   Index  N_, Np_;
   Vector r_, w_;
-  Matrix V_, Vr_, Dr_, LIFT_, M_;
+  Matrix V_, Vr_, Dr_, Drw_, LIFT_, M_;
 };
 
 } // namespace DG

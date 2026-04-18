@@ -1,3 +1,12 @@
+/**
+ * @file Integrator.hpp
+ * @brief Time integrators for advancing the semi-discrete DG system.
+ *
+ * Declares an abstract Integrator interface and several concrete explicit
+ * Runge--Kutta schemes used by the solver (ERK, LSERK, SSPRK). Integrators
+ * accept an RHS callback and operate on FieldVector instances.
+ */
+
 #pragma once
 
 #include "FieldVector.hpp"
@@ -22,6 +31,14 @@ template
   typename Device = TNL::Devices::Host,
   typename Index  = int
 >
+/**
+ * @class Integrator
+ * @brief Abstract base for time integrators advancing the semi-discrete DG system.
+ *
+ * Subclasses implement step() and integrate(). Integrators operate on
+ * FieldVector instances and accept an RHS callback describing the spatial
+ * operator.
+ */
 class Integrator
 {
 public:
@@ -32,14 +49,33 @@ public:
     virtual ~Integrator() = default;
 
     // single step
+    /**
+     * @brief Perform a single time step updating u in-place.
+     * @param u solution vector to be advanced
+     * @param dt time step size
+     * @param t_in current time
+     */
     virtual void step(Field& u, Real dt, Real t_in) = 0;
 
     // integrate, multiple steps
+    /**
+     * @brief Integrate from t0 to t_end using fixed step dt (last step clipped).
+     * @return number of steps performed
+     */
     virtual Index integrate(Field& u, Real t0, Real t_end, Real dt) = 0;
 
     // getters
+    /**
+     * @brief Number of steps performed by the integrator.
+     */
     virtual Index numSteps() const = 0;
+    /**
+     * @brief Total number of DOFs managed by the integrator (K * Np).
+     */
     virtual Index numPoints() const = 0;
+    /**
+     * @brief Current simulation time tracked by the integrator.
+     */
     virtual Real currentTime() const = 0;
 
 protected:
@@ -77,6 +113,13 @@ protected:
 template<typename Real   = double,
          typename Device = TNL::Devices::Host,
          typename Index  = int>
+/**
+ * @class ERK
+ * @brief Classic explicit four-stage Runge–Kutta integrator (ERK4).
+ *
+ * Implements a straightforward RK4 integration using temporary stage
+ * storage sized by K * Np.
+ */
 class ERK : Integrator< Real, Device, Index > // inherit protected methods
 {
 public:
@@ -87,6 +130,13 @@ public:
     // op       – spatial residual (must outlive this integrator)
     // K, Np    – element count and nodes-per-element (needed to size scratch)
     // callback – optional: called after every step, return false to stop early
+    /**
+     * @brief Construct ERK integrator.
+     * @param rhs Spatial residual callback: (u, out, time)
+     * @param K number of elements
+     * @param Np nodes per element
+     * @param callback optional per-step callback; return false to stop
+     */
     explicit ERK(RHSFunc rhs,
                  Index K, Index Np,
                  Callback callback = nullptr)

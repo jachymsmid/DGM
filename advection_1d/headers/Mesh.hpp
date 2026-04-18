@@ -1,3 +1,12 @@
+/**
+ * @file Mesh.hpp
+ * @brief DG mesh wrapper built on top of TNL meshes for 1D problems.
+ *
+ * The Mesh class provides element counts, vertex coordinates, element
+ * sizes, jacobians and neighbour/face queries tailored for 1D DG
+ * discretizations. Factory helpers include uniform(...) and readVTK(...).
+ */
+
 #pragma once
 
 #include "MeshConfig.hpp"
@@ -9,6 +18,14 @@
 
 namespace DG {
 
+/**
+ * @class Mesh
+ * @brief 1D DG mesh wrapper providing element geometry and adjacency queries.
+ *
+ * Built on top of TNL meshes; provides convenient accessors for element
+ * vertices, sizes, jacobians and face neighbour queries used by the DG
+ * operator and I/O routines.
+ */
 template
 <
   class Real = double,
@@ -33,6 +50,13 @@ public:
   }
 
   //  Factory: uniform mesh on [a,b] with K elements
+  /**
+   * @brief Build a uniform mesh on interval [a,b] with K elements.
+   * @param a left boundary
+   * @param b right boundary
+   * @param K number of elements
+   * @return Mesh instance
+   */
   static Mesh uniform(Real a, Real b, Index K)
   {
     if (K < 1) throw std::invalid_argument("K must be >= 1");
@@ -58,6 +82,12 @@ public:
   //  VTK Reader: construct mesh from a VTK file
   // ------------------------------------------------------------------ //
 
+  /**
+   * @brief Construct a Mesh by reading a VTK file produced by this code.
+   * @param filename path to the VTK mesh file
+   * @return Mesh constructed from the file
+   * @throws std::runtime_error on unsupported mesh dimension
+   */
   static Mesh readVTK(const std::string& filename)
   {
     using TNLMeshType = typename Mesh<Real, Device, Index>::TNLMeshType;
@@ -83,12 +113,30 @@ public:
   // ------------------------------------------------------------------ //
   //  Getters
   // ------------------------------------------------------------------ //
+  /**
+   * @brief Number of elements in the mesh (K).
+   * @return K
+   */
   Index numElements() const { return numK_; }
   Index numFaces()  const { return numK_ + 1; } // K+1 vertices in 1D
 
   // Physical vertex coordinates of element k: [x_L, x_R]
+  /**
+   * @brief Coordinate of the left vertex of element k.
+   * @param k element index
+   * @return x coordinate
+   */
   Real leftVertex (Index k) const { return vertCoords_[k];     }
+  /**
+   * @brief Coordinate of the right vertex of element k.
+   * @param k element index
+   * @return x coordinate
+   */
   Real rightVertex(Index k) const { return vertCoords_[k + 1]; }
+  /**
+   * @brief Physical length of element k (x_R - x_L).
+   * @param k element index
+   */
   Real elementSize(Index k) const { return rightVertex(k) - leftVertex(k); }
   Real minElementSize() const { return min_h_; }
   Real maxElementSize() const { return max_h_; }

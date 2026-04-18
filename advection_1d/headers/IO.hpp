@@ -1,3 +1,12 @@
+/**
+ * @file IO.hpp
+ * @brief VTK input/output helpers for writing DG solutions.
+ *
+ * Contains utilities to write DG data as legacy ASCII VTK files so that
+ * Paraview can visualize element-local polynomial solutions and time
+ * series (writeToVTK, writeTimeSeriesVTK).
+ */
+
 #pragma once
 
 #include "Mesh.hpp"
@@ -38,6 +47,14 @@ template
   class Device = TNL::Devices::Host,
   class Index = int
 >
+/**
+ * @brief Write a DG solution to an ASCII legacy VTK file.
+ *
+ * The function emits K*Np points and K POLY_LINE cells so Paraview can
+ * display the piecewise-polynomial DG solution including element
+ * discontinuities. The produced file includes a POINT_DATA scalar array
+ * with the field values.
+ */
 void writeToVTK(const Mesh<Real, Device, Index>& mesh,
                 const ReferenceElement<Real, Index>& ref,
                 const FieldVector<Real, Device, Index>& u,
@@ -137,6 +154,12 @@ template
   class Device,
   class Index
 >
+/**
+ * @brief Convenience wrapper to write numbered VTK frames for a timeseries.
+ *
+ * Produces files named basename_XXXXXX.vtk suitable for loading as a
+ * grouped time series in Paraview.
+ */
 void writeTimeSeriesVTK(const Mesh<Real, Device, Index>& mesh,
                         const ReferenceElement<Real, Index>& ref,
                         const FieldVector<Real, Device, Index>& u,
