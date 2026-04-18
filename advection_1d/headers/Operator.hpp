@@ -13,6 +13,11 @@
 #include "ReferenceElement.hpp"
 #include "FieldVector.hpp"
 #include "NumericalFlux.hpp"
+#include <TNL/Math.h>
+#include <exception>
+#include <iostream>
+#include <stdexcept>
+#include <cmath>
 
 namespace DG {
 
@@ -69,7 +74,7 @@ public:
   {
     const Index K  = mesh_.numElements();
     const Index Np = ref_.numDOF();
-    const auto& Dr = ref_.Dr();
+    const auto& Dw = ref_.Drw();
     const auto& LIFT = ref_.LIFT();
 
 
@@ -86,8 +91,16 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         flocal[i] = physFlux_(uk[i]);
+        if ( std::isnan(flocal[i]) ) throw std::invalid_argument( "NaN encountered in physical flux computation");
       }
 
+      for (Index i = 0; i < Np; ++i)
+      {
+        for (Index j = 0; j < Np; ++j)
+        {
+           if ( std::isnan(Dw(i,j)) ) throw std::invalid_argument( "NaN encountered in differnetiation matrix for weak formulation");
+        }
+      }
       // --- volume term ---
       // vol = Dr * flocal
       for (Index i = 0; i < Np; ++i)
@@ -95,7 +108,8 @@ public:
         Real s = 0;
         for (Index j = 0; j < Np; ++j)
         {
-          s += Dr(i,j) * flocal[j];
+          s += Dw(i,j) * flocal[j];
+          if ( std::isnan(s) ) throw std::invalid_argument( "NaN encountered in volume term computation");
         }
         vol[i] = s;
       }
@@ -121,6 +135,7 @@ public:
         }
         // fluxJump[0]  = fStar
         fluxJump[0]  = flux_.compute(u_int, u_ext, mesh_.leftNormal());
+        if ( std::isnan(fluxJump[0]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (left face)");
       }
 
       // right face
@@ -144,15 +159,17 @@ public:
         }
         // numerical flux f*(u-, u+)
         fluxJump[1] = flux_.compute(u_int, u_ext, mesh_.rightNormal());
+        if ( std::isnan(fluxJump[1]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (right face)");
       }
 
       // --- assemble rhs ---
-      // rhs = J^{-1} * (-vol + LIFT * fluxJump)
+      // rhs = J^{-1} * ( vol + LIFT * fluxJump) = J^{-1} * ( vol + lift )
       Real Jinv = Real(1) / mesh_.jacobian(k);
       for (Index i = 0; i < Np; ++i)
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
         rk[i] = Jinv * ( vol[i] + lift);
+        if ( std::isnan(rk[i]) ) throw std::invalid_argument( "NaN encountered in RHS computation");
       }
     }
   }

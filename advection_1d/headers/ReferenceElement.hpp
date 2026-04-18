@@ -11,6 +11,7 @@
 
 #include <Eigen/Core>
 #include <TNL/Allocators/Default.h>
+#include <TNL/Backend/Macros.h>
 #include <TNL/Devices/Host.h>
 #include <TNL/Matrices/DenseOperations.h>
 #include <TNL/Containers/Vector.h>
@@ -51,12 +52,27 @@ public:
     w_.setSize(Np_);
     computeGLL_(r_, w_, N_);  // Gauss–Lobatto–Legendre nodes & weights
 
-    V_ = buildVandermonde_(r_); // V_{ij} = P_j(r_i)
-    M_ = massMatrix_(V_, Vr_);
+    V_ = buildVandermonde_(r_);
     Vr_ = buildDerivVandermonde_(r_);
-    Drw_ = buildDwMatrix_(V_, Vr_, M_); // Drw = Vr * inv(V)
+    M_ = massMatrix_(V_);
+    Drw_ = buildDwMatrix_(V_, Vr_, M_); // differentiation matrix for weak formulation
     Dr_ = buildDMatrix_(V_, Vr_);
-    LIFT_ = buildLIFT_(V_, Vr_); // LIFT = M^{-1} * Eps, Eps is size Np x 2
+    LIFT_ = buildLIFT_(V_);
+
+#if DEBUG
+    std::cout << "Checking Vandermonde matrix" << std::endl;
+    checkMatrixNaN_(V_);
+    std::cout << "Checking derivative of Vandermonde matrix" << std::endl;
+    checkMatrixNaN_(Vr_);
+    std::cout << "Checking Mass matrix" << std::endl;
+    checkMatrixNaN_(M_);
+    std::cout << "Checking differentiation matrix for weak formulation" << std::endl;
+    checkMatrixNaN_(Drw_);
+    std::cout << "Checking differentiation matrix for strong formulation" << std::endl;
+    checkMatrixNaN_(Dr_);
+    std::cout << "Checking LIFT matrix" << std::endl;
+    checkMatrixNaN_(LIFT_);
+#endif
 
   }
 
@@ -213,7 +229,7 @@ private:
     }
     else if ( r.getSize() != N + 1 || w.getSize() != N + 1)
     {
-      throw std::invalid_argument("Invalid size of array r || w in function computeGLL_()");
+      throw std::invalid_argument("Invalid size of array r[] or w[] in function computeGLL_()");
     }
 
     // endpoints
@@ -260,9 +276,9 @@ private:
   Matrix buildVandermonde_(const Vector& r) const
   {
     Matrix V(Np_, Np_);
-    for (Index i = 0; i < Np_; ++i)
+    for (Index i = 0; i < Np_; i++)
     {
-      for (Index j = 0; j < Np_; ++j)
+      for (Index j = 0; j < Np_; j++)
       {
         V(i,j) = legendrePN(j, r[i]);
       }
@@ -274,15 +290,15 @@ private:
   // dV_{ij} = sqrt((2j+1)/2) * P'_j(r_i)
   Matrix buildDerivVandermonde_(const Vector& r) const
   {
-    Matrix dV(Np_, Np_);
+    Matrix Vr(Np_, Np_);
     for (Index i = 0; i < Np_; ++i)
     {
       for (Index j = 0; j < Np_; ++j)
       {
-        dV(i,j) = legendrePDerivN(j, r[i]);
+        Vr(i,j) = legendrePDerivN(j, r[i]);
       }
     }
-    return dV;
+    return Vr;
   }
 
   // Convert TNL DenseMatrix to Eigen MatrixXd
@@ -328,82 +344,60 @@ private:
   // D = V Vr^T M
   Matrix buildDwMatrix_(const Matrix& V, const Matrix& Vr, const Matrix& M) const
   {
-    Matrix tmp;
-    tmp.setDimensions(Np_, Np_);
-    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, Vr);
-    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, tmp, M);
+    Matrix tmp, tmp2, VrT;
+    VrT.getTransposition(Vr);
+    tmp.getMatrixProduct(V, VrT);
+    tmp2.getMatrixProduct(tmp, M);
 
-    return tmp;
+    return tmp2;
   }
 
   // build the differentiation matrix for the strong formulation
-  // D = V Vr^(-1)
+  // D = Vr V^(-1)
   Matrix buildDMatrix_(const Matrix& V, const Matrix& Vr) const
   {
-    Matrix tmp;
-    tmp.setDimensions(Np_, Np_);
-    Matrix Vr_inv;
-    Vr_inv.setDimensions(Np_, Np_);
-    Vr_inv = invertMatrix_(Vr);
-    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, Vr_inv);
+    Matrix tmp, V_inv;
+    V_inv.setDimensions(Np_, Np_);
+    V_inv = invertMatrix_(V);
+    tmp.getMatrixProduct(Vr, V_inv);
 
     return tmp;
   }
 
-  // M = (V V_r^T)^{-1}
-  Matrix massMatrix_(const Matrix& V, const Matrix& Vr) const
+  // M = (V V^T)^{-1}
+  Matrix massMatrix_(const Matrix& V) const
   {
-    Matrix tmp;
-    tmp.setDimensions(Np_, Np_);
-    Matrix VrT(Np_, Np_);
-    VrT.setDimensions(Np_, Np_);
-
-    TNL::Matrices::getTransposition<Matrix, Matrix, Real>(VrT, Vr);
-    std::cout << "Transposition worked" << std::endl;
-
-    std::cout << "Matrix dimensions in massMatrix_()" << std::endl;
-    auto print_dimensions = [&] (Matrix& matrix)
-    {
-      int cols = matrix.getColumns();
-      int rows = matrix.getRows();
-      std::cout << "\tRows: " << rows << std::endl;
-      std::cout << "\tCols: " << cols << std::endl;
-    };
-
-    std::cout << "tmp: " << std::endl;
-    print_dimensions(tmp);
-
-    std::cout << "V: " << std::endl;
-    print_dimensions(V);
-
-    std::cout << "Vr: " << std::endl;
-    print_dimensions(Vr);
-
-    std::cout << "VrT: " << std::endl;
-    print_dimensions(VrT);
-
-    TNL::Matrices::getMatrixProduct<Matrix, Matrix, Matrix, Real>(tmp, V, VrT);
-    std::cout << "Matrix product worked" << std::endl;
+    Matrix VT, tmp;
+    VT.getTransposition(V);
+    tmp.getMatrixProduct(V, VT);
 
     return invertMatrix_(tmp);
   }
 
   // build the LIFT matrix
-  Matrix buildLIFT_(const Matrix& V, const Matrix& Vr) const
+  Matrix buildLIFT_(const Matrix& V) const
   {
-    Matrix VVT(Np_, Np_);
-    for (Index i = 0; i < Np_; ++i)
-        for (Index j = 0; j < Np_; ++j) {
-            Real s = Real(0);
-            for (Index k = 0; k < Np_; ++k) s += V(i,k) * Vr(j,k);
-            VVT(i,j) = s;
-        }
+    Matrix tmp, VT;
+    VT.getTransposition(V);
+    tmp.getMatrixProduct(V, VT);
+
     Matrix L(Np_, 2);
-    for (Index i = 0; i < Np_; ++i) {
-        L(i,0) = VVT(i, 0);       // left face node (index 0)
-        L(i,1) = -VVT(i, Np_-1);   // right face node (index Np-1)
+    for (Index i = 0; i < Np_; i++) {
+        L(i,0) = tmp(i, 0);       // left face node (index 0)
+        L(i,1) = -tmp(i, Np_-1);   // right face node (index Np-1)
     }
     return L;
+  }
+
+  void checkMatrixNaN_(const Matrix& matrix)
+  {
+    auto check = [=] __cuda_callable__ (int rowIdx, int columnIdx, int globalIdx, const double& value)
+    {
+      if ( std::isnan(value) ) throw std::invalid_argument("NaN encountered in matrix");
+    };
+
+    auto matrixView = matrix.getConstView();
+    matrixView.forAllElements(check);
   }
 
   Index  N_, Np_;

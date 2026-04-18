@@ -23,7 +23,7 @@ target_link_libraries(dg_solver PRIVATE TNL::TNL Eigen3::Eigen)
 # compile options: Release, Debug, Diagnostics
 target_compile_options(dg_solver PRIVATE
     $<$<CONFIG:Release>:-O3 -march=native>
-    $<$<CONFIG:Debug>:  -O0 -g>
+    $<$<CONFIG:Debug>:  -O0 -g -DDEBUG>
     $<$<CONFIG:Diagnostics>:  -O3 -march=native -DDIAGNOSTICS >
 )
 
