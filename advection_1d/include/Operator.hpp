@@ -14,8 +14,6 @@
 #include "FieldVector.hpp"
 #include "NumericalFlux.hpp"
 #include <TNL/Math.h>
-#include <exception>
-#include <iostream>
 #include <stdexcept>
 #include <cmath>
 

@@ -79,14 +79,18 @@ template< class Real >
  */
 struct LaxFriedrichsFlux : NumericalFlux< Real >
 {
-  explicit LaxFriedrichsFlux( std::function< Real( Real u ) > advection_speed, std::function< Real( Real u ) > physical_flux ) : advection_speed_(std::move(advection_speed)), physical_flux_(std::move(physical_flux)) {}
+  explicit LaxFriedrichsFlux(
+      std::function< Real( Real u ) > advection_speed,
+      std::function< Real( Real u ) > physical_flux ) :
+      advection_speed_(std::move(advection_speed)),
+      physical_flux_(std::move(physical_flux)) {}
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
     // alpha is an estimate of the maximum wave speed across the interface
     Real alpha = TNL::argAbsMax(advection_speed_(u_minus), advection_speed_(u_plus));
-    return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus))
-           - Real(0.5) * alpha * n_outward * (u_plus - u_minus);
+    return n_outward * Real(0.5) * (physical_flux_(u_minus) - physical_flux_(u_plus))
+           - Real(0.5) * alpha * (u_minus - u_plus);
   }
 
   std::function< Real( Real u ) > advection_speed_;
