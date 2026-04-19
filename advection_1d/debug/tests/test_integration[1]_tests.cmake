@@ -1,7 +1,0 @@
-add_test([=[ERKTest.ExponentialDecay]=]  /home/j4s4/Documents/dgm/advection_1d/debug/tests/test_integration [==[--gtest_filter=ERKTest.ExponentialDecay]==] --gtest_also_run_disabled_tests)
-set_tests_properties([=[ERKTest.ExponentialDecay]=]  PROPERTIES DEF_SOURCE_LINE /home/j4s4/Documents/dgm/advection_1d/tests/test_integration.cpp:10 WORKING_DIRECTORY /home/j4s4/Documents/dgm/advection_1d SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
-add_test([=[LSERKTest.ExponentialDecay]=]  /home/j4s4/Documents/dgm/advection_1d/debug/tests/test_integration [==[--gtest_filter=LSERKTest.ExponentialDecay]==] --gtest_also_run_disabled_tests)
-set_tests_properties([=[LSERKTest.ExponentialDecay]=]  PROPERTIES DEF_SOURCE_LINE /home/j4s4/Documents/dgm/advection_1d/tests/test_integration.cpp:35 WORKING_DIRECTORY /home/j4s4/Documents/dgm/advection_1d SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
-add_test([=[SSPRKTest.ExponentialDecay]=]  /home/j4s4/Documents/dgm/advection_1d/debug/tests/test_integration [==[--gtest_filter=SSPRKTest.ExponentialDecay]==] --gtest_also_run_disabled_tests)
-set_tests_properties([=[SSPRKTest.ExponentialDecay]=]  PROPERTIES DEF_SOURCE_LINE /home/j4s4/Documents/dgm/advection_1d/tests/test_integration.cpp:60 WORKING_DIRECTORY /home/j4s4/Documents/dgm/advection_1d SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
-set(  test_integration_TESTS ERKTest.ExponentialDecay LSERKTest.ExponentialDecay SSPRKTest.ExponentialDecay)

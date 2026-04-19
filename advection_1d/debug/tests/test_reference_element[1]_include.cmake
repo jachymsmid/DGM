@@ -1,5 +1,0 @@
-if(EXISTS "/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_reference_element[1]_tests.cmake")
-  include("/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_reference_element[1]_tests.cmake")
-else()
-  add_test(test_reference_element_NOT_BUILT test_reference_element_NOT_BUILT)
-endif()

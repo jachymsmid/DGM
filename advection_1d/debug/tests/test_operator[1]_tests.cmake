@@ -1,5 +1,0 @@
-add_test([=[OperatorTest.ContinuousSolutionHasNoFluxJumps]=]  /home/j4s4/Documents/dgm/advection_1d/debug/tests/test_operator [==[--gtest_filter=OperatorTest.ContinuousSolutionHasNoFluxJumps]==] --gtest_also_run_disabled_tests)
-set_tests_properties([=[OperatorTest.ContinuousSolutionHasNoFluxJumps]=]  PROPERTIES DEF_SOURCE_LINE /home/j4s4/Documents/dgm/advection_1d/tests/test_operator.cpp:32 WORKING_DIRECTORY /home/j4s4/Documents/dgm/advection_1d SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
-add_test([=[OperatorTest.RHSMatchesExactDerivativeForSmoothSolution]=]  /home/j4s4/Documents/dgm/advection_1d/debug/tests/test_operator [==[--gtest_filter=OperatorTest.RHSMatchesExactDerivativeForSmoothSolution]==] --gtest_also_run_disabled_tests)
-set_tests_properties([=[OperatorTest.RHSMatchesExactDerivativeForSmoothSolution]=]  PROPERTIES DEF_SOURCE_LINE /home/j4s4/Documents/dgm/advection_1d/tests/test_operator.cpp:54 WORKING_DIRECTORY /home/j4s4/Documents/dgm/advection_1d SKIP_REGULAR_EXPRESSION [==[\[  SKIPPED \]]==])
-set(  test_operator_TESTS OperatorTest.ContinuousSolutionHasNoFluxJumps OperatorTest.RHSMatchesExactDerivativeForSmoothSolution)

@@ -1,3 +1,0 @@
-/home/j4s4/Documents/dgm/advection_1d/release/CMakeFiles/dg_solver.dir
-/home/j4s4/Documents/dgm/advection_1d/release/CMakeFiles/edit_cache.dir
-/home/j4s4/Documents/dgm/advection_1d/release/CMakeFiles/rebuild_cache.dir

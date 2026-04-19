@@ -1,5 +1,0 @@
-if(EXISTS "/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_operator[1]_tests.cmake")
-  include("/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_operator[1]_tests.cmake")
-else()
-  add_test(test_operator_NOT_BUILT test_operator_NOT_BUILT)
-endif()
