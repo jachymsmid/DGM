@@ -106,7 +106,7 @@ struct GodunovFlux : NumericalFlux< Real >
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
-    return ( u_minus < u_plus ) ? n_outward * TNL::min(physical_flux_(u_minus), physical_flux_(u_plus)) : n_outward * TNL::max(physical_flux_(u_minus), physical_flux_(u_plus));
+    return ( u_minus < u_plus ) ? TNL::min(physical_flux_(u_minus), physical_flux_(u_plus)) : TNL::max(physical_flux_(u_minus), physical_flux_(u_plus));
   }
 
   // data members

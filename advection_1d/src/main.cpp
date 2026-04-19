@@ -13,11 +13,11 @@ using Device  = TNL::Devices::Host;
 using Real = double;
 using Index = int;
 
-int main(int argc, char* argv[])
+int main()
 {
-    const int  K = 20; // number of elements
-    const int N = 3; // polynomial order of approximation
-    const Real a = 1.0; // advection speed
+    const int  K = 50; // number of elements
+    const int N = 1; // polynomial order of approximation
+    const Real a = 2.0; // advection speed
     const Real Tf = 2.0; // final time
     const Real CFL = 0.4;
     const Real PI = TNL::pi;
@@ -41,15 +41,13 @@ int main(int argc, char* argv[])
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::RoeFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::UpwindFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
 
     // construct field vector
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
-
-    int Np = ref.numDOF();
 
     // -------------------- initial conditions --------------------------------
 
@@ -145,7 +143,14 @@ int main(int argc, char* argv[])
       }
     }
 
-    Real dt = DG::ERK<Real>::computeDt(x_min, max_speed, N, CFL);
+    Real dt = DG::SSPRK<Real>::computeDt(x_min, max_speed, N, CFL);
+
+    std::cout << "Starting simulation with: " << std::endl;
+    std::cout << "\tK = " << K << std::endl;
+    std::cout << "\tN = " << N << std::endl;
+    std::cout << "\tx_min = " << x_min << std::endl;
+    std::cout << "\tdt = " << dt << std::endl;
+    std::cout << "\tmax advection speed = " << max_speed << std::endl;
 
     // write initial condition
     int frame = 0;
@@ -161,12 +166,6 @@ int main(int argc, char* argv[])
     rk.integrate(u, 0.0, Tf, dt);
 
     // output
-    std::cout << "Starting simulation with: " << std::endl;
-    std::cout << "\tK = " << K << std::endl;
-    std::cout << "\tN = " << N << std::endl;
-    std::cout << "\tx_min = " << x_min << std::endl;
-    std::cout << "\tdt = " << dt << std::endl;
-    std::cout << "\tmax advection speed = " << max_speed << std::endl;
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
     std::cout << "Done. Written " << frame << " frames.\n";
 }
