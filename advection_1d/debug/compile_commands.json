@@ -1,0 +1,56 @@
+[
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug",
+  "command": "/usr/bin/c++ -DHAVE_OPENMP -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /usr/include/eigen3 -g -std=c++17 -O0 -g -DDEBUG -fdiagnostics-color -fopenmp -o CMakeFiles/dg_solver.dir/src/main.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/src/main.cpp",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/src/main.cpp",
+  "output": "CMakeFiles/dg_solver.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/tests",
+  "command": "/usr/bin/c++ -DHAVE_OPENMP -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3 -g -std=c++17 -O0 -g -fdiagnostics-color -fopenmp -o CMakeFiles/test_reference_element.dir/test_reference_element.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/tests/test_reference_element.cpp",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/tests/test_reference_element.cpp",
+  "output": "tests/CMakeFiles/test_reference_element.dir/test_reference_element.cpp.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/tests",
+  "command": "/usr/bin/c++ -DHAVE_OPENMP -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3 -g -std=c++17 -O0 -g -fdiagnostics-color -fopenmp -o CMakeFiles/test_mesh.dir/test_mesh.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/tests/test_mesh.cpp",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/tests/test_mesh.cpp",
+  "output": "tests/CMakeFiles/test_mesh.dir/test_mesh.cpp.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/tests",
+  "command": "/usr/bin/c++ -DHAVE_OPENMP -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3 -g -std=c++17 -O0 -g -fdiagnostics-color -fopenmp -o CMakeFiles/test_operator.dir/test_operator.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/tests/test_operator.cpp",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/tests/test_operator.cpp",
+  "output": "tests/CMakeFiles/test_operator.dir/test_operator.cpp.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/tests",
+  "command": "/usr/bin/c++ -DHAVE_OPENMP -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3 -g -std=c++17 -O0 -g -fdiagnostics-color -fopenmp -o CMakeFiles/test_integration.dir/test_integration.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/tests/test_integration.cpp",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/tests/test_integration.cpp",
+  "output": "tests/CMakeFiles/test_integration.dir/test_integration.cpp.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -I/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/include -I/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -g -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/src/gmock-all.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -g -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googlemock/src/gmock_main.cc",
+  "output": "_deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -I/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -I/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -g -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/src/gtest-all.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o"
+},
+{
+  "directory": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-build/googletest",
+  "command": "/usr/bin/c++  -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -g -std=c++17 -Wall -Wshadow -Wundef -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/src/gtest_main.cc",
+  "output": "_deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o"
+}
+]

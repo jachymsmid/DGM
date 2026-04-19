@@ -1,0 +1,5 @@
+if(EXISTS "/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_mesh[1]_tests.cmake")
+  include("/home/j4s4/Documents/dgm/advection_1d/debug/tests/test_mesh[1]_tests.cmake")
+else()
+  add_test(test_mesh_NOT_BUILT test_mesh_NOT_BUILT)
+endif()

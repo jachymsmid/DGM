@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/dg_solver.dir/link.d CMakeFiles/dg_solver.dir/src/main.cpp.o -o dg_solver  /usr/lib/libgomp.so /usr/lib/libpthread.a
