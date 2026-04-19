@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../headers/Mesh.hpp"
+#include "Mesh.hpp"
 
 // set tolerance
 static constexpr double TOL = 1e-12;

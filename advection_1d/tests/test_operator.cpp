@@ -1,10 +1,10 @@
 #include <functional>
 #include <gtest/gtest.h>
-#include "../headers/Mesh.hpp"
-#include "../headers/ReferenceElement.hpp"
-#include "../headers/FieldVector.hpp"
-#include "../headers/NumericalFlux.hpp"
-#include "../headers/Operator.hpp"
+#include "Mesh.hpp"
+#include "ReferenceElement.hpp"
+#include "FieldVector.hpp"
+#include "NumericalFlux.hpp"
+#include "Operator.hpp"
 #include <cmath>
 
 static constexpr double TOL_TIGHT = 1e-11;

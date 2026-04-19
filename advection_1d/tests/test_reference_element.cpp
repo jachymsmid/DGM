@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../headers/ReferenceElement.hpp"
+#include "ReferenceElement.hpp"
 
 // tolerance for floating-point comparisons
 static constexpr double TOL = 1e-12;

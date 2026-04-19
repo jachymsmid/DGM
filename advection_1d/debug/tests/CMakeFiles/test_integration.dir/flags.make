@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DHAVE_OPENMP
 
-CXX_INCLUDES = -I/home/j4s4/Documents/dgm/advection_1d/headers -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3
+CXX_INCLUDES = -I/home/j4s4/Documents/dgm/advection_1d/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include -isystem /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest -isystem /usr/include/eigen3
 
 CXX_FLAGS = -g -std=c++17 -O0 -g -fdiagnostics-color -fopenmp
 

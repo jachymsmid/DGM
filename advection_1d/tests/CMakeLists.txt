@@ -15,7 +15,7 @@ include(GoogleTest)
 # ── Helper macro: one call registers a test executable ────────────────────────
 macro(dg_add_test TEST_NAME SOURCE_FILE)
     add_executable(${TEST_NAME} ${SOURCE_FILE})
-    target_include_directories(${TEST_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/headers)
+    target_include_directories(${TEST_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/include)
     target_link_libraries(${TEST_NAME} PRIVATE
         GTest::gtest_main
         TNL::TNL

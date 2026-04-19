@@ -1,7 +1,7 @@
 CMakeFiles/dg_solver.dir/src/main.cpp.o: \
  /home/j4s4/Documents/dgm/advection_1d/src/main.cpp \
  /usr/include/stdc-predef.h \
- /home/j4s4/Documents/dgm/advection_1d/headers/FieldVector.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/FieldVector.hpp \
  /usr/include/TNL/Containers/Vector.h /usr/include/TNL/Containers/Array.h \
  /usr/include/c++/15.2.1/list \
  /usr/include/c++/15.2.1/bits/requires_hosted.h \
@@ -300,9 +300,9 @@ CMakeFiles/dg_solver.dir/src/main.cpp.o: \
  /usr/include/TNL/Containers/VectorView.hpp \
  /usr/include/TNL/Containers/detail/VectorAssignment.h \
  /usr/include/TNL/Containers/Vector.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/IO.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/Mesh.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/MeshConfig.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/IO.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/Mesh.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/MeshConfig.hpp \
  /usr/include/TNL/Meshes/DefaultConfig.h \
  /usr/include/TNL/Meshes/Topologies/SubentityVertexMap.h \
  /usr/include/TNL/Meshes/Topologies/Edge.h \
@@ -503,7 +503,7 @@ CMakeFiles/dg_solver.dir/src/main.cpp.o: \
  /usr/include/TNL/Endianness.h \
  /usr/include/TNL/Meshes/EntityShapeGroupChecker.h \
  /usr/include/TNL/Meshes/EntityShapeGroup.h \
- /home/j4s4/Documents/dgm/advection_1d/headers/ReferenceElement.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/ReferenceElement.hpp \
  /usr/include/eigen3/Eigen/Core /usr/include/eigen3/Eigen/Version \
  /usr/include/eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  /usr/include/eigen3/Eigen/src/Core/util/Macros.h \
@@ -731,6 +731,6 @@ CMakeFiles/dg_solver.dir/src/main.cpp.o: \
  /usr/include/TNL/Meshes/Writers/detail/VTKOffsetsCountGetter.h \
  /usr/include/TNL/Meshes/Writers/detail/VerticesPerEntity.h \
  /usr/include/TNL/Meshes/Writers/detail/VTKMeshEntitiesWriter.h \
- /home/j4s4/Documents/dgm/advection_1d/headers/NumericalFlux.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/Integrator.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/Operator.hpp
+ /home/j4s4/Documents/dgm/advection_1d/include/NumericalFlux.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/Integrator.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/Operator.hpp

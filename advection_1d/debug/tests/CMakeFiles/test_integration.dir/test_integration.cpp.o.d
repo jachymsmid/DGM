@@ -255,7 +255,7 @@ tests/CMakeFiles/test_integration.dir/test_integration.cpp.o: \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest-typed-test.h \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest_pred_impl.h \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest_prod.h \
- /home/j4s4/Documents/dgm/advection_1d/headers/FieldVector.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/FieldVector.hpp \
  /usr/include/TNL/Containers/Vector.h /usr/include/TNL/Containers/Array.h \
  /usr/include/c++/15.2.1/list /usr/include/c++/15.2.1/bits/stl_list.h \
  /usr/include/c++/15.2.1/bits/list.tcc /usr/include/TNL/File.h \
@@ -359,4 +359,4 @@ tests/CMakeFiles/test_integration.dir/test_integration.cpp.o: \
  /usr/include/TNL/Containers/VectorView.hpp \
  /usr/include/TNL/Containers/detail/VectorAssignment.h \
  /usr/include/TNL/Containers/Vector.hpp \
- /home/j4s4/Documents/dgm/advection_1d/headers/Integrator.hpp
+ /home/j4s4/Documents/dgm/advection_1d/include/Integrator.hpp

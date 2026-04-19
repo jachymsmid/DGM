@@ -255,8 +255,8 @@ tests/CMakeFiles/test_operator.dir/test_operator.cpp.o: \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest-typed-test.h \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest_pred_impl.h \
  /home/j4s4/Documents/dgm/advection_1d/debug/_deps/googletest-src/googletest/include/gtest/gtest_prod.h \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/Mesh.hpp \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/MeshConfig.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/Mesh.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/MeshConfig.hpp \
  /usr/include/TNL/Meshes/DefaultConfig.h \
  /usr/include/TNL/Meshes/Topologies/SubentityVertexMap.h \
  /usr/include/TNL/Meshes/Topologies/Edge.h \
@@ -541,7 +541,7 @@ tests/CMakeFiles/test_operator.dir/test_operator.cpp.o: \
  /usr/include/TNL/Endianness.h \
  /usr/include/TNL/Meshes/EntityShapeGroupChecker.h \
  /usr/include/TNL/Meshes/EntityShapeGroup.h \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/ReferenceElement.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/ReferenceElement.hpp \
  /usr/include/eigen3/Eigen/Core /usr/include/eigen3/Eigen/Version \
  /usr/include/eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
  /usr/include/eigen3/Eigen/src/Core/util/Macros.h \
@@ -762,6 +762,6 @@ tests/CMakeFiles/test_operator.dir/test_operator.cpp.o: \
  /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
  /usr/include/eigen3/Eigen/src/Eigenvalues/RealQZ.h \
  /usr/include/eigen3/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/FieldVector.hpp \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/NumericalFlux.hpp \
- /home/j4s4/Documents/dgm/advection_1d/tests/../headers/Operator.hpp
+ /home/j4s4/Documents/dgm/advection_1d/include/FieldVector.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/NumericalFlux.hpp \
+ /home/j4s4/Documents/dgm/advection_1d/include/Operator.hpp
