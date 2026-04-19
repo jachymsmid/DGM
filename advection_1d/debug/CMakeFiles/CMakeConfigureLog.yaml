@@ -4413,3 +4413,229 @@ events:
         
       exitCode: 0
 ...
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/cuda/lib/cmake/cub/cub-header-search.cmake:7 (find_path)"
+      - "/opt/cuda/lib/cmake/cub/cub-config-version.cmake:2 (include)"
+      - "/opt/cuda/lib/cmake/cccl/cccl-config.cmake:60 (find_package)"
+      - "/usr/lib/cmake/TNL/TNLConfig.cmake:101 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "path"
+    variable: "_CUB_VERSION_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cub/version.cuh"
+    candidate_directories:
+      - "/opt/cuda/include/"
+      - "/opt/cuda/include/cccl/"
+    searched_directories:
+      - "/opt/cuda/include/cub/version.cuh"
+    found: "/opt/cuda/include/cccl/"
+    search_context:
+      ENV{PATH}:
+        - "/home/j4s4/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/opt/cuda/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/home/j4s4/.local/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/cuda/lib/cmake/thrust/thrust-header-search.cmake:7 (find_path)"
+      - "/opt/cuda/lib/cmake/thrust/thrust-config-version.cmake:2 (include)"
+      - "/opt/cuda/lib/cmake/cub/cub-config.cmake:70 (find_package)"
+      - "/opt/cuda/lib/cmake/cccl/cccl-config.cmake:60 (find_package)"
+      - "/usr/lib/cmake/TNL/TNLConfig.cmake:101 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "path"
+    variable: "_THRUST_VERSION_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "thrust/version.h"
+    candidate_directories:
+      - "/opt/cuda/include/"
+      - "/opt/cuda/include/cccl/"
+    searched_directories:
+      - "/opt/cuda/include/thrust/version.h"
+    found: "/opt/cuda/include/cccl/"
+    search_context:
+      ENV{PATH}:
+        - "/home/j4s4/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/opt/cuda/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/home/j4s4/.local/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/cuda/lib/cmake/libcudacxx/libcudacxx-header-search.cmake:7 (find_path)"
+      - "/opt/cuda/lib/cmake/libcudacxx/libcudacxx-config-version.cmake:2 (include)"
+      - "/opt/cuda/lib/cmake/thrust/thrust-config.cmake:943 (find_package)"
+      - "/opt/cuda/lib/cmake/cub/cub-config.cmake:70 (find_package)"
+      - "/opt/cuda/lib/cmake/cccl/cccl-config.cmake:60 (find_package)"
+      - "/usr/lib/cmake/TNL/TNLConfig.cmake:101 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    mode: "path"
+    variable: "_libcudacxx_VERSION_INCLUDE_DIR"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "cuda/std/detail/__config"
+    candidate_directories:
+      - "/opt/cuda/include/"
+      - "/opt/cuda/include/cccl/"
+    searched_directories:
+      - "/opt/cuda/include/cuda/std/detail/__config"
+    found: "/opt/cuda/include/cccl/"
+    search_context:
+      ENV{PATH}:
+        - "/home/j4s4/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/opt/cuda/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/home/j4s4/.local/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+      CMAKE_SYSTEM_INCLUDE_PATH:
+        - "/usr/include/X11"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "/usr/share/cmake/Modules/FindMPI.cmake:1491 (_MPI_try_staged_settings)"
+      - "/usr/share/cmake/Modules/FindMPI.cmake:1814 (_MPI_check_lang_works)"
+      - "/usr/lib/cmake/TNL/TNLConfig.cmake:111 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y"
+      binary: "/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/TNL/Modules"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3e536/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_3e536.dir/build.make CMakeFiles/cmTC_3e536.dir/build
+        make[1]: Entering directory '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y'
+        Building CXX object CMakeFiles/cmTC_3e536.dir/test_mpi.cpp.o
+        /usr/bin/c++   -std=c++17 -o CMakeFiles/cmTC_3e536.dir/test_mpi.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y/test_mpi.cpp
+        Linking CXX executable cmTC_3e536
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3e536.dir/link.txt --verbose=1
+        /usr/bin/c++ -Wl,-rpath -Wl,/usr/lib -Wl,--enable-new-dtags CMakeFiles/cmTC_3e536.dir/test_mpi.cpp.o -o cmTC_3e536  /usr/lib/libmpi.so
+        make[1]: Leaving directory '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-5IT25y'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/FindMPI.cmake:1447 (try_compile)"
+      - "/usr/share/cmake/Modules/FindMPI.cmake:1841 (_MPI_try_staged_settings)"
+      - "/usr/lib/cmake/TNL/TNLConfig.cmake:111 (find_package)"
+      - "CMakeLists.txt:11 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx"
+      binary: "/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/usr/lib/cmake/TNL/Modules"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_368b7/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_368b7.dir/build.make CMakeFiles/cmTC_368b7.dir/build
+        make[1]: Entering directory '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx'
+        Building CXX object CMakeFiles/cmTC_368b7.dir/test_mpi.cpp.o
+        /usr/bin/c++   -std=c++17 -o CMakeFiles/cmTC_368b7.dir/test_mpi.cpp.o -c /home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx/test_mpi.cpp
+        Linking CXX executable cmTC_368b7
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_368b7.dir/link.txt --verbose=1
+        /usr/bin/c++ -Wl,-rpath -Wl,/usr/lib -Wl,--enable-new-dtags CMakeFiles/cmTC_368b7.dir/test_mpi.cpp.o -o cmTC_368b7  /usr/lib/libmpi.so
+        make[1]: Leaving directory '/home/j4s4/Documents/dgm/advection_1d/debug/CMakeFiles/CMakeScratch/TryCompile-2wKUdx'
+        
+      exitCode: 0
+...
