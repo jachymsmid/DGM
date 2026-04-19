@@ -59,20 +59,20 @@ public:
     Dr_ = buildDMatrix_(V_, Vr_);
     LIFT_ = buildLIFT_(V_);
 
-#if DEBUG
-    std::cout << "Checking Vandermonde matrix" << std::endl;
-    checkMatrixNaN_(V_);
-    std::cout << "Checking derivative of Vandermonde matrix" << std::endl;
-    checkMatrixNaN_(Vr_);
-    std::cout << "Checking Mass matrix" << std::endl;
-    checkMatrixNaN_(M_);
-    std::cout << "Checking differentiation matrix for weak formulation" << std::endl;
-    checkMatrixNaN_(Drw_);
-    std::cout << "Checking differentiation matrix for strong formulation" << std::endl;
-    checkMatrixNaN_(Dr_);
-    std::cout << "Checking LIFT matrix" << std::endl;
-    checkMatrixNaN_(LIFT_);
-#endif
+    #if DEBUG
+      std::cout << "Checking Vandermonde matrix" << std::endl;
+      checkMatrixNaN_(V_);
+      std::cout << "Checking derivative of Vandermonde matrix" << std::endl;
+      checkMatrixNaN_(Vr_);
+      std::cout << "Checking Mass matrix" << std::endl;
+      checkMatrixNaN_(M_);
+      std::cout << "Checking differentiation matrix for weak formulation" << std::endl;
+      checkMatrixNaN_(Drw_);
+      std::cout << "Checking differentiation matrix for strong formulation" << std::endl;
+      checkMatrixNaN_(Dr_);
+      std::cout << "Checking LIFT matrix" << std::endl;
+      checkMatrixNaN_(LIFT_);
+    #endif
 
   }
 

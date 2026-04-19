@@ -15,7 +15,7 @@ using Index = int;
 
 int main(int argc, char* argv[])
 {
-    const int  K = 10; // number of elements
+    const int  K = 20; // number of elements
     const int N = 3; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0; // final time
@@ -28,11 +28,11 @@ int main(int argc, char* argv[])
     //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
 
     // Burger's equation
-    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
-    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
-    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return a; };
+    // auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(-1.0, 1.0, K);
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::RoeFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
     // 2-dimensional parallel for
-    TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
+    TNL::Algorithms::parallelFor< Device >(begin, end, abs_sin_init);
 
     // -------------------------- more setup ----------------------------------
     // find delta x_min for time step computation

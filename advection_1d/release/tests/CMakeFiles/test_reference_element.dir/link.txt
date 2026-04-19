@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/test_reference_element.dir/link.d CMakeFiles/test_reference_element.dir/test_reference_element.cpp.o -o test_reference_element  ../lib/libgtest_main.a ../lib/libgtest.a /usr/lib/libgomp.so /usr/lib/libpthread.a

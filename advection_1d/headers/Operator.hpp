@@ -91,16 +91,11 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         flocal[i] = physFlux_(uk[i]);
-        if ( std::isnan(flocal[i]) ) throw std::invalid_argument( "NaN encountered in physical flux computation");
+        #if DEBUG
+          if ( std::isnan(flocal[i]) ) throw std::invalid_argument( "NaN encountered in physical flux computation");
+        #endif
       }
 
-      for (Index i = 0; i < Np; ++i)
-      {
-        for (Index j = 0; j < Np; ++j)
-        {
-           if ( std::isnan(Dw(i,j)) ) throw std::invalid_argument( "NaN encountered in differnetiation matrix for weak formulation");
-        }
-      }
       // --- volume term ---
       // vol = Dr * flocal
       for (Index i = 0; i < Np; ++i)
@@ -109,7 +104,9 @@ public:
         for (Index j = 0; j < Np; ++j)
         {
           s += Dw(i,j) * flocal[j];
-          if ( std::isnan(s) ) throw std::invalid_argument( "NaN encountered in volume term computation");
+          #if DEBUG
+            if ( std::isnan(s) ) throw std::invalid_argument( "NaN encountered in volume term computation");
+          #endif
         }
         vol[i] = s;
       }
@@ -135,7 +132,9 @@ public:
         }
         // fluxJump[0]  = fStar
         fluxJump[0]  = flux_.compute(u_int, u_ext, mesh_.leftNormal());
-        if ( std::isnan(fluxJump[0]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (left face)");
+        #if DEBUG
+          if ( std::isnan(fluxJump[0]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (left face)");
+        #endif
       }
 
       // right face
@@ -159,7 +158,9 @@ public:
         }
         // numerical flux f*(u-, u+)
         fluxJump[1] = flux_.compute(u_int, u_ext, mesh_.rightNormal());
-        if ( std::isnan(fluxJump[1]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (right face)");
+        #if DEBUG
+          if ( std::isnan(fluxJump[1]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (right face)");
+        #endif
       }
 
       // --- assemble rhs ---
@@ -169,7 +170,9 @@ public:
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
         rk[i] = Jinv * ( vol[i] + lift);
-        if ( std::isnan(rk[i]) ) throw std::invalid_argument( "NaN encountered in RHS computation");
+        #if DEBUG
+          if ( std::isnan(rk[i]) ) throw std::invalid_argument( "NaN encountered in RHS computation");
+        #endif
       }
     }
   }
