@@ -19,6 +19,8 @@
 #include <TNL/Matrices/MatrixBase.h>
 #include <cmath>
 #include <Eigen/Dense>
+#include <iostream>
+#include <limits>
 #include <stdexcept>
 
 namespace DG {
@@ -60,18 +62,18 @@ public:
     LIFT_ = buildLIFT_(V_);
 
     #if DEBUG
-      std::cout << "Checking Vandermonde matrix" << std::endl;
-      checkMatrixNaN_(V_);
-      std::cout << "Checking derivative of Vandermonde matrix" << std::endl;
-      checkMatrixNaN_(Vr_);
-      std::cout << "Checking Mass matrix" << std::endl;
-      checkMatrixNaN_(M_);
-      std::cout << "Checking differentiation matrix for weak formulation" << std::endl;
-      checkMatrixNaN_(Drw_);
-      std::cout << "Checking differentiation matrix for strong formulation" << std::endl;
-      checkMatrixNaN_(Dr_);
-      std::cout << "Checking LIFT matrix" << std::endl;
-      checkMatrixNaN_(LIFT_);
+      auto printMatrixDiagnostics = [this](const char* name, const Matrix& matrix)
+      {
+        std::cout << name << " condition number: " << conditionNumber_(matrix) << std::endl;
+        checkMatrixNaN_(matrix);
+      };
+
+      printMatrixDiagnostics("Vandermonde matrix", V_);
+      printMatrixDiagnostics("Derivative of Vandermonde matrix", Vr_);
+      printMatrixDiagnostics("Mass matrix", M_);
+      printMatrixDiagnostics("Differentiation matrix for weak formulation", Drw_);
+      printMatrixDiagnostics("Differentiation matrix for strong formulation", Dr_);
+      printMatrixDiagnostics("LIFT matrix", LIFT_);
     #endif
 
   }
@@ -238,19 +240,6 @@ private:
     w[0] = Real(2) / (N * (N + 1));
     w[N] = w[0];
 
-
-    // TODO: complete this
-    // also verify this!
-    // switch (n)
-    // {
-    //   case 3:
-    //     r[1] = 0.0;
-    //     w[1] = 4.0/3.0;
-    //     break;
-    // }
-
-    // TODO: verify this code
-    // Interior nodes via Newton-Raphson method
     for (Index k = 1; k < N ; k++)
     {
       // Initial guess: Chebyshev-like
@@ -398,6 +387,27 @@ private:
 
     auto matrixView = matrix.getConstView();
     matrixView.forAllElements(check);
+  }
+
+  Real conditionNumber_(const Matrix& matrix) const
+  {
+    const Eigen::MatrixXd eigenMatrix = tnlToEigen(matrix);
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(eigenMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    const auto& singularValues = svd.singularValues();
+
+    if (singularValues.size() == 0)
+    {
+      return Real(0);
+    }
+
+    const Real maxSingular = singularValues.maxCoeff();
+    const Real minSingular = singularValues.minCoeff();
+
+    if (minSingular <= std::numeric_limits<Real>::epsilon())
+    {
+      return std::numeric_limits<Real>::infinity();
+    }
+    return maxSingular / minSingular;
   }
 
   Index  N_, Np_;
