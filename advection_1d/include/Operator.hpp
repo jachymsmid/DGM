@@ -129,7 +129,7 @@ public:
           u_ext = u.elementPtr(mesh_.leftCellOfFace(k))[Np-1];
         }
         // fluxJump[0]  = fStar
-        fluxJump[0]  = flux_.compute(u_int, u_ext, mesh_.leftNormal());
+        fluxJump[0]  = mesh_.leftNormal() * flux_.compute(u_int, u_ext, mesh_.leftNormal());
         #if DEBUG
           if ( std::isnan(fluxJump[0]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (left face)");
         #endif
@@ -155,7 +155,7 @@ public:
           u_ext = u.elementPtr(mesh_.rightCellOfFace(k+1))[0];
         }
         // numerical flux f*(u-, u+)
-        fluxJump[1] = flux_.compute(u_int, u_ext, mesh_.rightNormal());
+        fluxJump[1] = mesh_.rightNormal() * flux_.compute(u_int, u_ext, mesh_.rightNormal());
         #if DEBUG
           if ( std::isnan(fluxJump[1]) ) throw std::invalid_argument( "NaN encountered in numerical flux computation (right face)");
         #endif
@@ -167,7 +167,7 @@ public:
       for (Index i = 0; i < Np; ++i)
       {
         Real lift = LIFT(i,0)*fluxJump[0] + LIFT(i,1)*fluxJump[1];
-        rk[i] = Jinv * ( vol[i] + lift);
+        rk[i] = Jinv * ( vol[i] - lift);
         #if DEBUG
           if ( std::isnan(rk[i]) ) throw std::invalid_argument( "NaN encountered in RHS computation");
         #endif
