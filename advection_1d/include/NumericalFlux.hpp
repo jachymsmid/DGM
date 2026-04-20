@@ -79,14 +79,18 @@ template< class Real >
  */
 struct LaxFriedrichsFlux : NumericalFlux< Real >
 {
-  explicit LaxFriedrichsFlux( std::function< Real( Real u ) > advection_speed, std::function< Real( Real u ) > physical_flux ) : advection_speed_(std::move(advection_speed)), physical_flux_(std::move(physical_flux)) {}
+  explicit LaxFriedrichsFlux(
+      std::function< Real( Real u ) > advection_speed,
+      std::function< Real( Real u ) > physical_flux ) :
+      advection_speed_(std::move(advection_speed)),
+      physical_flux_(std::move(physical_flux)) {}
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
-    // alpha is an estimate of the maximum wave speed across the interface
-    Real alpha = TNL::argAbsMax(advection_speed_(u_minus), advection_speed_(u_plus));
+    // C is an estimate of the maximum wave speed across the interface
+    Real C = TNL::argAbsMax(advection_speed_(u_minus), advection_speed_(u_plus));
     return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus))
-           - Real(0.5) * alpha * n_outward * (u_plus - u_minus);
+           + Real(0.5) * C * n_outward * (u_minus - u_plus);
   }
 
   std::function< Real( Real u ) > advection_speed_;
@@ -106,7 +110,14 @@ struct GodunovFlux : NumericalFlux< Real >
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
-    return ( u_minus < u_plus ) ? n_outward * TNL::min(physical_flux_(u_minus), physical_flux_(u_plus)) : n_outward * TNL::max(physical_flux_(u_minus), physical_flux_(u_plus));
+    if ( n_outward * u_minus < n_outward * u_plus )
+    {
+      return TNL::min(physical_flux_(u_minus), physical_flux_(u_plus));
+    }
+    else
+    {
+      return TNL::max(physical_flux_(u_minus), physical_flux_(u_plus));
+    }
   }
 
   // data members
@@ -127,8 +138,8 @@ struct RoeFlux : NumericalFlux< Real >
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
-    Real C = (advection_speed_(u_minus) + advection_speed_(u_plus))/2;
-    return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus)) - Real(0.5) * C * n_outward * (u_plus - u_minus);
+    Real alpha = (TNL::abs(advection_speed_(u_minus)) + TNL::abs(advection_speed_(u_plus)))/2;
+    return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus)) + Real(0.5) * alpha * n_outward * (u_minus - u_plus);
   }
 
   // data members

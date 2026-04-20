@@ -1,3 +1,4 @@
-/build
-/output
+release/
+debug/
+output/
 cmake_test_discovery*.json

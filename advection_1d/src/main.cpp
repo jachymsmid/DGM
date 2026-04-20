@@ -13,10 +13,10 @@ using Device  = TNL::Devices::Host;
 using Real = double;
 using Index = int;
 
-int main(int argc, char* argv[])
+int main()
 {
-    const int  K = 10; // number of elements
-    const int N = 3; // polynomial order of approximation
+    const int  K = 12; // number of elements
+    const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0; // final time
     const Real CFL = 0.4;
@@ -28,11 +28,11 @@ int main(int argc, char* argv[])
     //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
 
     // Burger's equation
-    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
-    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
-    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return a; };
+    // auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(-1.0, 1.0, K);
@@ -41,15 +41,13 @@ int main(int argc, char* argv[])
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::GodunovFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::RoeFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
 
     // construct field vector
     DG::FieldVector<Real> u(mesh.numElements(), ref.numDOF());
-
-    int Np = ref.numDOF();
 
     // -------------------- initial conditions --------------------------------
 
@@ -61,15 +59,31 @@ int main(int argc, char* argv[])
       Real xL = mesh.leftVertex(i.x());
       Real h = mesh.elementSize(i.x());
       Real r = ref.nodes()[i.y()];
-      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::sin((xL + (r + 1.0) * 0.5 * h) * PI);
+      u_view[ i.y() + i.x() * ref.numDOF() ] = - TNL::sin((xL + (r + 1.0) * 0.5 * h) * PI) + 1.f;
     };
 
-    auto abs_sin_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& i  ) mutable
+    auto shock_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx ) mutable
     {
-      Real xL = mesh.leftVertex(i.x());
-      Real h = mesh.elementSize(i.x());
-      Real r = ref.nodes()[i.y()];
-      u_view[ i.y() + i.x() * ref.numDOF() ] = TNL::abs(TNL::sin((xL + (r + 1.0) * 0.5 * h) * PI));
+      if (idx.x() < int(mesh.numElements()/3) || idx.x() > int(mesh.numElements()/2))
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 1.0;
+      }
+      else
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 0.0;
+      }
+    };
+
+    auto rarefaction_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx ) mutable
+    {
+      if (idx.x() < int(mesh.numElements()/3) || idx.x() > int(mesh.numElements()/2))
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 0.0;
+      }
+      else
+      {
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = 1.0;
+      }
     };
 
     auto saw_init = [=] __cuda_callable__ ( const TNL::Containers::StaticArray< 2, int >& idx) mutable
@@ -92,11 +106,11 @@ int main(int argc, char* argv[])
 
       if ( idx.x() < int(mesh.numElements()/4) )
       {
-        u_view[ idx.y() + idx.x() * ref.numDOF() ] = (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4) );
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4)) + 2.0;
       }
       else if ( idx.x() >= int(mesh.numElements()/4) && idx.x() < int(mesh.numElements()/2) )
       {
-        u_view[ idx.y() + idx.x() * ref.numDOF() ] = - (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4) ) + 2;
+        u_view[ idx.y() + idx.x() * ref.numDOF() ] = - (xL + (r + 1.0) * 0.5 * h)/( h * int(mesh.numElements()/4) );
       }
       else
       {
@@ -109,7 +123,7 @@ int main(int argc, char* argv[])
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
     // 2-dimensional parallel for
-    TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
+    TNL::Algorithms::parallelFor< Device >(begin, end, cone_init);
 
     // -------------------------- more setup ----------------------------------
     // find delta x_min for time step computation
@@ -145,7 +159,14 @@ int main(int argc, char* argv[])
       }
     }
 
-    Real dt = DG::ERK<Real>::computeDt(x_min, max_speed, N, CFL);
+    Real dt = DG::SSPRK<Real>::computeDt(x_min, max_speed, N, CFL);
+
+    std::cout << "Starting simulation with: " << std::endl;
+    std::cout << "\tK = " << K << std::endl;
+    std::cout << "\tN = " << N << std::endl;
+    std::cout << "\tx_min = " << x_min << std::endl;
+    std::cout << "\tdt = " << dt << std::endl;
+    std::cout << "\tmax advection speed = " << max_speed << std::endl;
 
     // write initial condition
     int frame = 0;
@@ -161,12 +182,6 @@ int main(int argc, char* argv[])
     rk.integrate(u, 0.0, Tf, dt);
 
     // output
-    std::cout << "Starting simulation with: " << std::endl;
-    std::cout << "\tK = " << K << std::endl;
-    std::cout << "\tN = " << N << std::endl;
-    std::cout << "\tx_min = " << x_min << std::endl;
-    std::cout << "\tdt = " << dt << std::endl;
-    std::cout << "\tmax advection speed = " << max_speed << std::endl;
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
     std::cout << "Done. Written " << frame << " frames.\n";
 }

@@ -148,7 +148,7 @@ This is a compilation of functions that work as input output for the solver.
 - `writeTimeSeriesVTK(const Mesh mesh, const Ref ref, const string base_name, int frameIndex, Real t, const string fieldname)` : outputs multiple VTK files
 
 # Compilation notes
-**Configure with tests enabled (default)**
+**Configure with tests enabled (Debug only)**
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 ```

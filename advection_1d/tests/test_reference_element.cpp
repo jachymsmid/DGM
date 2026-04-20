@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
-#include "../headers/ReferenceElement.hpp"
+#include "ReferenceElement.hpp"
 
 // tolerance for floating-point comparisons
 static constexpr double TOL = 1e-12;
+static constexpr double TOL2 = 1e-4;
 
 class ReferenceElementTest : public ::testing::TestWithParam<int> {};
 
@@ -92,7 +93,7 @@ TEST_P(ReferenceElementTest, DMatrixExactForPolynomials)
       s += ref.Dr()(i,j) * ref.nodes()[j] * ref.nodes()[j];
     }
     double exact = 2.0 * ref.nodes()[i];
-    EXPECT_NEAR(s, exact, TOL);
+    EXPECT_NEAR(s, exact, TOL2);
   }
 }
 

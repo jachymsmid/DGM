@@ -15,7 +15,7 @@ find_package(Eigen3 REQUIRED)
 add_executable(dg_solver src/main.cpp)
 
 # DGM headers live in headers/
-target_include_directories(dg_solver PRIVATE headers)
+target_include_directories(dg_solver PRIVATE include)
 
 # link TNL and Eigen3
 target_link_libraries(dg_solver PRIVATE TNL::TNL Eigen3::Eigen)
@@ -23,13 +23,11 @@ target_link_libraries(dg_solver PRIVATE TNL::TNL Eigen3::Eigen)
 # compile options: Release, Debug, Diagnostics
 target_compile_options(dg_solver PRIVATE
     $<$<CONFIG:Release>:-O3 -march=native>
-    $<$<CONFIG:Debug>:  -O0 -g -DDEBUG>
-    $<$<CONFIG:Diagnostics>:  -O3 -march=native -DDIAGNOSTICS >
+    $<$<CONFIG:Debug>:-O0 -g -DDEBUG -Wall -Wextra -Wconversion -Wshadow>
 )
 
 # tests
-option(BUILD_TESTS "Build unit tests" ON)
-if(BUILD_TESTS )
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   enable_testing()
   add_subdirectory(tests)
 endif()
