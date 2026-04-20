@@ -87,10 +87,10 @@ struct LaxFriedrichsFlux : NumericalFlux< Real >
 
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
-    // alpha is an estimate of the maximum wave speed across the interface
-    Real alpha = TNL::argAbsMax(advection_speed_(u_minus), advection_speed_(u_plus));
-    return Real(0.5) * (physical_flux_(u_minus) - physical_flux_(u_plus))
-           - Real(0.5) * alpha * n_outward * (u_minus - u_plus);
+    // C is an estimate of the maximum wave speed across the interface
+    Real C = TNL::argAbsMax(advection_speed_(u_minus), advection_speed_(u_plus));
+    return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus))
+           + Real(0.5) * C * n_outward * (u_minus - u_plus);
   }
 
   std::function< Real( Real u ) > advection_speed_;
@@ -139,7 +139,7 @@ struct RoeFlux : NumericalFlux< Real >
   Real compute(Real u_minus, Real u_plus, Real n_outward) const override
   {
     Real alpha = (TNL::abs(advection_speed_(u_minus)) + TNL::abs(advection_speed_(u_plus)))/2;
-    return Real(0.5) * (physical_flux_(u_minus) - physical_flux_(u_plus)) - Real(0.5) * alpha * n_outward * (u_minus - u_plus);
+    return Real(0.5) * (physical_flux_(u_minus) + physical_flux_(u_plus)) + Real(0.5) * alpha * n_outward * (u_minus - u_plus);
   }
 
   // data members

@@ -17,7 +17,7 @@ int main()
 {
     const int  K = 12; // number of elements
     const int N = 4; // polynomial order of approximation
-    const Real a = 2.0; // advection speed
+    const Real a = 1.0; // advection speed
     const Real Tf = 2.0; // final time
     const Real CFL = 0.4;
     const Real PI = TNL::pi;
@@ -28,11 +28,11 @@ int main()
     //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
 
     // Burger's equation
-    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
-    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
-    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return a; };
+    // auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(-1.0, 1.0, K);
@@ -41,7 +41,7 @@ int main()
     DG::ReferenceElement<Real> ref(N);
 
     // construct numerical flux: UpwindFlux, LaxFriedrichsFlux, GodunovFlux, RoeFlux
-    DG::LaxFriedrichsFlux<Real> numerical_flux( advection_speed, physical_flux );
+    DG::RoeFlux<Real> numerical_flux( advection_speed, physical_flux );
 
     // construct rhs operator
     DG::Operator<Real> op(mesh, ref, numerical_flux, physical_flux);
