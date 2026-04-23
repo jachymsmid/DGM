@@ -11,7 +11,7 @@
 
 #include <TNL/Math.h>
 #include <functional>
-namespace DG {
+namespace TNL::DGM {
 
 // ---------------------- Base numerical flux class ---------------------------
 // Abstract base (crtp-free for simplicity; use std::function or templates)

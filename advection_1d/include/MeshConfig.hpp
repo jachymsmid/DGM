@@ -14,7 +14,7 @@
 #include <TNL/Meshes/MeshBuilder.h>
 #include <TNL/Containers/StaticArray.h>
 
-namespace DG {
+namespace TNL::DGM {
 
 // inherits from DefaultConfig
 /**

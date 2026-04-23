@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include <iomanip>
 
-namespace DG {
+namespace TNL::DGM {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  writeToVTK
