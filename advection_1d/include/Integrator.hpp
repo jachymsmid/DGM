@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace DG {
+namespace TNL::DGM {
 
 //  callback type: called after every accepted step with (t, u, step_index).
 template<typename Real, typename Device, typename Index>

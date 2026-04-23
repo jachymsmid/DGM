@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <cmath>
 
-namespace DG {
+namespace TNL::DGM {
 
 template
 <
