@@ -94,3 +94,53 @@ TEST(UniformMeshTest, Normals)
     EXPECT_DOUBLE_EQ(mesh.leftNormal(),  -1.0);
     EXPECT_DOUBLE_EQ(mesh.rightNormal(), +1.0);
 }
+
+// ── Error handling ────────────────────────────────────────────────────────────
+TEST(UniformMeshTest, ZeroElementsThrows)
+{
+    EXPECT_THROW(DG::Mesh<double>::uniform(0.0, 1.0, 0), std::invalid_argument);
+}
+
+// ── Min/max element size ───────────────────────────────────────────────────────
+TEST(UniformMeshTest, MinMaxElementSizeUniform)
+{
+    const int K = 8;
+    auto mesh = DG::Mesh<double>::uniform(0.0, 2.0, K);
+    const double h = 2.0 / K;
+    EXPECT_NEAR(mesh.minElementSize(), h, TOL);
+    EXPECT_NEAR(mesh.maxElementSize(), h, TOL);
+}
+
+// ── Min/max Jacobian ──────────────────────────────────────────────────────────
+TEST(UniformMeshTest, MinMaxJacobian)
+{
+    const int K = 6;
+    auto mesh = DG::Mesh<double>::uniform(0.0, 3.0, K);
+    const double J = 0.5 * 3.0 / K;
+    EXPECT_NEAR(mesh.minJacobian(), J, TOL);
+    EXPECT_NEAR(mesh.maxJacobian(), J, TOL);
+}
+
+// ── faceCoord ─────────────────────────────────────────────────────────────────
+TEST(UniformMeshTest, FaceCoordinates)
+{
+    const int K = 4;
+    auto mesh = DG::Mesh<double>::uniform(0.0, 1.0, K);
+    for (int f = 0; f <= K; ++f)
+        EXPECT_NEAR(mesh.faceCoord(f), static_cast<double>(f) / K, TOL)
+            << "faceCoord wrong at face " << f;
+}
+
+// ── Single-element mesh ───────────────────────────────────────────────────────
+TEST(UniformMeshTest, SingleElementMesh)
+{
+    auto mesh = DG::Mesh<double>::uniform(-1.0, 1.0, 1);
+    EXPECT_EQ(mesh.numElements(), 1);
+    EXPECT_EQ(mesh.numFaces(),    2);
+    EXPECT_NEAR(mesh.leftVertex(0),  -1.0, TOL);
+    EXPECT_NEAR(mesh.rightVertex(0),  1.0, TOL);
+    EXPECT_NEAR(mesh.elementSize(0),  2.0, TOL);
+    EXPECT_NEAR(mesh.jacobian(0),     1.0, TOL);
+    EXPECT_TRUE(mesh.isBoundaryFace(0));
+    EXPECT_TRUE(mesh.isBoundaryFace(1));
+}
