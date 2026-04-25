@@ -86,19 +86,29 @@ But now we have a problem, because $u$ is double valued at the boundaries (of ea
 $
 integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f^*(u) dif x // + integral_(D^k) v (s)(x,t) dif x
 $
-The flux must be consistent i.e. $f^* (a,a) = f (a).$ One such numerical flux could be the local Lax-Friedrichs numerical flux.
+The flux must be consistent i.e. $f^* (a,a) = f (a).$
+
+*Lax-Friedrichs flux*
+
+One such numerical flux could be the local Lax-Friedrichs numerical flux.
 $
-f^* = brace.l.stroked f(u) brace.r.stroked + C/2 bracket.l.stroked u bracket.r.stroked
+f^* (u^-, u^+) = brace.l.stroked f(u) brace.r.stroked + C/2 bracket.l.stroked u bracket.r.stroked = (f(u^-) + f(u^+))/2 + C/2 bold(n) (u^- - u^+) 
 $
 where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
 $
-C = max_i lambda_i = rho (f_(u)) = rho ((partial f)/(partial u))
+C = max_(a lt.eq s lt.eq b) (max_i lambda_i (s)) = rho (f_(u) (s)) = rho ((partial f (s))/(partial u))
 $
 
-Or the upwind flux
+*Upwind flux*
+
 $
-...
+f^* (u^-, u^+) = cases(f(u^-) quad &: quad bold(n) C > 0,f(u^+) quad &: quad bold(n) C < 0)
 $
+where $C = f(u^-)$ i.e. the local advection speed.
+
+*Godunov flux*
+
+*Roe flux*
 
 == Basis functions
 
@@ -133,12 +143,11 @@ where
 $
 &M_(i j)^k = integral_(D^k) l_i (x) l_j (x) dif x " - the mass matrix"\
 &S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stifness matrix"\
-&cal(E) = cases(-&1 quad : quad "lower right corner",
-                &1 quad : quad "upper left corner",
+&cal(E)_(i j) = cases(&1 quad : quad "upper left corner and lower right corner",
                 &0 quad : quad "otherwise")\
 &(bold(u)_h)_j^k = u_h (x_j^k, t) " - the vector of unknowns"\
 &(bold(f)_h)_j^k " - the physical flux vector"\
-&bold(f)^k_* = (f^*(x_L^k), f^*(x_R^k))^T "- numerical flux at endpoints"
+&bold(f)^k_* = (bold(n)_L f^*(x_L^k), bold(n)_R f^*(x_R^k))^T "- numerical flux at endpoints"
 $
 This matrix equation is the semi-discrete form of the PDE. We will discuss all the local operatros in more detail later.
 
@@ -257,9 +266,13 @@ We call this matrix $D_w$, differentiation matrix for the weak form.
 
 === Surface integral
 This operator is responsible of extracting the surface terms of the form
-$ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x =  f^* bar.v_(x_R) bold(e)_n - u^* bar.v_(x_L) bold(e)_1, $
+$
+integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x =  (hat(bold(n)) f^*) bar.v_(x_R) bold(e)_n + (hat(bold(n)) f^*) bar.v_(x_L) bold(e)_1,
+$
 where $bold(e)_i$ is a zero vector with $1$ at index $i$. We can rewrite this using a $N_p times 2$ matrix $cal(E)$ that is zero except for upper right corener that is $1$ and the lower left corner that is $-1$ like so
-$ integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x = cal(E) dot.op (f^*_R, f^*_L)^T $
+$
+integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x = cal(E) dot.op (f^*_R, f^*_L)^T
+$
 Again, to recover the semi-discrete form we multiply by the inverse mass matrix from the left. We call this matrix the LIFT.
 $
 "LIFT" = M^(-1) cal(E) = cal(V) cal(V)^T cal(E)
