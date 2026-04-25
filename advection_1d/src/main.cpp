@@ -194,12 +194,13 @@ int main()
     const int L = N / 2;
     const int M = N - L;
     DG::PadeLegendreSolver<Real> pade_solver(ref, L, M);
-    DG::FieldVector<Real> u_pade = pade_solver.reconstruct(u);
 
     std::cout << "Padé–Legendre [" << L << "/" << M << "] reconstruction done.\n";
 
-    // Write reconstructed solution to a separate VTK series for comparison
+    // Write reconstructed solution on a finer equidistant grid (4×Np points
+    // per element) for smooth visualization in ParaView.
     int pade_frame = 0;
-    DG::writeTimeSeriesVTK(mesh, ref, u_pade, "output/pade_output", pade_frame++, Tf);
+    DG::writePadeTimeSeriesVTK(mesh, ref, u, pade_solver,
+                                "output/pade_output", pade_frame++, Tf);
     std::cout << "Written " << pade_frame << " Padé frame(s).\n";
 }
