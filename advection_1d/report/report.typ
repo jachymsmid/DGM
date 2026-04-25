@@ -56,7 +56,7 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 The general one dimensional advection equation is of the following form:
 $
 (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) =
-bold(s)(x,t) quad [x,t] in Omega times RR^+,
+bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+
 $
 where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$
 is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$
@@ -85,7 +85,7 @@ $
 where $hat(bold(n))$ is a unit outward normal. Notice that we express the term
 $[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form
 $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$,
-this will later help us when moving to higher dimensions.
+this will later help us when moving to multiple dimensions.
 
 = Discontinous Galerkin Method
 
@@ -155,8 +155,8 @@ $
 
 == Basis functions
 
-To approximate the solution we assume that it can be expressed as a
-direct sum of local piecewise polynomial solutions, local here refers to elements
+We assume that the approximate solution $bold(u)_h (x,t)$ can be expressed as a
+direct sum of local piecewise polynomial solutions
 $
 u (x,t) approx u_h (x,t) = plus.o.big_(k=1)^K u_h^k (x^k, t).
 $
@@ -484,7 +484,6 @@ The last figure shows a beautiful example of Gibb's phenomenon, that stems from 
 
 // == Filters
 // When approximating a discontinuous function using a polynomial we can observe the well known Gibbs phenomenon.
-
 // = Nonlinearity
 //
 // == Limiters
