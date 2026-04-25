@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
+#include "IO.hpp"
+#include "Mesh.hpp"
 #include "PadeLegendre.hpp"
 #include <cmath>
+#include <fstream>
+#include <sstream>
 #include <vector>
 
 // ── Tolerances ────────────────────────────────────────────────────────────────
@@ -276,4 +280,109 @@ TEST(PadeLegendreSolverTest, DenominatorPositiveForSmoothFunction)
                  * DG::ReferenceElement<double>::legendreP(m, x);
         EXPECT_GT(Q, 0.0) << "Denominator should be positive at x=" << x;
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  writePadeVTK: output has the correct number of points (K * refineFactor * Np)
+// ─────────────────────────────────────────────────────────────────────────────
+TEST(WritePadeVTKTest, CorrectPointCount)
+{
+    const int K = 4, N = 4;
+    const int refineFactor = 4;
+
+    DG::Mesh<double>             mesh   = DG::Mesh<double>::uniform(0.0, 1.0, K);
+    DG::ReferenceElement<double> ref(N);
+    DG::PadeLegendreSolver<double> solver(ref, N / 2, N - N / 2);
+
+    const int Np = ref.numDOF();
+    DG::FieldVector<double> u(K, Np);
+    for (int k = 0; k < K; ++k)
+        for (int i = 0; i < Np; ++i)
+            u.elementPtr(k)[i] = std::sin(ref.nodes()[i]);
+
+    const std::string tmp = "/tmp/test_pade_vtk_points.vtk";
+    ASSERT_NO_THROW(DG::writePadeVTK(mesh, ref, u, solver, tmp));
+
+    // Count how many coordinate lines appear after "POINTS N double"
+    std::ifstream fin(tmp);
+    ASSERT_TRUE(fin.is_open()) << "VTK file was not created";
+
+    const int expectedPts = K * refineFactor * Np;
+    std::string line;
+    int pointsFound = 0;
+    bool inPoints = false;
+    while (std::getline(fin, line)) {
+        if (line.rfind("POINTS", 0) == 0) {
+            // Extract declared count
+            int declared = 0;
+            std::istringstream ss(line);
+            std::string tok;
+            ss >> tok >> declared;
+            EXPECT_EQ(declared, expectedPts) << "POINTS header count mismatch";
+            inPoints = true;
+            continue;
+        }
+        if (inPoints) {
+            if (line.empty() || line.rfind("CELLS", 0) == 0) break;
+            ++pointsFound;
+        }
+    }
+    EXPECT_EQ(pointsFound, expectedPts) << "Actual point rows mismatch";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  writePadeVTK: output contains only finite values
+// ─────────────────────────────────────────────────────────────────────────────
+TEST(WritePadeVTKTest, AllValuesFinite)
+{
+    const int K = 3, N = 4;
+
+    DG::Mesh<double>             mesh   = DG::Mesh<double>::uniform(-1.0, 1.0, K);
+    DG::ReferenceElement<double> ref(N);
+    DG::PadeLegendreSolver<double> solver(ref, 2, 2);
+
+    const int Np = ref.numDOF();
+    DG::FieldVector<double> u(K, Np);
+    for (int k = 0; k < K; ++k)
+        for (int i = 0; i < Np; ++i)
+            u.elementPtr(k)[i] = std::exp(ref.nodes()[i]);
+
+    const std::string tmp = "/tmp/test_pade_vtk_finite.vtk";
+    ASSERT_NO_THROW(DG::writePadeVTK(mesh, ref, u, solver, tmp));
+
+    // Scan POINT_DATA section and check every scalar value is finite
+    std::ifstream fin(tmp);
+    ASSERT_TRUE(fin.is_open());
+
+    std::string line;
+    bool inData = false;
+    int scalarCount = 0;
+    while (std::getline(fin, line)) {
+        if (line.rfind("LOOKUP_TABLE", 0) == 0) { inData = true; continue; }
+        if (!inData || line.empty()) continue;
+        double val = 0.0;
+        std::istringstream ss(line);
+        ss >> val;
+        EXPECT_TRUE(std::isfinite(val))
+            << "Non-finite scalar at line: " << line;
+        ++scalarCount;
+    }
+    EXPECT_GT(scalarCount, 0) << "No scalar data found in VTK file";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  writePadeVTK: throws when refineFactor < 1
+// ─────────────────────────────────────────────────────────────────────────────
+TEST(WritePadeVTKTest, ThrowsForZeroRefineFactor)
+{
+    DG::Mesh<double>             mesh   = DG::Mesh<double>::uniform(0.0, 1.0, 2);
+    DG::ReferenceElement<double> ref(4);
+    DG::PadeLegendreSolver<double> solver(ref, 2, 2);
+
+    const int Np = ref.numDOF();
+    DG::FieldVector<double> u(2, Np);
+
+    EXPECT_THROW(DG::writePadeVTK(mesh, ref, u, solver,
+                                   "/tmp/test_pade_bad.vtk", "u", 0.0, 0),
+                 std::invalid_argument);
 }
