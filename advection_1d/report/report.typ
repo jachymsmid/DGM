@@ -21,15 +21,16 @@
 
 #title()
 
+// add some interesting picture
+
 #pagebreak()
 
 This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code supporting this text can be found on #link("https://github.com/jachymsmid/DGM/tree/main/advection_1d")[Github].
 
-
 #outline()
 
-
 #pagebreak()
+
 #heading(level: 1, numbering: none, "Symbols and definitions")
 
 - $u_h$ - approximate solution obtained on a mesh with step $h$
@@ -47,13 +48,20 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 - $l_i (x)$ - $i$-th Lagrange polynomoial
 - $N$ - order of polynomial approximation
 - $N_p = N + 1$ - number of points in each element (number of degrees of freedom)
+
 #pagebreak()
 
 = Problem overview
+
 The general one dimensional advection equation is of the following form:
-$ (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) = bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+ $
-where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$ is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$ is the unknown vector valued function and $bold(s)(x,t)$ is the source term.
-This equation is hyperbolic.
+$
+(partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) =
+bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+
+$
+where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$
+is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$
+is the unknown vector valued function and $bold(s)(x,t) = [s_1, s_2, dots, s_n]$
+is the source term. This equation is hyperbolic.
 
 For this problem to be well defined we need to impose initial and boundary conditions.
 $
@@ -61,26 +69,44 @@ bold(u)(x, 0) = bold(u)_0 (x)\
 cal(B)_L bold(u)(L, t) = bold(g)_1 (t) " at " x = L\
 cal(B)_R bold(u)(R, t) = bold(g)_2 (t) " at " x = R
 $
-where the sum of the ranks of the boundary operators $cal(B)_L,cal(B)_R$ equals the number of the required inflow conditions.
+where the sum of the ranks of the boundary operators $cal(B)_L,cal(B)_R$
+equals the number of the required inflow conditions.
 
 == Weak formulation of the problem
 
 To obtain the weak formulation we multiply the equation by a test function $bold(v) in V$ and integrate over the domain $Omega$.
-$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x. $
+$
+integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x.
+$
 Using per-partes on the second integral we obtain
-$ integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x, $
-$hat(bold(n))$ here is a unit outward normal. Notice that we express the term $[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$, this will later help us when generalazing the scheme.
+$
+integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x,
+$
+where $hat(bold(n))$ is a unit outward normal. Notice that we express the term
+$[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form
+$integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$,
+this will later help us when moving to multiple dimensions.
 
 = Discontinous Galerkin Method
 
-Let's focus on linear scalar advection equation for now and generalize the scheme later.
+Let's focus on linear scalar advection equation without source term for now and
+generalize the scheme later.
+
 == Spatial discretization
 
-We split our domain ($Omega = chevron.l L, R chevron.r$) into $N$ elements $D^j= chevron.l x_(j-1/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,$ here $x_j$ is the center of the element and $x_(1/2) = L$, $x_(N+1/2) = R$.
-$ Omega approx Omega_h = limits(union.big)_(k=1)^K D^k $
+We split our domain $Omega = chevron.l L, R chevron.r$ into $N$ elements
+$
+D^j= chevron.l x_(j-1/2), x_(j+1/2) chevron.r, thick j = 1,2,dots,N,
+$
+here $x_j$ is the center of the  $j$-th element and $x_(1/2) = L$, $x_(N+1/2) = R$.
+$
+Omega approx Omega_h = limits(union.big)_(k=1)^K D^k
+$
 We now formulate the local weak formulation
 $
-integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f(u) dif x // + integral_(D^k) v s (x,t) dif x
+integral_(D^k) v (partial u)/(partial t) dif x =
+integral_(D^k) (partial v)/(partial x) f(u) dif x -
+integral_(partial D^k) hat(bold(n)) v f(u) dif x
 $
 But now we have a problem, because $u$ is double valued at the boundaries (of each element). To solve this we define a numerical flux $f^* = f^* (u^-, u^+)$. The equation then becomes
 $
@@ -92,11 +118,11 @@ The flux must be consistent i.e. $f^* (a,a) = f (a).$
 
 One such numerical flux could be the local Lax-Friedrichs numerical flux.
 $
-f^* (u^-, u^+) = brace.l.stroked f(u) brace.r.stroked + C/2 bracket.l.stroked u bracket.r.stroked = (f(u^-) + f(u^+))/2 + C/2 bold(n) (u^- - u^+) 
+f^* (u^-, u^+) = (f(u^-) + f(u^+))/2 + C/2 hat(bold(n)) (u^- - u^+)
 $
-where the local constant $C$ is determined by the maximum eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
+where the local constant $C$ is determined by the maximum local advection speed //eigenvalue (the spectral radius) of the physical flux Jacobi matrix.
 $
-C = max_(a lt.eq s lt.eq b) (max_i lambda_i (s)) = rho (f_(u) (s)) = rho ((partial f (s))/(partial u))
+C = max_(u^- lt.eq s lt.eq u^+) f_u (s) //= rho (f_(u) (s)) = rho ((partial f (s))/(partial u))
 $
 
 *Upwind flux*
@@ -112,24 +138,33 @@ where $C = f(u^-)$ i.e. the local advection speed.
 
 == Basis functions
 
-We assume that the approximate solution $bold(u)_h (x,t)$ can be expressed as a direct sum of local piecewise polynomial solutions
+We assume that the approximate solution $bold(u)_h (x,t)$ can be expressed as a
+direct sum of local piecewise polynomial solutions
 $
 u (x,t) approx u_h (x,t) = plus.o.big_(k=1)^K u_h^k (x^k, t)
 $
 We define a local function space $V_h^k$ such that
 $
 V_h = plus.o.big_(k=1)^K V_h^k\
-V_h^k = {phi in L^2(D^k) thick : thick phi bar.v_(D^k) in P_j (D^k), thick j = 1,2,dots,N},
+V_h^k = {
+  phi in L^2(D^k) thick : thick phi bar.v_(D^k) in P_j (D^k), thick j = 1,2,dots,N
+        },
 $
-where $P_j (D^k)$ is a space of polynomials of at most degree $k$ on the interval $D^j.$
+where $P_j (D^k)$ is a space of polynomials of at most degree $j$ on the interval $D^k.$
 
 Now we can express the local approximate solution in the basis of the space $V_h^k$
 $
-x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(u)_n^k (t) phi_n (x) = sum_i^(N_p) u_h^k (x_i, t) l_i (x),
+x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(u)_n^k (t) phi_n (x) =
+sum_i^(N_p) u_h^k (x_i, t) l_i (x),
 $
-where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th interpolating Lagrange polynomial and $x_i in D^k$ are distinct. The first expression is said to be modal representation and the second nodal. We won't discuss the modal formulation in this text.
+where $hat(bold(u))_n$ is a vector of coefficients and $l_i$ is the $i$-th
+interpolating Lagrange polynomial and $x_i in D^k$ are distinct.
+The first expression is said to be modal representation and the second nodal.
+We won't discuss the modal formulation any further in this text,
+but it will come in handy when implementing limiters.
 
-Following the Galerkin approach we replace the test function with each of the basis functions. This yields a system of $N+1$ equations for each element
+Following the Galerkin approach we replace the test function with each of
+the basis functions. This yields a system of $N+1$ equations for each element
 $
 integral_(D^k) l_i (x) partial/(partial t)(sum_(j=1)^N_p u_h (x_j, t)) dif x = integral_(D^k) (dif l_i (x))/(dif x) sum_(j=1)^N_p a u_h (x_j, t) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
 dif/(dif t) sum_(j=1)^N_p u_h (x_j, t) integral_(D^k) l_i (x) l_j (x) dif x = sum_(j=1)^N_p a u_h (x_j, t) integral_(D^k) (dif l_i (x))/(dif x) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
@@ -147,16 +182,21 @@ $
                 &0 quad : quad "otherwise")\
 &(bold(u)_h)_j^k = u_h (x_j^k, t) " - the vector of unknowns"\
 &(bold(f)_h)_j^k " - the physical flux vector"\
-&bold(f)^k_* = (bold(n)_L f^*(x_L^k), bold(n)_R f^*(x_R^k))^T "- numerical flux at endpoints"
+&bold(f)^k_* = (bold(n)_L f^*(x_L^k), bold(n)_R f^*(x_R^k))^T "- numerical flux at endpoints"\
+&bold(n)_L, bold(n)_R "- unit normal at the left, respectively right, element boundary"
 $
-This matrix equation is the semi-discrete form of the PDE. We will discuss all the local operatros in more detail later.
+This matrix equation is the semi-discrete form of the PDE.
+We will discuss all the local operatros in more detail later.
 
-When choosing the basis of the space $V_h^k$ we have many options. But for the mass matrix to be well conditioned we will choose the Legendre polynomials.
+When choosing the basis of the space $V_h^k$ we have many options.
+But for the mass matrix to be well conditioned we will choose the Legendre polynomials.
 
 === Legender polynomials
-Legendre polynomials are a complete set of orthogonal polynomials defined on $chevron.l -1, 1 chevron.r$
+Legendre polynomials are a complete set of orthogonal polynomials defined on
+$chevron.l -1, 1 chevron.r$
 
-An easy way to calculate the polynomials is through the three term reccurence using the Bonnet's formula [cite]
+An easy way to calculate the polynomials is through the three term reccurence
+using the Bonnet's formula [cite]
 $
 P_n = ((2 n + 1) x P_(n-1) (x) - n P_(n-2) (x)) / (n + 1);\
 $
@@ -164,7 +204,8 @@ To start the reccurence we need the first two terms. They are given as
 $
 P_0 (x) = 1, quad P_1 (x) = x
 $
-Now to obtain the normalized (in the $L^2$ norm) Legender polynomials $tilde(P)_n (x)$ we multiply each polynomial by an appropriate coefficient
+Now to obtain the normalized (in the $L^2$ norm) Legender polynomials
+$tilde(P)_n (x)$ we multiply each polynomial by an appropriate coefficient
 $
 tilde(P)_n (x) = sqrt((2 n + 1)/2) P_n (x)
 $
@@ -173,7 +214,7 @@ To obtain a derivative of the Legendre polynomial we use the formula [cite]
 $
 P_n^' (x) = (n (P_(n-1) (x) - x P_(n) (x)))/(1-x^2)
 $
-Notice that the formula doesn't hold for $x = plus.minus 1$, for that we use a the following property
+Notice that the formula doesn't hold for $x = plus.minus 1$, for that we use a the property
 $
 P_n^' (1) =  (n (n+1))/2
 $
@@ -182,20 +223,25 @@ $
 P_n^' (-x) = (-1)^(2 n - 1) P_n^' (x)
 $
 
-#heading(level: 4, numbering: none, "Important properties")
-+ $ P_n (-x) = (-1)^n P_n (x) $
-+ $ integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m $
-+ $ integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1 $
+// #heading(level: 4, numbering: none, "Important properties")
+// + $ P_n (-x) = (-1)^n P_n (x) $
+// + $ integral_(-1)^1 P_n (x) P_m (x) dif x = 0 " for " n != m $
+// + $ integral_(-1)^1 P_n (x)  dif x = 0 " for " n gt.eq 1 $
 
 == Nodal representation
 
-Let's now discuss the nodal representation in greater detail. We define $hat(bold(u))_n$ such that the approximation is interpolatory i.e.
+Let's now discuss the nodal representation in greater detail.
+We define $hat(bold(u))_n$ such that the approximation is interpolatory i.e.
 $
 u(x_i) = sum hat(u)_n psi_n (x_i),
 $
 where $x_i$ represents distinct grid nodes. We can now write
 $ bold(u) = cal(V) hat(bold(u)), $
-where $cal(V)_(i j) = psi_j (x_i)$ is the Vandermonde matrix and $u_i = u(x_i)$. This matrix connects the modes $hat(u)$ and nodal values $u(x_i)$. We would like the matrix to be well conditioned. We already chose the basis polynomials, so only the nodes $x_i$ are left, to define the Vandermonde matrix.
+where $cal(V)_(i j) = psi_j (x_i)$ is the Vandermonde matrix and
+$u_i = u(x_i)$. This matrix connects the modes $hat(u)$ and nodal values $u(x_i)$.
+We would like the matrix to be well conditioned.
+We already chose the basis polynomials, so only the nodes $x_i$ are left,
+to define the Vandermonde matrix.
 The node's that acomplish this are the solution of
 $
 (1-x^2) dif/(dif x) P_N (x) = 0
@@ -215,11 +261,13 @@ these are known as the Legendre-Gauss-Lobatto nodes. The LGL nodes will be noted
 // l_i (x_j) = delta_(i j),
 // $
 // where $delta_(i j)$ is the Kronecker delta.
-// 
+//
 // Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
 == Local operators
-Up till now we were developing a sensible local representation of the approximate solution. We should now discuss the various local operators in the nodal formulation of DGM.
+Up till now we were developing a sensible local representation
+of the approximate solution. We should now discuss the various
+local operators in the nodal formulation of DGM.
 
 === Mass matrix
 The local mass matrix $M^k$ is given as
@@ -249,12 +297,12 @@ M D = S
 $
 The entries of the differentiation matrix can be found directly
 $ D = cal(V)_r cal(V)^(-1), $
-where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials. 
+where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials.
 $
 (cal(V)_r)_(i j) = psi'_j (xi_i)
 $
 
-But for the weak formulation we need $S^T$, for that we use the identity
+But in the weak formulation $S^T$ is involved, for that we use the identity
 $
 S^T = D^T M
 $
@@ -294,13 +342,16 @@ $
 $
 
 === LSERK
-Low storage explicit five stage Runge-Kutta method.
+Low storage explicit five stage fourth order Runge-Kutta method.
+
+=== SSPRK
+strong stability preserving Runge-Kutta fourth order method
 
 == Example linear problem
 
 We are given the following problem
 $
-partial_t u + partial_x u = 0, quad x in chevron.l 0, 2 pi chevron.r\
+partial_t u + partial_x u = 0, quad x in chevron.l -1, 1 chevron.r\
 $
 with periodic boundary conditions.
 
@@ -315,7 +366,8 @@ J^k M (dif u_h^k)/(dif t) - S^T u_h^k = - cal(E) ((u)^*, (u)^*)^T\
 $
 
 Now let's try multiple initial conditions with different number of elemnets and polynomial order.
-First we will test non-smooth initial conditions.
+First we will test non-smooth initial conditions. On the left are the initial
+conditions and on the right is the solution after one period.
 // cone advection
 #figure(
   grid(
@@ -380,20 +432,22 @@ Now let us test a non-continuous initial condition.
   numbering: none,
 )
 
-= Nonlinearity
+// = Nonlinearity
 
 == Filters
+When approximating a discontinuous function using a polynomial we can observe the well known Gibbs phenomenon.
 
-== Limiters
 
-== Example nonlinear problem
-burger's equation
-
-= Systems of equations
-
-== Euler's equation
-
-=== Sod's problem
+// == Limiters
+//
+// == Example nonlinear problem
+// burger's equation
+//
+// = Systems of equations
+//
+// == Euler's equation
+//
+// === Sod's problem
 
 
 #bibliography("sources.bib")
