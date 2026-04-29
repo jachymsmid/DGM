@@ -11,10 +11,6 @@
 #include <TNL/Meshes/Writers/VTKWriter.h>
 #include <TNL/Meshes/Writers/VTUWriter.h>
 
-using namespace TNL::Meshes;
-using namespace TNL::Containers;
-using namespace TNL::Algorithms;
-
 // ------------------------------------------------------------------------------------------------------------------ //
 
 struct Traits
@@ -27,11 +23,11 @@ struct Traits
    /**
     * types used for configuring the input mesh
     */
-   using MeshConfig = DefaultConfig< Topologies::Quadrangle >;
+   using MeshConfig = TNL::Meshes::DefaultConfig< TNL::Meshes::Topologies::Quadrangle >;
    using MeshType = TNL::Meshes::Mesh< MeshConfig, Device >;
    using HostMeshType = TNL::Meshes::Mesh< MeshConfig, TNL::Devices::Host >;
-   using ReaderType = Readers::VTKReader;
-   using WriterType = Writers::VTKWriter< HostMeshType >;
+   using ReaderType = TNL::Meshes::Readers::VTKReader;
+   using WriterType = TNL::Meshes::Writers::VTKWriter< HostMeshType >;
 
    /**
     * types for basic data types
