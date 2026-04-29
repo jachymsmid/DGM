@@ -2,6 +2,7 @@
 
 #include <TNL/Timer.h>
 #include <iostream>
+#include "Traits.h"
 
 #include <TNL/Containers/Expressions/ExpressionTemplates.h>
 
@@ -10,7 +11,6 @@
 template< typename Traits >
 class Simulation
 {
-   using ConservativeType = typename Traits::ConservativeType;
    using GlobalIndexType = typename Traits::GlobalIndexType;
    using LocalIndexType = typename Traits::LocalIndexType;
    using IndexArrayType = typename Traits::IndexArrayType;
@@ -31,7 +31,6 @@ private:
    RealType v_0;
 
    // initial conditions
-   ConservativeType wInitial;
 
 public:
    // attributes
@@ -191,68 +190,6 @@ public:
       fluidData.w_new = fluidData.w_old;
       fluidData.w_one = fluidData.w_old;
       parallelFor< Device >( 0, w_old_view.getSize(), setInitialCondition );
-   }
-
-   // --------------------------------------------------------------------------------------------------------------- //
-
-   void
-   DEBUG_computeDerivatives()
-   {
-      const auto innerCellInterfacePoints_const_view = meshData.connectivity.innerCellInterfacePoints.getConstView();
-      const auto innerCellNeighborOffsets_const_view = meshData.connectivity.innerCellNeighborOffsets.getConstView();
-      const auto innerCellNeighborCounts_const_view = meshData.connectivity.innerCellNeighborCounts.getConstView();
-      const auto dualMeshScaledNormals_const_view = meshData.dual.dualMeshScaledNormals.getConstView();
-      const auto innerCellNeighborIDs_const_view = meshData.connectivity.innerCellNeighborIDs.getConstView();
-      const auto dualMeshVolumes_const_view = meshData.dual.dualMeshVolumes.getConstView();
-      const auto innerCellIDs_const_view = meshData.IDs.innerCellIDs.getConstView();
-      const auto w_points_const_view = fluidData.w_points.getConstView();
-      const auto w_old_const_view = fluidData.w_old.getConstView();
-
-      const auto DIMENSION = MeshType::getMeshDimension();
-
-      auto processCell = [ = ] __cuda_callable__( const GlobalIndexType iterIndex )
-      {
-         const auto cellIndex = innerCellIDs_const_view[ iterIndex ];
-         const auto offset = innerCellNeighborOffsets_const_view[ iterIndex ];
-         const auto neighborCount = innerCellNeighborCounts_const_view[ iterIndex ];
-         printf( "# (%d / %d): processing cell %d...\n", iterIndex, innerCellIDs_const_view.getSize(), cellIndex );
-         for( LocalIndexType neighborIndex = 0; neighborIndex < neighborCount; ++neighborIndex ) {
-            const auto interfaceIndex =
-               meshData.meshPointer->template getSubentityIndex< DIMENSION, DIMENSION - 1 >( cellIndex, neighborIndex );
-            const auto interface = meshData.meshPointer->template getEntity< DIMENSION - 1 >( interfaceIndex );
-            const GlobalIndexType cellNeighborIndex = innerCellNeighborIDs_const_view[ offset + neighborIndex ];
-            const auto cellNeighbor = meshData.meshPointer->template getEntity< DIMENSION >( cellNeighborIndex );
-            const auto cellNeighborCenter = getEntityCenter( *meshData.meshPointer, cellNeighbor );
-            const auto normal = getOutwardNormalVector( *meshData.meshPointer, interface, cellNeighborCenter );
-            printf( " = interface %d with a normal vector [%f, %f]\n", neighborIndex, normal.x(), normal.y() );
-
-            const auto sn1 = dualMeshScaledNormals_const_view( offset + neighborIndex, 0 );
-            const auto sn2 = dualMeshScaledNormals_const_view( offset + neighborIndex, 1 );
-            const auto sn3 = dualMeshScaledNormals_const_view( offset + neighborIndex, 2 );
-            const auto sn4 = dualMeshScaledNormals_const_view( offset + neighborIndex, 3 );
-
-            const ConservativeType wi = w_old_const_view[ cellIndex ];
-            const ConservativeType wj = w_old_const_view[ cellNeighborIndex ];
-            const ConservativeType wr = w_points_const_view[ innerCellInterfacePoints_const_view( offset + neighborIndex, 0 ) ];
-            const ConservativeType wl = w_points_const_view[ innerCellInterfacePoints_const_view( offset + neighborIndex, 1 ) ];
-
-            const Primitive< Traits > pvi( wi );
-            const Primitive< Traits > pvj( wj );
-            const Primitive< Traits > pvr( wr );
-            const Primitive< Traits > pvl( wl );
-
-            const RealType dualMeshVolume = dualMeshVolumes_const_view[ offset + neighborIndex ];
-
-            DerivativeContainerType derivativesMatrix{};
-            computeVelocityDerivatives( pvi, pvj, pvr, pvl, sn1, sn2, sn3, sn4, dualMeshVolume, derivativesMatrix );
-            printf( " * du/dx = %f\n", derivativesMatrix[ 0 ] );
-            printf( " * du/dy = %f\n", derivativesMatrix[ 1 ] );
-            printf( " * dv/dx = %f\n", derivativesMatrix[ 2 ] );
-            printf( " * dv/dy = %f\n", derivativesMatrix[ 3 ] );
-         }
-         printf( "\n" );
-      };
-      parallelFor< Device >( 0, innerCellIDs_const_view.getSize(), processCell );
    }
 
    // --------------------------------------------------------------------------------------------------------------- //
