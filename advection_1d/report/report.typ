@@ -33,7 +33,7 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 
 #heading(level: 1, numbering: none, "Symbols and definitions")
 
-- $u_h$ - approximate solution obtained on a mesh with step $h$
+- $u_h$ - approximate solution obtained on a mesh with spatial step $h$
 - $(u, v)_(L^2(Omega)) = integral_Omega u v dif x$ - scalar product in $L^2$
 - $bar.v.double u bar.v.double _(L^2 (Omega))^2 = (u, u)_(L^2 (Omega))$
 - $P_j (D^k)$ - space of polynomoials of up to order $j$ on an interval $D^k$
@@ -56,7 +56,7 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 The general one dimensional advection equation is of the following form:
 $
 (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) =
-bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+
+bold(s)(x,t) quad [x,t] in Omega times RR^+,
 $
 where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$
 is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$
@@ -65,9 +65,9 @@ is the source term. This equation is hyperbolic.
 
 For this problem to be well defined we need to impose initial and boundary conditions.
 $
-bold(u)(x, 0) = bold(u)_0 (x)\
-cal(B)_L bold(u)(L, t) = bold(g)_1 (t) " at " x = L\
-cal(B)_R bold(u)(R, t) = bold(g)_2 (t) " at " x = R
+bold(u)(x, 0) = bold(u)_0 (x),\
+cal(B)_L bold(u)(L, t) = bold(g)_1 (t) " at " x = L,\
+cal(B)_R bold(u)(R, t) = bold(g)_2 (t) " at " x = R,
 $
 where the sum of the ranks of the boundary operators $cal(B)_L,cal(B)_R$
 equals the number of the required inflow conditions.
@@ -96,7 +96,7 @@ generalize the scheme later.
 
 We split our domain $Omega = chevron.l L, R chevron.r$ into $N$ elements
 $
-D^k= chevron.l x_(k-1/2), x_(k+1/2) chevron.r, thick k = 1,2,dots,N,
+D^k= chevron.l x_(k-1/2), x_(k+1/2) chevron.r, thick k = 1,2,dots,K,
 $
 here $x_k$ is the center of the  $k$-th element and $x_(1/2) = L$, $x_(N+1/2) = R$.
 $
@@ -198,16 +198,16 @@ $
 &S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stifness matrix"\
 &cal(E)_(i j) = cases(&1 quad : quad "upper left corner and lower right corner",
                 &0 quad : quad "otherwise")\
-&(bold(u)_h)_j^k = u_h (x_j^k, t) " - the vector of unknowns"\
-&(bold(f)_h)_j^k " - the physical flux vector"\
-&bold(f)^k_* = (bold(n)_L f^*(x_L^k), bold(n)_R f^*(x_R^k))^T "- numerical flux at endpoints"\
-&bold(n)_L, bold(n)_R "- unit normal at the left, respectively right, element boundary"
+&(bold(u)_h^k)_j = u_h (x_j^k, t) " - the vector of unknowns"\
+&(bold(f)_h^k)_j " - the physical flux vector"\
+&bold(f)^k_* = (bold(n)_L f^*(x_L^k), bold(n)_R f^*(x_R^k))^T "- numerical flux at boundaries"\
+&bold(n)_L, bold(n)_R "- unit normal at the left and right element boundary respectively "
 $
 This matrix equation is the semi-discrete form of the PDE.
 We will discuss all the local operatros in more detail later.
 
 When choosing the basis of the space $V_h^k$ we have many options.
-But for the mass matrix to be well conditioned we will choose the Legendre polynomials.
+But for the mass matrix to be well conditioned we will choose the Legendre polynomials. #cite(<hesthaven2008nodal>, supplement: [pg. 45])
 
 === Legender polynomials
 Legendre polynomials are a complete set of orthogonal polynomials defined on
@@ -266,7 +266,7 @@ $
 $
 these are known as the Legendre-Gauss-Lobatto nodes.
 The LGL nodes will be noted by the greek letter $xi$.
-There are $N+1$ LGL nodes for solution approximation of order $N$.
+There are $N+1$ LGL nodes for solution approximation of order $N$. #cite(<hesthaven2008nodal>, supplement: [pg. 47])
 
 // Now we recognize that if
 // $ bold(u)(r) approx bold(u)_h (r) = sum hat(bold(u))_n phi_n $
@@ -284,7 +284,7 @@ There are $N+1$ LGL nodes for solution approximation of order $N$.
 //
 // Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
-== Local operators
+== Local operators <local_operators>
 Up till now we were developing a sensible local representation
 of the approximate solution. We should now discuss the various
 local operators in the nodal formulation of DGM.
@@ -311,6 +311,7 @@ Thus
 $
 M^k = h_k/2 M = h_k/2 (cal(V) cal(V)^T)^(-1)
 $
+#cite(<hesthaven2008nodal>, supplement: [pg. 51-52])
 
 === Stiffness matrix
 The local stiffness matrix is given as
@@ -338,7 +339,8 @@ To recover the semi-discrete formulation we need to multiply this by the mass ma
 $
 M^(-1) S^T = M^(-1) D^T M = cal(V) cal(V)_r^T M = D_w
 $
-We call this matrix $D_w$, differentiation matrix for the weak form.
+We denote this matrix $D_w$, differentiation matrix for the weak form.
+#cite(<hesthaven2008nodal>, supplement: [pg. 52-54])
 
 === Surface integral
 This operator is responsible of extracting the surface terms of the form
@@ -353,6 +355,7 @@ Again, to recover the semi-discrete form we multiply by the inverse mass matrix 
 $
 "LIFT" = M^(-1) cal(E) = cal(V) cal(V)^T cal(E)
 $
+#cite(<hesthaven2008nodal>, supplement: [pg. 56])
 
 == Time discretization
 
@@ -362,7 +365,7 @@ $
 $
 
 === ERK
-General explicit four stage Runge-Kutta method.
+General explicit four stage Runge-Kutta method. #cite(<hesthaven2008nodal>, supplement: [pg. 63])
 $
 &k_1 = cal(L)_h (u_h^n, t^n)\
 &k_2 = cal(L)_h (u_h^n + 1/2 Delta t k_1, t^n + Delta t)\
@@ -371,11 +374,11 @@ $
 &u_h^(n+1) = u_h^n + 1/6 Delta t (k_1 + k_2 + k_3 + k_4)
 $
 
-=== LSERK
-Low storage explicit five stage fourth order Runge-Kutta method. [cite the nasa paper]
+// === LSERK
+// Low storage explicit five stage fourth order Runge-Kutta method #cite(<lserk1999nasa>)
 
 === SSPRK
-strong stability preserving Runge-Kutta fourth order method [cite]
+Strong stability preserving Runge-Kutta fourth order method. #cite(<durran2010numerical>)
 $
 &k_1 = u^n + 1/2 Delta t cal(L)_h (u^n, t_n)\
 &k_2 = k_1 + 1/2 Delta t cal(L)_h (k_1, t_n + 1/2 Delta t)\
@@ -397,15 +400,16 @@ u_h^k = sum_i u_h^k (x_i^k, t) l_i^k (x).
 $
 And that the direct sum of these solutions is an approximation to the global solution. This yields the local semidiscrete scheme
 $
-M^k (dif u_h^k)/(dif t) - S^T u_h^k = - [l^k (x)  (u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((u)^*, (u)^*)^T\
-J^k M (dif u_h^k)/(dif t) - S^T u_h^k = - cal(E) ((u)^*, (u)^*)^T\
-(dif u_h^k)/(dif t) = 1/J^k ( M^(-1) S^T u_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
-(dif u_h^k)/(dif t) = 1/J^k ( D_w u_h^k - "LIFT" (f^*_R, f^*_L)^T)
+M^k (dif bold(u)_h^k)/(dif t) - S^T bold(u)_h^k = - [l^k (x) f^*(u))]_(x_l^k)^(x_r^k) = - cal(E) (f^*(u), f^*(u))^T\
+J^k M (dif bold(u)_h^k)/(dif t) - S^T bold(u)_h^k = - cal(E) (f^*(u), f^*(u))^T\
+(dif bold(u)_h^k)/(dif t) = 1/J^k ( M^(-1) S^T bold(u)_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
+(dif bold(u)_h^k)/(dif t) = 1/J^k ( D_w bold(u)_h^k - "LIFT" (f^*_R, f^*_L)^T)
 $
+We have defined all of these operators beforehand in @local_operators.
 
-Now let's try multiple initial conditions with different number of elemnets and polynomial order.
+Now let's test our solver on multiple initial conditions with different number of elemnets ($K$) and polynomial order ($N$).
 First we will test non-smooth initial conditions. On the left are the initial
-conditions and on the right is the solution after one period.
+conditions and on the right is the solution after one period. (Keep in mind we are using periodic boundary conditions)
 
 // cone advection
 #figure(
@@ -470,11 +474,13 @@ Now let us test a discontinuous initial condition in the form of a step function
   numbering: none,
 )
 
-== Solution reconstruction
-- gibs phenomenon
-- pointwise error
-- pade reconstruction
-- other reconstructions
+The last figure shows a beautiful example of Gibb's phenomenon, that stems from trying to approximate discontinuous function using a polynomial. There are a few approaches how to battle these oscillations. One is using a filter on the solution after each timestep and the other is using a suitable solution reconstruction.
+
+// == Solution reconstruction
+// - gibs phenomenon
+// - pointwise error
+// - pade reconstruction
+// - other reconstructions
 
 // == Filters
 // When approximating a discontinuous function using a polynomial we can observe the well known Gibbs phenomenon.
