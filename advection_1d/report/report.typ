@@ -144,8 +144,14 @@ $
 where $C = f(u^-)$ i.e. the local advection speed.
 
 *Godunov flux*
+$
+f^* (u^-, u^+) = cases(
+  min(f(u^-), f(u^+)) quad &: quad hat(bold(n)) u^- < hat(bold(n)) u^+,
+  max(f(u^-), f(u^+)) quad &: quad hat(bold(n)) u^- gt.eq hat(bold(n)) u^+
+)
+$
 
-*Roe flux*
+// *Roe flux*
 
 == Basis functions
 
@@ -351,7 +357,9 @@ $
 == Time discretization
 
 Two explicit RK4 methods were implemented to integrate the semidiscrete system
-$ (dif u_h)/(dif t) = cal(L)_h (u_h, t) $ // = 1/J^k (D_w bold(f)^k - "LIFT" bold(f)^k_*) $
+$
+(dif u_h)/(dif t) = cal(L)_h (u_h, t) // = 1/J^k (D_w bold(f)^k - "LIFT" bold(f)^k_*)
+$
 
 === ERK
 General explicit four stage Runge-Kutta method.
@@ -364,10 +372,16 @@ $
 $
 
 === LSERK
-Low storage explicit five stage fourth order Runge-Kutta method.
+Low storage explicit five stage fourth order Runge-Kutta method. [cite the nasa paper]
 
 === SSPRK
-strong stability preserving Runge-Kutta fourth order method
+strong stability preserving Runge-Kutta fourth order method [cite]
+$
+&k_1 = u^n + 1/2 Delta t cal(L)_h (u^n, t_n)\
+&k_2 = k_1 + 1/2 Delta t cal(L)_h (k_1, t_n + 1/2 Delta t)\
+&k_3 = 2/3 u^n + 1/2 k_2 + 1/6 cal(L)_h (k_2, t^n + Delta t)\
+&u_h^(n+1) = k_3 + 1/2 Delta t cal(L)_h (k_3, t^n + 1/2 Delta t)
+$
 
 == Example linear problem
 
@@ -378,7 +392,9 @@ $
 with periodic boundary conditions.
 
 We assume the solution can be approximated as
-$ u_h^k = sum_i u_h^k (x_i^k, t) l_i^k (x). $
+$
+u_h^k = sum_i u_h^k (x_i^k, t) l_i^k (x).
+$
 And that the direct sum of these solutions is an approximation to the global solution. This yields the local semidiscrete scheme
 $
 M^k (dif u_h^k)/(dif t) - S^T u_h^k = - [l^k (x)  (u)^*)]_(x_l^k)^(x_r^k) = - cal(E) ((u)^*, (u)^*)^T\
@@ -390,6 +406,7 @@ $
 Now let's try multiple initial conditions with different number of elemnets and polynomial order.
 First we will test non-smooth initial conditions. On the left are the initial
 conditions and on the right is the solution after one period.
+
 // cone advection
 #figure(
   grid(
@@ -421,8 +438,7 @@ conditions and on the right is the solution after one period.
   numbering: none,
 )
 
-Now let us test a discontinuous initial condition.
-// step signal advection
+Now let us test a discontinuous initial condition in the form of a step function.
 
 #figure(
   grid(
@@ -454,12 +470,17 @@ Now let us test a discontinuous initial condition.
   numbering: none,
 )
 
+== Solution reconstruction
+- gibs phenomenon
+- pointwise error
+- pade reconstruction
+- other reconstructions
+
+// == Filters
+// When approximating a discontinuous function using a polynomial we can observe the well known Gibbs phenomenon.
+
 // = Nonlinearity
-
-== Filters
-When approximating a discontinuous function using a polynomial we can observe the well known Gibbs phenomenon.
-
-
+//
 // == Limiters
 //
 // == Example nonlinear problem
@@ -468,8 +489,5 @@ When approximating a discontinuous function using a polynomial we can observe th
 // = Systems of equations
 //
 // == Euler's equation
-//
-// === Sod's problem
-
 
 #bibliography("sources.bib")
