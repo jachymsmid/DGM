@@ -37,11 +37,11 @@ int main()
     const Real PI = TNL::pi;
 
     // Burger's equation
-    auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
-    auto advection_speed = [&] ( Real u ) -> Real { return u; };
+    // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
+    // auto advection_speed = [&] ( Real u ) -> Real { return u; };
     // Linear advection
-    // auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
-    // auto advection_speed = [&] ( Real u ) -> Real { return a; };
+    auto physical_flux = [&] ( Real u ) -> Real { return a * u; };
+    auto advection_speed = [&] ( Real u ) -> Real { return a; };
 
     // construct uniform mesh
     DG::Mesh<Real> mesh = DG::Mesh<Real>::uniform(-1.0, 1.0, K);
@@ -132,15 +132,15 @@ int main()
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
     // 2-dimensional parallel for
-    TNL::Algorithms::parallelFor< Device >(begin, end, cone_init);
+    TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
 
 
-    std::cout << "Starting simulation with: " << std::endl;
-    std::cout << "\tK = " << K << std::endl;
-    std::cout << "\tN = " << N << std::endl;
-    std::cout << "\tx_min = " << x_min << std::endl;
-    std::cout << "\tdt = " << dt << std::endl;
-    std::cout << "\tmax advection speed = " << max_speed << std::endl;
+    std::cout << "Starting simulation with: " << '\n';
+    std::cout << "\tK = " << K << '\n';
+    std::cout << "\tN = " << N << '\n';
+    std::cout << "\tx_min = " << x_min << '\n';
+    std::cout << "\tdt = " << dt << '\n';
+    std::cout << "\tmax advection speed = " << max_speed << '\n';
 
     // write initial condition
     int frame = 0;
@@ -152,11 +152,17 @@ int main()
       return true;
     };
 
-    DG::SSPRK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF(), callback);
-    rk.integrate(u, 0.0, Tf, dt);
+    DG::SSPRK<Real> rk(op.rhsFunction(), mesh.numElements(), ref.numDOF());
+
+    Real t = 0.0F;
+    while (t < Tf)
+    {
+      rk.step(u, dt, t);
+      t += dt;
+    }
 
     // output
-    DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
+    DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, t);
     std::cout << "Done. Written " << frame << " frames.\n";
 
     // ── Padé–Legendre post-processing ────────────────────────────────────────
