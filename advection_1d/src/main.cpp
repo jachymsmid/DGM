@@ -4,6 +4,7 @@
 #include "NumericalFlux.hpp"
 #include "Integrator.hpp"
 #include "Operator.hpp"
+#include "PadeLegendre.hpp"
 #include <TNL/Containers/StaticArray.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Math.h>
@@ -184,4 +185,22 @@ int main()
     // output
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, Tf);
     std::cout << "Done. Written " << frame << " frames.\n";
+
+    // ── Padé–Legendre post-processing ────────────────────────────────────────
+    // Diagonal [L/M] approximant with L = floor(N/2), M = ceil(N/2).
+    // The diagonal choice balances numerator and denominator degrees, which
+    // gives the best uniform accuracy for smooth solutions while still
+    // capturing rational-function behaviour near discontinuities.
+    const int L = N / 2;
+    const int M = N - L;
+    DG::PadeLegendreSolver<Real> pade_solver(ref, L, M);
+
+    std::cout << "Padé–Legendre [" << L << "/" << M << "] reconstruction done.\n";
+
+    // Write reconstructed solution on a finer equidistant grid (4×Np points
+    // per element) for smooth visualization in ParaView.
+    int pade_frame = 0;
+    DG::writePadeTimeSeriesVTK(mesh, ref, u, pade_solver,
+                                "output/pade_output", pade_frame++, Tf);
+    std::cout << "Written " << pade_frame << " Padé frame(s).\n";
 }
