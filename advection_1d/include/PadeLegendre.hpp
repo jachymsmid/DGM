@@ -76,8 +76,8 @@ template<class Real = double, class Index = int>
 class PadeLegendreSolver
 {
 public:
-    using RefElem   = ReferenceElement<Real, Index>;
-    using RefMatrix = typename RefElem::Matrix;
+    using ReferenceElement   = ReferenceElement<Real, Index>;
+    using RefMatrix = typename ReferenceElement::Matrix;
     using Field     = FieldVector<Real, TNL::Devices::Host, Index>;
     using EigenMat  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
     using EigenVec  = Eigen::Matrix<double, Eigen::Dynamic, 1>;
@@ -96,7 +96,7 @@ public:
      *                     the value is automatically appropriate for both float
      *                     and double instantiations.
      */
-    PadeLegendreSolver(const RefElem& ref, Index L, Index M,
+    PadeLegendreSolver(const ReferenceElement& ref, Index L, Index M,
                        Real fallback_tol = Real(100) * std::numeric_limits<Real>::epsilon())
         : ref_(ref), L_(L), M_(M), N_(ref.order()), Np_(ref.numDOF()),
           fallback_tol_(fallback_tol), vinv_(ref.Vinv())
@@ -214,17 +214,17 @@ public:
     {
         Real P = Real(0);
         for (Index l = 0; l <= approx.L; ++l)
-            P += approx.p_coeffs[l] * RefElem::legendreP(l, x);
+            P += approx.p_coeffs[l] * ReferenceElement::legendreP(l, x);
 
         Real Q = Real(0);
         for (Index m = 0; m <= approx.M; ++m)
-            Q += approx.q_coeffs[m] * RefElem::legendreP(m, x);
+            Q += approx.q_coeffs[m] * ReferenceElement::legendreP(m, x);
 
         if (std::abs(Q) < fallback_tol_) {
             // Polynomial fallback: evaluate the original DG approximation
             Real poly = Real(0);
             for (Index n = 0; n < static_cast<Index>(approx.modal_coeffs.size()); ++n)
-                poly += approx.modal_coeffs[n] * RefElem::legendreP(n, x);
+                poly += approx.modal_coeffs[n] * ReferenceElement::legendreP(n, x);
             return poly;
         }
 
@@ -296,23 +296,23 @@ private:
      */
     EigenMat buildBMatrix_(const std::vector<Real>& c) const
     {
-        const Index nq = static_cast<Index>(gl_nodes_.size());
+        const Index nq = static_cast<Index>(ref_.numDOF());
         EigenMat B = EigenMat::Zero(N_ + 1, M_ + 1);
 
         for (Index q = 0; q < nq; ++q) {
-            const Real xq = gl_nodes_[q];
-            const Real wq = gl_weights_[q];
+            const Real xq = ref_.nodes()[q];
+            const Real wq = ref_.weights()[q];
 
             // Evaluate u_h at quadrature point
             Real uh = Real(0);
             for (Index n = 0; n <= N_; ++n)
-                uh += c[n] * RefElem::legendreP(n, xq);
+                uh += c[n] * ReferenceElement::legendreP(n, xq);
 
             // Accumulate B(k, m) += w_q * P_k(x_q) * P_m(x_q) * u_h(x_q)
             for (Index k = 0; k <= N_; ++k) {
-                const double Pk = static_cast<double>(RefElem::legendreP(k, xq));
+                const double Pk = static_cast<double>(ReferenceElement::legendreP(k, xq));
                 for (Index m = 0; m <= M_; ++m) {
-                    const double Pm = static_cast<double>(RefElem::legendreP(m, xq));
+                    const double Pm = static_cast<double>(ReferenceElement::legendreP(m, xq));
                     B(k, m) += static_cast<double>(wq) * Pk * Pm
                                * static_cast<double>(uh);
                 }
@@ -321,55 +321,11 @@ private:
         return B;
     }
 
-    /**
-     * @brief Compute Gauss–Legendre quadrature on [-1,1] via Golub–Welsch.
-     *
-     * Builds the symmetric tridiagonal Jacobi matrix for the Legendre
-     * polynomial family, then finds its eigendecomposition.  Eigenvalues
-     * are the quadrature nodes; weights are 2*(first eigenvector entry)^2.
-     *
-     * @param nq      Number of quadrature points
-     * @param nodes   Output: quadrature nodes
-     * @param weights Output: quadrature weights
-     */
-    void buildGaussLegendre_(Index nq,
-                              std::vector<Real>& nodes,
-                              std::vector<Real>& weights) const
-    {
-        if (nq < 1)
-            throw std::invalid_argument("PadeLegendreSolver: nq must be >= 1");
-
-        // Symmetric tridiagonal Jacobi matrix for Gauss–Legendre:
-        //   off-diagonal entry: beta_k = k / sqrt(4k^2 - 1)
-        EigenMat J = EigenMat::Zero(nq, nq);
-        for (int k = 1; k < nq; ++k) {
-            const double beta = static_cast<double>(k)
-                                / std::sqrt(static_cast<double>(4 * k * k - 1));
-            J(k - 1, k) = beta;
-            J(k, k - 1) = beta;
-        }
-
-        Eigen::SelfAdjointEigenSolver<EigenMat> solver(J);
-        const auto& eigenvals = solver.eigenvalues();
-        const auto& eigenvecs = solver.eigenvectors();
-
-        nodes.resize(nq);
-        weights.resize(nq);
-        for (int i = 0; i < nq; ++i) {
-            nodes[i]   = static_cast<Real>(eigenvals(i));
-            const double v0 = eigenvecs(0, i);
-            weights[i] = static_cast<Real>(2.0 * v0 * v0);
-        }
-    }
-
     // ── Member data ──────────────────────────────────────────────────────────
 
-    const RefElem& ref_;          ///< Reference element (borrowed)
+    const ReferenceElement& ref_;          ///< Reference element (borrowed)
     Index L_, M_, N_, Np_;        ///< Padé degrees and element polynomial order
     Real  fallback_tol_;          ///< Denominator zero-tolerance for fallback
-    std::vector<Real> gl_nodes_;  ///< Gauss–Legendre quadrature nodes
-    std::vector<Real> gl_weights_;///< Gauss–Legendre quadrature weights
-    RefMatrix vinv_;              ///< Cached inverse Vandermonde (normalized basis)
 };
 
 } // namespace DG
