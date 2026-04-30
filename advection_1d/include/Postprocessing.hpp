@@ -30,6 +30,7 @@
 
 #include "FieldVector.hpp"
 #include "ReferenceElement.hpp"
+#include "Traits.h"
 #include <Eigen/Dense>
 #include <TNL/Devices/Host.h>
 #include <cmath>
@@ -38,26 +39,23 @@
 #include <vector>
 
 namespace DG {
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PadeApproximant
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * @brief Stores the [L/M] Padé–Legendre approximant for a single element.
  *
  * Coefficients are in the unnormalized Legendre polynomial basis.
  * q_coeffs[0] is always 1 (normalization convention).
  */
-template<class Real = double, class Index = int>
 struct PadeApproximant
 {
-    std::vector<Real> p_coeffs;     ///< Numerator  P_L: p[l] for l = 0..L
-    std::vector<Real> q_coeffs;     ///< Denominator Q_M: q[m] for m = 0..M (q[0]==1)
-    std::vector<Real> modal_coeffs; ///< u_h modal coefficients c_n (polynomial fallback)
-    bool  valid{true};              ///< False if the linear solve failed
-    Index L{0};                     ///< Numerator degree
-    Index M{0};                     ///< Denominator degree
+   using Real = typename Traits::RealType;
+   using Index = typename Traits::IndexType;
+
+   std::vector<Real> p_coeffs;     ///< Numerator  P_L: p[l] for l = 0..L
+   std::vector<Real> q_coeffs;     ///< Denominator Q_M: q[m] for m = 0..M (q[0]==1)
+   std::vector<Real> modal_coeffs; ///< u_h modal coefficients c_n (polynomial fallback)
+   bool valid{true};               ///< False if the linear solve failed
+   Index L{0};                     ///< Numerator degree
+   Index M{0};                     ///< Denominator degree
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,15 +70,16 @@ struct PadeApproximant
  * element-local nodal value arrays.  All arithmetic is done on the reference
  * element [-1,1] using unnormalized Legendre polynomials.
  */
-template<class Real = double, class Index = int>
 class PadeLegendreSolver
 {
 public:
-    using ReferenceElement   = ReferenceElement<Real, Index>;
-    using RefMatrix = typename ReferenceElement::Matrix;
-    using Field     = FieldVector<Real, TNL::Devices::Host, Index>;
-    using EigenMat  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
-    using EigenVec  = Eigen::Matrix<double, Eigen::Dynamic, 1>;
+   using Real = typename Traits::RealType;
+   using Index = typename Traits::IndexType;
+   using ReferenceElement = TNL::DGM::ReferenceElement<Real, Index>;
+   using RefMatrix = typename ReferenceElement::Matrix;
+   using Field     = TNL::DGM::FieldVector<Real, TNL::Devices::Host, Index>;
+   using EigenMat  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
+   using EigenVec  = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 
     /**
      * @brief Construct the solver.
@@ -99,12 +98,12 @@ public:
     PadeLegendreSolver(const ReferenceElement& ref, Index L, Index M,
                        Real fallback_tol = Real(100) * std::numeric_limits<Real>::epsilon())
         : ref_(ref), L_(L), M_(M), N_(ref.order()), Np_(ref.numDOF()),
-          fallback_tol_(fallback_tol), vinv_(ref.Vinv())
+          fallback_tol_(fallback_tol)
     {
         if (L < 0 || M < 0)
             throw std::invalid_argument("PadeLegendreSolver: L and M must be >= 0");
         if (L + M > N_)
-            throw std::invalid_argument("PadeLegendreSolver: L+M must be <= N");
+            throw std::invalid_argument("PadeLegendreSolver: L + M must be <= N");
 
         // Need 2*nq-1 >= k_max + m_max + N = N + M + N = 2N + M
         // nq = N + M + 1 gives 2(N+M+1)-1 = 2N+2M+1 >= 2N+M  ✓
