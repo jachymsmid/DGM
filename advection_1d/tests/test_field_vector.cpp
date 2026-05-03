@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 #include "FieldVector.hpp"
 
+namespace DG = TNL::DGM;
+
 // ── Default constructor ────────────────────────────────────────────────────────
 TEST(FieldVectorTest, DefaultConstructorSizes)
 {

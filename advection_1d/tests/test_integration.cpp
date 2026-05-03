@@ -3,6 +3,8 @@
 #include "Integrator.hpp"
 #include <cmath>
 
+namespace DG = TNL::DGM;
+
 // tolerance
 double TOL = 1e-4;
 

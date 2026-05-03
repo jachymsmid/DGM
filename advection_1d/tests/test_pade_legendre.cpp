@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
 #include "IO.hpp"
 #include "Mesh.hpp"
-#include "PadeLegendre.hpp"
+#include "Postprocessing.hpp"
 #include <cmath>
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+namespace DG = TNL::DGM;
 
 // ── Tolerances ────────────────────────────────────────────────────────────────
 static constexpr double TOL       = 1e-10;  // tight (analytical)

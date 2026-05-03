@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "Mesh.hpp"
 
+namespace DG = TNL::DGM;
+
 // set tolerance
 static constexpr double TOL = 1e-12;
 

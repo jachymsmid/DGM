@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "ReferenceElement.hpp"
 
+namespace DG = TNL::DGM;
+
 // tolerance for floating-point comparisons
 static constexpr double TOL = 1e-12;
 static constexpr double TOL2 = 1e-4;

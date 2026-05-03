@@ -11,6 +11,8 @@
 #include <functional>
 #include <cmath>
 
+namespace DG = TNL::DGM;
+
 static constexpr double TOL = 1e-12;
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -7,6 +7,8 @@
 #include "Operator.hpp"
 #include <cmath>
 
+namespace DG = TNL::DGM;
+
 static constexpr double TOL_TIGHT = 1e-11;
 static constexpr double TOL_LOOSE = 1e-6;
 
