@@ -146,6 +146,18 @@ This is a compilation of functions that work as input output for the solver.
 
 - `writeToVTK(const Mesh mesh, const Ref ref, const string filename, const string fieldname, Real t)` : writes the data to a VTK file
 - `writeTimeSeriesVTK(const Mesh mesh, const Ref ref, const string base_name, int frameIndex, Real t, const string fieldname)` : outputs multiple VTK files
+- `writePadeVTK(...)` and `writePadeTimeSeriesVTK(...)` : output Padé-Legendre reconstructed fields on a finer equidistant grid
+
+## Padé-Legendre postprocessing
+
+Padé-Legendre reconstruction is available as an **optional postprocessing stage** in `src/main.cpp`.
+
+- Toggle with compile-time constant: `ENABLE_PADE_POSTPROCESS`
+- Default degrees: diagonal split `L = N / 2`, `M = N - L`
+- Output refinement: `PADE_REFINE_FACTOR` points per original DG node
+- Output file series: `output/pade_output_XXXXXX.vtk`
+
+When enabled, the solver keeps the standard DG output unchanged and writes one Padé frame for the **final state** (`t = Tf`).
 
 # Compilation notes
 **Configure with tests enabled (Debug only)**
