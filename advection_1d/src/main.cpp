@@ -13,9 +13,13 @@
 using Device  = TNL::Devices::Host;
 using Real = double;
 using Index = int;
+namespace DG = TNL::DGM;
 
 int main()
 {
+    constexpr bool ENABLE_PADE_POSTPROCESS = true;
+    constexpr int PADE_REFINE_FACTOR = 4;
+
     const int  K   = 12; // number of elements
     const int  N   = 4; // polynomial order of approximation
     const Real a   = 1.0; // advection speed
@@ -128,10 +132,11 @@ int main()
     Real max_speed = 0.0;
     for (int k = 0; k < mesh.numElements(); k++)
     {
+      const Real* uk = u.elementPtr(k);
       for (int i = 1; i < ref.numDOF(); i++)
       {
         r_min = std::min(r_min, ref.nodes()[i] - ref.nodes()[i-1]);
-        max_speed = TNL::argAbsMax(max_speed, advection_speed(u.elementPtr(i)[j]));
+        max_speed = TNL::argAbsMax(max_speed, advection_speed(uk[i]));
       }
     }
 
@@ -169,21 +174,12 @@ int main()
     DG::writeTimeSeriesVTK(mesh, ref, u, "output/output", frame++, t);
     std::cout << "Done. Written " << frame << " frames.\n";
 
-    // ── Padé–Legendre post-processing ────────────────────────────────────────
-    // Diagonal [L/M] approximant with L = floor(N/2), M = ceil(N/2).
-    // The diagonal choice balances numerator and denominator degrees, which
-    // gives the best uniform accuracy for smooth solutions while still
-    // capturing rational-function behaviour near discontinuities.
-    const int L = N / 2;
-    const int M = N - L;
-    DG::PadeLegendreSolver<Real> pade_solver(ref, L, M);
-
-    std::cout << "Padé–Legendre [" << L << "/" << M << "] reconstruction done.\n";
-
-    // Write reconstructed solution on a finer equidistant grid (4×Np points
-    // per element) for smooth visualization in ParaView.
-    int pade_frame = 0;
-    DG::writePadeTimeSeriesVTK(mesh, ref, u, pade_solver,
-                                "output/pade_output", pade_frame++, Tf);
-    std::cout << "Written " << pade_frame << " Padé frame(s).\n";
+    if (ENABLE_PADE_POSTPROCESS)
+    {
+      const int L = N / 2;
+      const int M = N - L;
+      DG::PadeLegendreSolver<Real, Index> pade_solver(ref, L, M);
+      DG::writePadeTimeSeriesVTK(mesh, ref, u, pade_solver, "output/pade_output", 0, t, "u_pade", PADE_REFINE_FACTOR);
+      std::cout << "Padé-Legendre [" << L << "/" << M << "] final-state frame written.\n";
+    }
 }

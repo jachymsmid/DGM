@@ -19,6 +19,8 @@
 #include <string>
 #include <stdexcept>
 #include <iomanip>
+#include <sstream>
+#include <vector>
 
 namespace TNL::DGM {
 
