@@ -12,7 +12,7 @@
 #include "Mesh.hpp"
 #include "ReferenceElement.hpp"
 #include "FieldVector.hpp"
-#include "PadeLegendre.hpp"
+#include "Postprocessing.hpp"
 #include <TNL/Meshes/Readers/VTKReader.h>
 #include <TNL/Meshes/Writers/VTKWriter.h>
 #include <fstream>

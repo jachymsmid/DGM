@@ -81,35 +81,47 @@ public:
    using EigenMat  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
    using EigenVec  = Eigen::Matrix<double, Eigen::Dynamic, 1>;
 
-    /**
-     * @brief Construct the solver.
-     *
-     * Precomputes the inverse Vandermonde matrix and a Gauss–Legendre
-     * quadrature rule accurate enough to integrate P_k P_m u_h exactly.
-     *
-     * @param ref          Reference element (must outlive this object)
-     * @param L            Numerator degree  (L >= 0)
-     * @param M            Denominator degree (M >= 0, L+M <= N)
-     * @param fallback_tol Absolute tolerance: if |Q(x)| < tol use polynomial fallback.
-     *                     Defaults to 100 * machine epsilon for type Real, so
-     *                     the value is automatically appropriate for both float
-     *                     and double instantiations.
-     */
-    PadeLegendreSolver(const ReferenceElement& ref, Index L, Index M,
-                       Real fallback_tol = Real(100) * std::numeric_limits<Real>::epsilon())
-        : ref_(ref), L_(L), M_(M), N_(ref.order()), Np_(ref.numDOF()),
-          fallback_tol_(fallback_tol)
-    {
-        if (L < 0 || M < 0)
-            throw std::invalid_argument("PadeLegendreSolver: L and M must be >= 0");
-        if (L + M > N_)
-            throw std::invalid_argument("PadeLegendreSolver: L + M must be <= N");
+   PadeLegendreSolver( const PadeLegendreSolver& ) = default;
+   PadeLegendreSolver( PadeLegendreSolver&& ) = default;
+   PadeLegendreSolver&
+   operator=( const PadeLegendreSolver& ) = default;
+   PadeLegendreSolver&
+   operator=( PadeLegendreSolver&& ) = default;
+   /**
+    * @brief Construct the solver.
+    *
+    * Precomputes the inverse Vandermonde matrix and a Gauss–Legendre
+    * quadrature rule accurate enough to integrate P_k P_m u_h exactly.
+    *
+    * @param ref          Reference element (must outlive this object)
+    * @param L            Numerator degree  (L >= 0)
+    * @param M            Denominator degree (M >= 0, L+M <= N)
+    * @param fallback_tol Absolute tolerance: if |Q(x)| < tol use polynomial fallback.
+    *                     Defaults to 100 * machine epsilon for type Real, so
+    *                     the value is automatically appropriate for both float
+    *                     and double instantiations.
+    */
+   PadeLegendreSolver( const ReferenceElement& ref,
+                       Index L,
+                       Index M,
+                       Real fallback_tol = Real( 100 ) * std::numeric_limits< Real >::epsilon() )
+   : ref_( ref ),
+     L_( L ),
+     M_( M ),
+     N_( ref.order() ),
+     Np_( ref.numDOF() ),
+     fallback_tol_( fallback_tol )
+   {
+      if( L < 0 || M < 0 )
+         throw std::invalid_argument( "PadeLegendreSolver: L and M must be >= 0" );
+      if( L + M > N_ )
+         throw std::invalid_argument( "PadeLegendreSolver: L + M must be <= N" );
 
-        // Need 2*nq-1 >= k_max + m_max + N = N + M + N = 2N + M
-        // nq = N + M + 1 gives 2(N+M+1)-1 = 2N+2M+1 >= 2N+M  ✓
-        const Index nq = N_ + M_ + 1;
-        buildGaussLegendre_(nq, gl_nodes_, gl_weights_);
-    }
+      // Need 2*nq-1 >= k_max + m_max + N = N + M + N = 2N + M
+      // nq = N + M + 1 gives 2(N+M+1)-1 = 2N+2M+1 >= 2N+M
+      const Index nq = N_ + M_ + 1;
+      buildGaussLegendre_( nq, gl_nodes_, gl_weights_ );
+   }
 
     // ── Public interface ──────────────────────────────────────────────────────
 

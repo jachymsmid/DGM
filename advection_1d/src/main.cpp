@@ -4,7 +4,7 @@
 #include "NumericalFlux.hpp"
 #include "Integrator.hpp"
 #include "Operator.hpp"
-#include "PadeLegendre.hpp"
+#include "Postprocessing.hpp"
 #include <TNL/Containers/StaticArray.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Math.h>
@@ -16,17 +16,12 @@ using Index = int;
 
 int main()
 {
-    const int  K = 12; // number of elements
-    const int N = 4; // polynomial order of approximation
-    const Real a = 1.0; // advection speed
-    const Real Tf = 2.0; // final time
+    const int  K   = 12; // number of elements
+    const int  N   = 4; // polynomial order of approximation
+    const Real a   = 1.0; // advection speed
+    const Real Tf  = 2.0; // final time
     const Real CFL = 0.4;
-    const Real PI = TNL::pi;
-
-    // Build mesh: either from a VTK file or uniform
-    // DG::Mesh<Real> mesh = (argc > 1)
-    //     ? DG::Mesh<Real>::readVTK(argv[1])
-    //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
+    const Real PI  = TNL::pi;
 
     // Burger's equation
     // auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };
@@ -124,41 +119,23 @@ int main()
     TNL::Containers::StaticArray< 2, int > end{mesh.numElements(), ref.numDOF()};
 
     // 2-dimensional parallel for
+    // wouldnt mesh.forElement() be better?
     TNL::Algorithms::parallelFor< Device >(begin, end, saw_init);
 
     // -------------------------- more setup ----------------------------------
-    // find delta x_min for time step computation
+    // find delta x_min and max advection speed for time step computation
     Real r_min = 2.0;
+    Real max_speed = 0.0;
     for (int k = 0; k < mesh.numElements(); k++)
     {
       for (int i = 1; i < ref.numDOF(); i++)
       {
         r_min = std::min(r_min, ref.nodes()[i] - ref.nodes()[i-1]);
+        max_speed = TNL::argAbsMax(max_speed, advection_speed(u.elementPtr(i)[j]));
       }
     }
 
     Real x_min = r_min * mesh.minJacobian();
-
-    // auto energy = [&](const DG::FieldVector<Real>& v) {
-    //   Real E = 0;
-    //   for (int k = 0; k < mesh.numElements(); ++k) {
-    //       Real J = mesh.jacobian(k);
-    //       const Real* vk = v.elementPtr(k);
-    //       for (int i = 0; i < Np; ++i)
-    //           E += ref.weights()[i] * J * vk[i] * vk[i];
-    //   }
-    //   return E;
-    // };
-
-    // find max advection speed
-    Real max_speed = 0.0;
-    for (int i = 0; i < mesh.numElements(); i++)
-    {
-      for (int j = 0; j < ref.numDOF(); j++)
-      {
-        max_speed = TNL::argAbsMax(max_speed, advection_speed(u.elementPtr(i)[j]));
-      }
-    }
 
     Real dt = DG::SSPRK<Real>::computeDt(x_min, max_speed, N, CFL);
 
