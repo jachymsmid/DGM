@@ -4,6 +4,7 @@
 #include "NumericalFlux.hpp"
 #include "Integrator.hpp"
 #include "Operator.hpp"
+#include "Solver.hpp"
 #include <TNL/Containers/StaticArray.h>
 #include <TNL/Containers/Vector.h>
 #include <TNL/Math.h>
@@ -15,7 +16,19 @@ using Index = int;
 
 int main()
 {
-   // move to config struct
+   TNL::DGM::Solver<Model> solver;
+   solver.init();
+   solver.computeTimeStep();
+   solver.makeSnapshot();
+
+   while ( solver.timeStepping.runSimulation() )
+   {
+      solver.integrate();
+      solver.applyFilter();
+      solver.updateTime();
+   }
+
+   // move to config struct (prameter container)
     const int  K = 12; // number of elements
     const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
@@ -121,41 +134,6 @@ int main()
     // 2-dimensional parallel for
     TNL::Algorithms::parallelFor< Device >(begin, end, cone_init);
 
-    // -------------------------- more setup ----------------------------------
-    // find delta x_min for time step computation
-    Real r_min = 2.0;
-    for (int k = 0; k < mesh.numElements(); k++)
-    {
-      for (int i = 1; i < ref.numDOF(); i++)
-      {
-        r_min = std::min(r_min, ref.nodes()[i] - ref.nodes()[i-1]);
-      }
-    }
-
-    Real x_min = r_min * mesh.minJacobian();
-
-    // auto energy = [&](const DG::FieldVector<Real>& v) {
-    //   Real E = 0;
-    //   for (int k = 0; k < mesh.numElements(); ++k) {
-    //       Real J = mesh.jacobian(k);
-    //       const Real* vk = v.elementPtr(k);
-    //       for (int i = 0; i < Np; ++i)
-    //           E += ref.weights()[i] * J * vk[i] * vk[i];
-    //   }
-    //   return E;
-    // };
-
-    // find max advection speed
-    Real max_speed = 0.0;
-    for (int i = 0; i < mesh.numElements(); i++)
-    {
-      for (int j = 0; j < ref.numDOF(); j++)
-      {
-        max_speed = TNL::argAbsMax(max_speed, advection_speed(u.elementPtr(i)[j]));
-      }
-    }
-
-    Real dt = DG::SSPRK<Real>::computeDt(x_min, max_speed, N, CFL);
 
     std::cout << "Starting simulation with: " << std::endl;
     std::cout << "\tK = " << K << std::endl;
