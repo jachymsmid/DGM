@@ -16,7 +16,6 @@ using Index = int;
 
 int main()
 {
-<<<<<<< HEAD
    TNL::DGM::Solver<Model> solver;
    solver.init();
    solver.computeTimeStep();
@@ -30,9 +29,6 @@ int main()
    }
 
    // move to config struct (prameter container)
-=======
-   // move to config struct
->>>>>>> c359168 (changes)
     const int  K = 12; // number of elements
     const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
