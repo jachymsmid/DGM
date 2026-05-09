@@ -15,17 +15,13 @@ using Index = int;
 
 int main()
 {
+   // move to config struct
     const int  K = 12; // number of elements
     const int N = 4; // polynomial order of approximation
     const Real a = 1.0; // advection speed
     const Real Tf = 2.0; // final time
     const Real CFL = 0.4;
     const Real PI = TNL::pi;
-
-    // Build mesh: either from a VTK file or uniform
-    // DG::Mesh<Real> mesh = (argc > 1)
-    //     ? DG::Mesh<Real>::readVTK(argv[1])
-    //     : DG::Mesh<Real>::uniform(0.0, 2.0 * M_PI, K);
 
     // Burger's equation
     auto physical_flux = [&] ( Real u ) -> Real { return 1.0/2.0 * u * u; };

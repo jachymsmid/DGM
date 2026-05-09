@@ -13,10 +13,14 @@
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
+/**
+ * @struct Traits
+ * @brief Holds the commonly used types
+ */
 struct Traits
 {
    /**
-    * which device to launch the code on
+    *  which device to launch the code on
     */
    using Device = TNL::Devices::Host;
 
@@ -36,7 +40,7 @@ struct Traits
    using IndexType = int;
    using LocalIndexType = MeshType::LocalIndexType;
    using GlobalIndexType = MeshType::GlobalIndexType;
-
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
+
