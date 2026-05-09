@@ -4,6 +4,7 @@
 #include <TNL/Math.h>
 #include <TNL/Algorithms/parallelFor.h>
 #include <TNL/Containers/Vector.h>
+#include <TNL/Matrices/DenseMatrix.h>
 #include <TNL/Meshes/Mesh.h>
 #include <TNL/Meshes/Readers/VTKReader.h>
 #include <TNL/Meshes/Readers/VTUReader.h>
@@ -40,6 +41,12 @@ struct Traits
    using IndexType = int;
    using LocalIndexType = MeshType::LocalIndexType;
    using GlobalIndexType = MeshType::GlobalIndexType;
+
+   /**
+    * types for matrices and vectors
+    */
+  using Vector = TNL::Containers::Vector< RealType, TNL::Devices::Host, IndexType >;
+  using Matrix = TNL::Matrices::DenseMatrix< RealType, TNL::Devices::Host, IndexType >;
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
