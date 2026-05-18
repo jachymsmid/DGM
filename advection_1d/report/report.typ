@@ -33,6 +33,7 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 
 #heading(level: 1, numbering: none, "Symbols and definitions")
 
+- $Omega$ - our domain
 - $u_h$ - approximate solution obtained on a mesh with spatial step $h$
 - $(u, v)_(L^2(Omega)) = integral_Omega u v dif x$ - scalar product in $L^2$
 - $bar.v.double u bar.v.double _(L^2 (Omega))^2 = (u, u)_(L^2 (Omega))$
@@ -42,6 +43,8 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 - $u^+$ - limit of $u$ when approaching the boundary of an element from the right
 - $f^* = f^* (u^-, u^+)$ - numerical flux
 - $hat(bold(n))$ - outward unit normal
+- $hat(bold(n))^-$ - outward unit normal on the left face of an element ($-1$ in 1D)
+- $hat(bold(n))^+$ - outward unit normal on the right face of an element ($1$ in 1D)
 - $brace.l.stroked u brace.r.stroked = (u^- + u^+)/2$
 - $bracket.l.stroked u bracket.r.stroked = hat(bold(n))^- u^- + hat(bold(n))^+ u^+$
 - $bracket.l.stroked bold(u) bracket.r.stroked = hat(bold(n))^- dot.op bold(u)^- + hat(bold(n))^+ dot.op bold(u)^+$
@@ -56,9 +59,9 @@ This text was mainly inspired by #cite(<hesthaven2008nodal>). My own code suppor
 The general one dimensional advection equation is of the following form:
 $
 (partial bold(u))/(partial t) + (partial bold(f)(bold(u)))/(partial x) =
-bold(s)(x,t) quad [x,t] in chevron.l L, R chevron.r times RR^+
+bold(s)(x,t) quad [x,t] in Omega times RR^+
 $
-where $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$
+where $Omega = (L, R)$ is our domain, $bold(f) = [f_1 (bold(u)),f_2 (bold(u)), dots, f_n (bold(u))]^T$
 is the physical flux, $bold(u) = bold(u)(x,t) = [u_1, u_2, dots, u_n]^T$
 is the unknown vector valued function and $bold(s)(x,t) = [s_1, s_2, dots, s_n]$
 is the source term. This equation is hyperbolic.
@@ -74,7 +77,7 @@ equals the number of the required inflow conditions.
 
 == Weak formulation of the problem
 
-To obtain the weak formulation we multiply the equation by a test function $bold(v) in V$ and integrate over the domain $Omega$.
+To obtain the weak formulation we multiply the equation by a test function $bold(v) in cal(V) = cal(C)^infinity_0 (Omega)$ and integrate over the domain $Omega$.
 $
 integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x + integral_(Omega) bold(v)^T (partial bold(f) (bold(u)))/(partial x) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x.
 $
@@ -82,8 +85,8 @@ Using per-partes on the second integral we obtain
 $
 integral_(Omega) bold(v)^T (partial bold(u))/(partial t) dif x - integral_(Omega) (partial bold(v)^T)/(partial x) bold(f)(bold(u)) dif x + integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x = integral_(Omega) bold(v)^T bold(s)(x,t) dif x,
 $
-where $hat(bold(n))$ is a unit outward normal. Notice that we express the term
-$[bold(v)^T bold(f)(bold(u))]_L^R$ in a integral form
+where $hat(bold(n))$ is the outward unit normal on the domain boundary $partial Omega$. Notice that we express the term
+$[bold(v)^T bold(f)(bold(u))]_L^R$ in the integral form
 $integral_(partial Omega) hat(bold(n)) dot.op bold(v)^T bold(f) (bold(u)) dif x$,
 this will later help us when moving to multiple dimensions.
 
@@ -94,13 +97,13 @@ generalize the scheme later.
 
 == Spatial discretization
 
-We split our domain $Omega = chevron.l L, R chevron.r$ into $N$ elements
+We split our domain $Omega = (L, R)$ into $N$ elements
 $
 D^k= chevron.l x_(k-1/2), x_(k+1/2) chevron.r, thick k = 1,2,dots,K,
 $
 here $x_k$ is the center of the  $k$-th element and $x_(1/2) = L$, $x_(N+1/2) = R$.
 $
-Omega approx Omega_h = limits(union.big)_(k=1)^K D^k
+dash(Omega) approx dash(Omega)_h = limits(union.big)_(k=1)^K D^k
 $
 We now formulate the local weak formulation
 $
@@ -114,9 +117,9 @@ What vallue should we choose when evaluating the $integral_(partial D^k) hat(bol
 To solve this we define a numerical flux $f^* = f^* (u^-, u^+)$ that takes in both values and returns only one.
 The equation then becomes
 $
-integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f^*(u) dif x // + integral_(D^k) v (s)(x,t) dif x
+integral_(D^k) v (partial u)/(partial t) dif x = integral_(D^k) (partial v)/(partial x) f(u) dif x - integral_(partial D^k) hat(bold(n)) v f^*(u^-, u^+) dif x // + integral_(D^k) v (s)(x,t) dif x
 $
-The flux must be consistent i.e. $f^* (a,a) = f (a).$
+// The flux must be consistent i.e. $f^* (a,a) = f (a).$
 
 #figure(
   image("img/elements_multivalue.pdf", width: 60%),
@@ -171,10 +174,10 @@ where $P_j (D^k)$ is a space of polynomials of at most degree $j$ on the interva
 
 Now we can express the local approximate solution in the basis of the space $V_h^k$
 $
-x in D^k quad : quad u_h^k = sum_(n)^(N_p) hat(u)_n^k (t) phi_n (x) =
-sum_i^(N_p) u_h^k (x_i, t) l_i (x),
+x in D^k quad : quad u_h^k (x,t) = sum_(n=1)^(N_p) hat(u)_n^k (t) phi_n (x) =
+sum_(i=1)^(N_p) u_h^k (x_i, t) l_i (x),
 $
-where $hat(u)_n$ is a vector of coefficients and $l_i$ is the $i$-th
+where $hat(u)_n$ is a vector of coefficients, $phi_n$ is $n$-th basis function and $l_i$ is the $i$-th
 interpolating Lagrange polynomial, we assume that $x_i in D^k$ are distinct.
 The first expression is said to be modal representation and the second nodal.
 We won't discuss the modal formulation any further in this text,
@@ -185,7 +188,7 @@ Following the Galerkin approach we replace the test function with each of
 the basis functions. This yields a system of $N+1$ equations for each element
 $
 integral_(D^k) l_i (x) partial/(partial t)(sum_(j=1)^N_p u_h (x_j, t)) dif x = integral_(D^k) (dif l_i (x))/(dif x) sum_(j=1)^N_p a u_h (x_j, t) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
-dif/(dif t) sum_(j=1)^N_p u_h (x_j, t) integral_(D^k) l_i (x) l_j (x) dif x = sum_(j=1)^N_p a u_h (x_j, t) integral_(D^k) (dif l_i (x))/(dif x) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
+sum_(j=1)^N_p dif/(dif t) u_h (x_j, t) integral_(D^k) l_i (x) l_j (x) dif x = sum_(j=1)^N_p a u_h (x_j, t) integral_(D^k) (dif l_i (x))/(dif x) l_j (x) dif x - integral_(partial D^k) l_i f^* dif x\
 i = 1,2,dots,N+1\
 $
 We can rewrite this equation into it's matrix form
@@ -195,7 +198,7 @@ $
 where
 $
 &M_(i j)^k = integral_(D^k) l_i (x) l_j (x) dif x " - the mass matrix"\
-&S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stifness matrix"\
+&S_(i j)^k = integral_(D^k) l_i (x) (dif l_j (x))/(dif x) dif x " - the stiffness matrix"\
 &cal(E)_(i j) = cases(&1 quad : quad "upper left corner and lower right corner",
                 &0 quad : quad "otherwise")\
 &(bold(u)_h^k)_j = u_h (x_j^k, t) " - the vector of unknowns"\
@@ -209,20 +212,20 @@ We will discuss all the local operatros in more detail later.
 When choosing the basis of the space $V_h^k$ we have many options.
 But for the mass matrix to be well conditioned we will choose the Legendre polynomials. #cite(<hesthaven2008nodal>, supplement: [pg. 45])
 
-=== Legender polynomials
+=== Legendre polynomials
 Legendre polynomials are a complete set of orthogonal polynomials defined on
 $chevron.l -1, 1 chevron.r$
 
 An easy way to calculate the polynomials is through the three term reccurence
 using the Bonnet's formula [cite]
 $
-P_n = ((2 n + 1) x P_(n-1) (x) - n P_(n-2) (x)) / (n + 1);\
+P_n (x) = ((2 n + 1) x P_(n-1) (x) - n P_(n-2) (x)) / (n + 1)
 $
 To start the reccurence we need the first two terms. They are given as
 $
 P_0 (x) = 1, quad P_1 (x) = x
 $
-Now to obtain the normalized (in the $L^2$ norm) Legender polynomials
+Now to obtain the normalized (in the $L^2$ norm) Legendre polynomials
 $tilde(P)_n (x)$ we multiply each polynomial by an appropriate coefficient
 $
 tilde(P)_n (x) = sqrt((2 n + 1)/2) P_n (x)
@@ -282,7 +285,7 @@ There are $N+1$ LGL nodes for solution approximation of order $N$. #cite(<hestha
 // $
 // where $delta_(i j)$ is the Kronecker delta.
 //
-// Without other comments the Legender-Gauss-Lobatto nodes were chosen.
+// Without other comments the Legendre-Gauss-Lobatto nodes were chosen.
 
 == Local operators <local_operators>
 Up till now we were developing a sensible local representation
@@ -351,9 +354,9 @@ where $bold(e)_i$ is a zero vector with $1$ at index $i$. We can rewrite this us
 $
 integral_(partial D^k) hat(bold(n)) f^* l_i (r) dif x = cal(E) dot.op (f^*_R, f^*_L)^T
 $
-Again, to recover the semi-discrete form we multiply by the inverse mass matrix from the left. We call this matrix the LIFT.
+Again, to recover the semi-discrete form we multiply by the inverse mass matrix from the left. We call this matrix the $L$.
 $
-"LIFT" = M^(-1) cal(E) = cal(V) cal(V)^T cal(E)
+L = M^(-1) cal(E) = cal(V) cal(V)^T cal(E)
 $
 #cite(<hesthaven2008nodal>, supplement: [pg. 56])
 
@@ -361,7 +364,7 @@ $
 
 Two explicit RK4 methods were implemented to integrate the semidiscrete system
 $
-(dif u_h)/(dif t) = cal(L)_h (u_h, t) // = 1/J^k (D_w bold(f)^k - "LIFT" bold(f)^k_*)
+(dif u_h)/(dif t) = cal(L)_h (u_h, t) // = 1/J^k (D_w bold(f)^k - L bold(f)^k_*)
 $
 
 === ERK
@@ -403,11 +406,11 @@ $
 M^k (dif bold(u)_h^k)/(dif t) - S^T bold(u)_h^k = - [l^k (x) f^*(u))]_(x_l^k)^(x_r^k) = - cal(E) (f^*(u), f^*(u))^T\
 J^k M (dif bold(u)_h^k)/(dif t) - S^T bold(u)_h^k = - cal(E) (f^*(u), f^*(u))^T\
 (dif bold(u)_h^k)/(dif t) = 1/J^k ( M^(-1) S^T bold(u)_h^k - M^(-1) cal(E) (f^*_R, f^*_L)^T)\
-(dif bold(u)_h^k)/(dif t) = 1/J^k ( D_w bold(u)_h^k - "LIFT" (f^*_R, f^*_L)^T)
+(dif bold(u)_h^k)/(dif t) = 1/J^k ( D_w bold(u)_h^k - L (f^*_R, f^*_L)^T)
 $
 We have defined all of these operators beforehand in @local_operators.
 
-Now let's test our solver on multiple initial conditions with different number of elemnets ($K$) and polynomial order ($N$).
+Now let's test our solver on multiple initial conditions with different number of elements ($K$) and polynomial order ($N$).
 First we will test non-smooth initial conditions. On the left are the initial
 conditions and on the right is the solution after one period. (Keep in mind we are using periodic boundary conditions)
 
