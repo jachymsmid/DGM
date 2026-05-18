@@ -206,7 +206,7 @@ these are known as the Legendre-Gauss-Lobatto nodes. The LGL nodes will be noted
 // l_i (x_j) = delta_(i j),
 // $
 // where $delta_(i j)$ is the Kronecker delta.
-// 
+//
 // Without other comments the Legender-Gauss-Lobatto nodes were chosen.
 
 == Local operators
@@ -240,7 +240,7 @@ M D = S
 $
 The entries of the differentiation matrix can be found directly
 $ D = cal(V)_r cal(V)^(-1), $
-where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials. 
+where $cal(V)_r$ is the Vandermonde matrix assembled from differentiated Legendre polynomials.
 $
 (cal(V)_r)_(i j) = psi'_j (xi_i)
 $
