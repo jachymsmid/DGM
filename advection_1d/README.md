@@ -1,6 +1,17 @@
 # DGM solver for 1D advection equation
 
-This solver was written along the book Nodal Discontinuous Galerkin Methods by Hesthaven and Warburton.
+A templated Discontinuous Galerkin solver for the 1D advection equation, implemented following *Nodal Discontinuous Galerkin Methods* by Hesthaven and Warburton. The solver uses TNL (Template Numerical Library) for mesh and vector operations and supports multiple explicit time integrators (ERK, LSERK, SSPRK) with various numerical flux implementations.
+
+## Architecture
+
+The solver is organized as a templated DG pipeline:
+
+**Mesh** → **ReferenceElement** → **NumericalFlux** → **Operator (RHS)** → **Integrator** → **VTK output**
+
+All components are templated with:
+- `Real`: floating-point type (default: `double`)
+- `Device`: TNL device (default: `Host`)
+- `Index`: integer type for indexing (default: `int`)
 
 ## MeshConfig.hpp
 This is a config struct for the TNL::Meshes::Mesh constructor. It inherits from the TNL::Meshes::Mesh::DefaultConfig, that has these templates:
@@ -15,137 +26,228 @@ using TNLMesh1D = TNL::Meshes::Mesh<Mesh1DConfig<Real, Index, short>, Device>;
 ```
 Where `Real`, `Index` and `Device` are templated.
 
-## DGMesh.hpp
-This is a mesh class for the DGM. It is templated with `Real`, `Index` and `Device`. It contains
-- `numK_` : number of elements in the mesh
-- `vertCoods_` : coordinates of the vertices of the elements
-- `mesh_` : the underlying TNL mesh
+## Mesh.hpp
 
-### Constructors
-This class has three constructors
-- Constructor from an already built mesh
-```cpp
-DG1DMesh(MeshType mesh);
-```
-- Constructor that creates a mesh with uniform steps
-```cpp
-DG1DMesh uniform(Real a, Real b, Index K)
-```
-- Constructor that reads a VTK file a creates the mesh
-```cpp
-TODO
-```
+The `Mesh` class wraps a TNL 1D mesh and provides DG-specific geometric utilities:
 
-### Public methods
-- `numElements()` : returns the number of elements of the mesh
-- `numFaces()` : returns the number of faces of all elements (should be numElements + 1 in 1D)
-- `leftVertex(Index k)` : returns the coordinate of the left vertex of k-th element
-- `rightVertex(Index k)` : returns the coordinate of the right vertex of k-th element
-- `elementSize(Index k)` : returns the size of the k-th element
-- `jacobian(Index k)` : returns the Jacobian of the k-th element
-- `leftCellOfFace(Index f)` : returns the index of the cell to the left of the f-th face, if the face is the left boundary a -1 is returned
-- `rightCellOfFace(Index f)` : returns the index of the cell to the right of the f-th face, if the face is the right boundary a -1 is returned
-- `leftNormal()` : returns the left normal (its just -1 in 1D)
-- `rightNormal()` : returns the right normal (its just 1 in 1D)
-- `isBoundaryFace(Index f)` : checks whether the face with index f is a boundary or not
-- `faceCoord(Index f)` : returns the coordinate of the f-th face
-- `tnlMesh()` : returns the underlying TNL mesh
+**Members:**
+- `mesh_`: underlying TNL unstructured mesh
+- `numElements_`: number of elements (K)
+- Additional geometry and adjacency helpers (element sizes, face neighbors, normals)
 
-### Private methods
-- `buildDerivedData_()` :
-    - sets the number of elements
-    - computes the coordinates of the vertices
+**Constructors:**
+- Construct from an existing TNL mesh
+- Factory `uniform(a, b, K)`: creates a uniform mesh on interval [a,b] with K elements
+- Factory `readVTK(filename)`: reads mesh from a VTK file
+
+**Key methods:**
+- `numElements()`: returns K (number of elements)
+- `numFaces()`: returns K+1 (number of faces in 1D)
+- `leftVertex(k)`, `rightVertex(k)`: boundary coordinates of element k
+- `elementSize(k)`, `jacobian(k)`: element metrics
+- `leftCellOfFace(f)`, `rightCellOfFace(f)`: neighbor queries (returns -1 at domain boundary)
+- `isBoundaryFace(f)`: test if face is at domain boundary
+- `faceCoord(f)`: physical coordinate of face f
+- `leftNormal()`, `rightNormal()`: return -1 and +1 respectively (1D normals)
+- `tnlMesh()`: access underlying TNL mesh
 
 ## ReferenceElement.hpp
-This is a class that holds the data about a reference element. It comprises
-- `N_` : the polynomial order of the approximation
-- `Np_` : number of degrees of freedom
-- `r_` : LGL nodes
-- `w_` : LGL weights
-- `V_` : the Vandermonde matrix
-- `Dr_` : the derivative matrix
-- `LIFT_` : the lift
 
-### Public methods
-- `order()` : returns the polynomial order of the approximation
-- `numDOF()` : returns the number of degrees of freedom
-- `nodes()` : returns the coordinates of the LGL nodes on the reference element
-- `weights()` : returns the coordinates of the LGL weights on the reference element
-- `V()` : returns the Vandermonde matrix
-- `Dr()` : returns the derivative matrix
-- `LIFT()` : returns the LIFT matrix
-- `legendreP(Index n, Real x)` : evaluates the Legendre polynomial of order 'n' at coordinate 'x'
-- `legendrePderiv(Index n, Real x)` : evaluates the derivative of the Legendre polynomial of order 'n' at coordinate 'x'
 
-### Private methods
-- `computeGLL_(Vector& r, Vector& w)` : computes the GLL nodes and weights
-- `buildVandermonde_(const Vector& r)` : builds the Vandermonde matrix from the LGL nodes
-- `buildDerivVandermonde(const Vector& r)` : builds the derivative of the Vandermonde matrix
-- `invertMatrix_(const Matri& A)` : inverts the matrix A using the Gauss-Jordan elimination
-- `buildDMatrix_(const Matrix& V)` : builds the derivative matrix
-- `buildLIFT_(const Matrix& V)` : builds the LIFT matrix
+Builds and manages nodal DG operators for the reference element [-1, 1].
 
-## FiledVector.hpp
-This is a class that stores
-- `data_` : vector of the data
-- `K_` : number of elements
-- `Np_` : number of degrees of freedom
+**Members:**
+- `N_`: polynomial order
+- `Np_`: number of degrees of freedom (= N + 1)
+- `r_`: Gauss-Legendre-Lobatto (GLL) node positions
+- `w_`: GLL weights
+- `V_`: Vandermonde matrix (evaluates Legendre basis at GLL nodes)
+- `Dr_`: derivative matrix (computes derivatives of nodal expansion)
+- `LIFT_`: lifting matrix (projects surface fluxes into volume RHS)
 
-It has two constructors
-- default constructor
-- constructor if the 'K' and 'Np' are specified
-```cpp
-FiledVector(Index K, Index Np);
-```
+**Key methods:**
+- `order()`: returns polynomial degree N
+- `numDOF()`: returns Np (number of nodes per element)
+- `nodes()`, `weights()`: GLL node/weight access
+- `V()`, `Dr()`, `LIFT()`: operator matrices
+- `legendreP(n, x)`: evaluates Legendre polynomial P_n(x)
+- `legendrePderiv(n, x)`: evaluates dP_n/dx
 
-### Public methods
-- `numElements()` : returns the number of elements
-- `numDOF()` : returns the number of degrees of freedom
-- `totalSize()` : returns the total number of data points
-- `elementPtr(Index k)` : returns a pointer to the first element of the k-th element
-- `data()` : returns the data vector
-- `copyFrom(const FiledVector& other)` : deep copy
+**Implementation notes:** Uses Eigen-based matrix inversion and TNL matrices for storage. GLL nodes are computed via root-finding on derivatives of Legendre polynomials.
+
+
+## FieldVector.hpp
+
+Element-major contiguous storage for DG solution fields.
+
+**Members:**
+- `K_`: number of elements
+- `Np_`: degrees of freedom per element
+- `data_`: TNL vector holding K*Np values
+
+**Storage layout:** Values are ordered element-major: `data[i + k*Np]` is the i-th DOF of element k.
+
+**Constructors:**
+- Default: empty (K=0, Np=0)
+- `FieldVector(K, Np)`: allocate for K elements with Np DOFs each, initialize to zero
+
+**Key methods:**
+- `numElements()`, `numDOF()`, `totalSize()`: query dimensions
+- `elementPtr(k)`: host pointer to start of element k's DOFs
+- `data()`, `data() const`: access underlying storage
+- `copyFrom(other)`: deep copy from another FieldVector
+
+**Element-local access:** Use `elementPtr(k)` to obtain a local pointer for element-wise operations, or index the storage directly as `data()[i + k*Np]`.
+
 
 ## NumericalFlux.hpp
-This is a general struct that computes the numerical flux from $u^+$, $u^-$ and $\mathbf{n}$
-There are two numerical fluxes that inherit from the general struct
 
-### Upwind
-```math
-begin{align*}
-f^* = f(u^-) \text{ for } \mathbf{n} > 0\\
-f^* = f(u^+) \text{ for } \mathbf{n} < 0\\
-end{align*}
+Abstract interface and implementations for computing numerical fluxes at element interfaces.
+
+**Interface:** 
+```cpp
+template<class Real>
+struct NumericalFlux {
+  virtual Real compute(Real u_minus, Real u_plus, Real n_outward) const = 0;
+};
 ```
 
-### Lax-Friedrichs
-```math
-f^* = 0.5(f(u^-) + f(u^+)) - 0.5 C (u^+ - u^-)
-```
+Returns the scalar numerical flux f* to use in the DG surface term, given:
+- `u_minus`: interior (left) state
+- `u_plus`: exterior (right) state  
+- `n_outward`: outward normal from interior element (-1 for left face, +1 for right face)
+
+**Implementations:**
+
+1. **UpwindFlux**: Selects the upwind state based on advection speed sign
+   - If `a(u) * n_outward >= 0`: use interior flux `f(u_minus)`
+   - Otherwise: use exterior flux `f(u_plus)`
+
+2. **LaxFriedrichsFlux** (Rusanov): Arithmetic flux plus jump penalty
+   - `f* = 0.5(f(u−) + f(u+)) + 0.5·C·n_outward·(u− − u+)`
+   - where `C = max(|a(u−)|, |a(u+)|)`
+
+3. **GodunovFlux**: Exact solver-based flux (for Burgers' equation)
+   - Solves the local Riemann problem exactly
+
+4. **RoeFlux**: Linearized Riemann solver using Roe average
+   - Uses intermediate state weighted by characteristic speeds
+
+All fluxes are constructed with function objects for advection speed and physical flux evaluation.
+
 ## Operator.hpp
-This class computes the RHS for the semi-discrete form of the equation. It comprises
-- `mesh_` : the mesh class
-- `ref_` : the reference element class
-- `flux_` : the numerical flux struct
-- `physFlux_` : the physical flux function
 
-It has only one member function `computeRHS(const Field& u, Field& res)` that computes the RHS and saves it into 'res'.
+Computes the semi-discrete RHS for the DG discretization via volume and interface terms.
 
-## RK4Integrator.hpp
-This class features the 4 step order Runge-Kutta methods for numerical integration. It comprises
-- `K_` : number of elements
-- `Np_` : number of degrees of freedom
-- `callback_` : callback function
-- `k1_`,`k2_`,`k3_`,`k4_` : the four derivatives
-- `tmp_` : temporary field
-- `lastStepCount_` : last step count
-- `currentTime_` : current time
+**Members:**
+- `mesh_`: DG mesh (geometry and adjacency)
+- `ref_`: reference element (nodal operators)
+- `flux_`: numerical flux implementation
+- `physFlux_`: physical flux function callback
+
+**Key method:**
+- `computeRHS(const FieldVector& u, FieldVector& rhs)`: 
+  - Computes volume term: `−Dr · u` on each element
+  - Computes interface term: lift of numerical flux jumps
+  - Stores semi-discrete RHS in `rhs`
+
+**RHS callback:** Provides `rhsFunction()` signature for time integrators:
+```cpp
+void rhsFunction(const FieldVector& u, FieldVector& rhs, const Real& t)
+```
+
+**Boundary handling:** Currently uses periodic boundary conditions. For other conditions, modify the neighbor lookups in `computeRHS()`.
+
+
+## Integrator.hpp
+
+Multiple explicit Runge–Kutta time integration schemes with a shared callback signature.
+
+**RHS callback signature:**
+```cpp
+void(const FieldVector& u, FieldVector& rhs, const Real& t)
+```
+
+**Integrator classes:**
+
+1. **ERK** (Explicit Runge–Kutta)
+   - Standard p-stage explicit RK of order p (p ∈ {1,2,3,4})
+   - RK4 is the default (4 stages, 4th order)
+   - Tableau-driven implementation
+
+2. **LSERK** (Low-Storage Explicit RK)
+   - Reduced memory: only 2 field vectors instead of p+1
+   - Useful for large-scale problems
+   - Same order as ERK for same stage count
+
+3. **SSPRK** (Strong Stability Preserving RK)
+   - TVD property: preserves monotonicity under appropriate CFL restriction
+   - SSPRK3(3) is the most common 3-stage, 3rd-order variant
+
+All integrators:
+- Advance state `u` from time `t` by step `dt`
+- Accept a user-provided RHS callback
+- Manage internal stage storage and temporal state
+
 
 ## IO.hpp
-This is a compilation of functions that work as input output for the solver.
 
-- `writeToVTK(const Mesh mesh, const Ref ref, const string filename, const string fieldname, Real t)` : writes the data to a VTK file
-- `writeTimeSeriesVTK(const Mesh mesh, const Ref ref, const string base_name, int frameIndex, Real t, const string fieldname)` : outputs multiple VTK files
+VTK input/output utilities for visualizing DG solutions.
+
+**Main functions:**
+
+1. **writeToVTK**
+   ```cpp
+   void writeToVTK(const Mesh& mesh, const ReferenceElement& ref,
+                   const FieldVector& u, const std::string& filename,
+                   const std::string& fieldName = "u", Real t = 0)
+   ```
+   - Writes DG solution to a legacy ASCII VTK file
+   - Creates K*Np points (one per DG node) and K cells (one POLY_LINE per element)
+   - Paraview visualizes element-local polynomials with discontinuities at interfaces
+   - Includes POINT_DATA scalar array with field values
+
+2. **writeTimeSeriesVTK**
+   ```cpp
+   void writeTimeSeriesVTK(const Mesh& mesh, const ReferenceElement& ref,
+                           const FieldVector& u, const std::string& base_name,
+                           int frameIndex, Real t, const std::string& fieldName = "u")
+   ```
+   - Generates time-series VTK files with naming convention: `{base_name}_{frameIndex:06d}.vtk`
+   - Useful for animation sequences in Paraview
+
+**Output format:** Legacy ASCII VTK (version 3.0) compatible with Paraview and VisIt.
+
+
+# Testing
+
+The project includes a comprehensive test suite covering:
+- **FieldVector**: storage, indexing, and deep copy
+- **ReferenceElement**: GLL node computation, matrix construction, Legendre polynomials
+- **Mesh**: uniform and VTK mesh creation, geometry queries, neighbor lookups
+- **NumericalFlux**: flux computations for various schemes
+- **Integrator**: time stepping with all RK variants
+- **Operator**: RHS assembly and interface term handling
+
+Run tests via:
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+Or run individual test binaries directly:
+```bash
+./build/tests/test_reference_element --gtest_filter="*DMatrix*"
+```
+
+# Documentation
+
+Full API documentation is generated by Doxygen. To build:
+```bash
+doxygen Doxyfile
+open docs/html/index.html
+```
+
+The documentation describes all classes, methods, and includes algorithm references for key operations (e.g., GLL node computation, Roe flux).
 
 # Compilation notes
 **Configure with tests enabled (Debug only)**
