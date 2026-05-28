@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Mesh.hpp"
+#include "Operator.hpp"
+#include "Solver.hpp"
 #include <TNL/Devices/Host.h>
 #include <TNL/Math.h>
 #include <TNL/Algorithms/parallelFor.h>
@@ -26,10 +29,17 @@ struct Traits
    using Device = TNL::Devices::Host;
 
    /**
+    * basic types
+    */
+   using RealType = float;
+   using IndexType = int;
+
+   /**
     * types used for configuring the input mesh
     */
    using MeshConfig = TNL::Meshes::DefaultConfig< TNL::Meshes::Topologies::Quadrangle >;
    using MeshType = TNL::Meshes::Mesh< MeshConfig, Device >;
+   using MyMesh = TNL::DGM::Mesh<RealType, Device, IndexType>;
    using HostMeshType = TNL::Meshes::Mesh< MeshConfig, TNL::Devices::Host >;
    using ReaderType = TNL::Meshes::Readers::VTKReader;
    using WriterType = TNL::Meshes::Writers::VTKWriter< HostMeshType >;
@@ -37,16 +47,20 @@ struct Traits
    /**
     * types for basic data types
     */
-   using RealType = float;
-   using IndexType = int;
    using LocalIndexType = MeshType::LocalIndexType;
    using GlobalIndexType = MeshType::GlobalIndexType;
 
    /**
     * types for matrices and vectors
     */
-  using Vector = TNL::Containers::Vector< RealType, TNL::Devices::Host, IndexType >;
-  using Matrix = TNL::Matrices::DenseMatrix< RealType, TNL::Devices::Host, IndexType >;
+  using Vector = TNL::Containers::Vector< RealType, Device, IndexType >;
+  using Matrix = TNL::Matrices::DenseMatrix< RealType, Device, IndexType >;
+
+  /**
+   * custom DGM types
+   */
+  using Operator = TNL::DGM::Operator< RealType, Device, IndexType >;
+
 };
 
 // ------------------------------------------------------------------------------------------------------------------ //
