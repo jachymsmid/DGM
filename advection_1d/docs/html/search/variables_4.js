@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['flux_5f_0',['flux_',['../classDG_1_1Operator.html#a6c98602589a220bf00830ea688b1bb2d',1,'DG::Operator']]]
+  ['valid_0',['valid',['../structDG_1_1PadeApproximant.html#a6ca46358156cb65b79e8ca98a2bb0b7b',1,'DG::PadeApproximant']]]
 ];

@@ -10,7 +10,7 @@
 
 #include <TNL/Containers/Vector.h>
 
-namespace DG {
+namespace TNL::DGM {
 
 /**
  * @class FieldVector

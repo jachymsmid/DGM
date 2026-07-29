@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>advection_1d: headers/NumericalFlux.hpp File Reference</title>
+<title>DGM: advection_1d/include/NumericalFlux.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -26,8 +26,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">advection_1d
+   <div id="projectname">DGM<span id="projectnumber">&#160;0.1</span>
    </div>
+   <div id="projectbrief">Numerical lirary utilizing the Discontinuos Galerkin Method</div>
   </td>
  </tr>
  </tbody>
@@ -101,20 +102,16 @@ $(function(){initNavTree('NumericalFlux_8hpp.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:DG_3A_3ANumericalFlux_3C_20Real_20_3E" id="r_DG_3A_3ANumericalFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1NumericalFlux.html">DG::NumericalFlux&lt; Real &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract interface for numerical flux computations at interfaces.  <a href="structDG_1_1NumericalFlux.html#details">More...</a><br /></td></tr>
-<tr class="memitem:DG_3A_3AUpwindFlux_3C_20Real_20_3E" id="r_DG_3A_3AUpwindFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1UpwindFlux.html">DG::UpwindFlux&lt; Real &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upwind numerical flux using the sign of the advection speed.  <a href="structDG_1_1UpwindFlux.html#details">More...</a><br /></td></tr>
-<tr class="memitem:DG_3A_3ALaxFriedrichsFlux_3C_20Real_20_3E" id="r_DG_3A_3ALaxFriedrichsFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1LaxFriedrichsFlux.html">DG::LaxFriedrichsFlux&lt; Real &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Lax–Friedrichs (Rusanov) flux.  <a href="structDG_1_1LaxFriedrichsFlux.html#details">More...</a><br /></td></tr>
-<tr class="memitem:DG_3A_3AGodunovFlux_3C_20Real_20_3E" id="r_DG_3A_3AGodunovFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1GodunovFlux.html">DG::GodunovFlux&lt; Real &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Godunov flux (exact Riemann solver for scalar problems).  <a href="structDG_1_1GodunovFlux.html#details">More...</a><br /></td></tr>
-<tr class="memitem:DG_3A_3ARoeFlux_3C_20Real_20_3E" id="r_DG_3A_3ARoeFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1RoeFlux.html">DG::RoeFlux&lt; Real &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Roe approximate Riemann solver (linearized flux).  <a href="structDG_1_1RoeFlux.html#details">More...</a><br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
-Namespaces</h2></td></tr>
-<tr class="memitem:DG" id="r_DG"><td class="memItemLeft">namespace &#160;</td><td class="memItemRight"><a class="el" href="namespaceDG.html">DG</a></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3ANumericalFlux_3C_20Real_20_3E" id="r_TNL_3A_3ADGM_3A_3ANumericalFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1NumericalFlux.html">TNL::DGM::NumericalFlux&lt; Real &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract interface for numerical flux computations at interfaces.  <a href="structTNL_1_1DGM_1_1NumericalFlux.html#details">More...</a><br /></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3AUpwindFlux_3C_20Real_20_3E" id="r_TNL_3A_3ADGM_3A_3AUpwindFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1UpwindFlux.html">TNL::DGM::UpwindFlux&lt; Real &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upwind numerical flux using the sign of the advection speed.  <a href="structTNL_1_1DGM_1_1UpwindFlux.html#details">More...</a><br /></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3ALaxFriedrichsFlux_3C_20Real_20_3E" id="r_TNL_3A_3ADGM_3A_3ALaxFriedrichsFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1LaxFriedrichsFlux.html">TNL::DGM::LaxFriedrichsFlux&lt; Real &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Local Lax–Friedrichs (Rusanov) flux.  <a href="structTNL_1_1DGM_1_1LaxFriedrichsFlux.html#details">More...</a><br /></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3AGodunovFlux_3C_20Real_20_3E" id="r_TNL_3A_3ADGM_3A_3AGodunovFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1GodunovFlux.html">TNL::DGM::GodunovFlux&lt; Real &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Godunov flux (exact Riemann solver for scalar problems).  <a href="structTNL_1_1DGM_1_1GodunovFlux.html#details">More...</a><br /></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3ARoeFlux_3C_20Real_20_3E" id="r_TNL_3A_3ADGM_3A_3ARoeFlux_3C_20Real_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1RoeFlux.html">TNL::DGM::RoeFlux&lt; Real &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Roe approximate Riemann solver (linearized flux).  <a href="structTNL_1_1DGM_1_1RoeFlux.html#details">More...</a><br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Numerical flux interface and common flux implementations. </p>
@@ -132,8 +129,8 @@ Namespaces</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a href="dir_7f57b1e41c5acd0e859ae5f3a2b075a9.html">headers</a></li><li class="navelem"><a href="NumericalFlux_8hpp.html">NumericalFlux.hpp</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+    <li class="navelem"><b>advection_1d</b></li><li class="navelem"><b>include</b></li><li class="navelem"><a href="NumericalFlux_8hpp.html">NumericalFlux.hpp</a></li>
+    <li class="footer">Generated on <span class="timestamp"></span> for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>
 </body>

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['device_0',['Device',['../main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651',1,'main.cpp']]]
+  ['localindextype_0',['LocalIndexType',['../structTraits.html#acfa3932ad36d6aab9ac1512998a52fc7',1,'Traits']]]
 ];

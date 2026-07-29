@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['facecoord_0',['faceCoord',['../classDG_1_1Mesh.html#a2d205f5dbb4b529ea6a50c671f1197b7',1,'DG::Mesh']]],
-  ['fieldvector_1',['FieldVector',['../classDG_1_1FieldVector.html#a2b4e50937c03672949079618033605ea',1,'DG::FieldVector::FieldVector()=default'],['../classDG_1_1FieldVector.html#a4215487265c86a1d65efc21a432e90a9',1,'DG::FieldVector::FieldVector(Index K, Index Np)']]]
+  ['fieldvector_0',['FieldVector',['../classTNL_1_1DGM_1_1FieldVector.html#a483635e75471b20a762ea0149551ee96',1,'TNL::DGM::FieldVector::FieldVector()=default'],['../classTNL_1_1DGM_1_1FieldVector.html#ac8290112bb333e813bb969341d8ca7a6',1,'TNL::DGM::FieldVector::FieldVector(Index K, Index Np)']]]
 ];

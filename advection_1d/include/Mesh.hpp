@@ -16,7 +16,7 @@
 #include <TNL/Meshes/Readers/VTKReader.h>
 #include <stdexcept>
 
-namespace DG {
+namespace TNL::DGM {
 
 /**
  * @class Mesh

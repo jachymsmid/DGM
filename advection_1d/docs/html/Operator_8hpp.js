@@ -1,4 +1,4 @@
 var Operator_8hpp =
 [
-    [ "DG::Operator&lt; Real, Device, Index &gt;", "classDG_1_1Operator.html", "classDG_1_1Operator" ]
+    [ "TNL::DGM::Operator&lt; Real, Device, Index &gt;", "classTNL_1_1DGM_1_1Operator.html", "classTNL_1_1DGM_1_1Operator" ]
 ];

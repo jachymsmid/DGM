@@ -23,7 +23,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace DG {
+namespace TNL::DGM {
 
 // Gauss-Lobatto nodes and weights (N+1 points, exact for poly deg 2N-1).
 /**

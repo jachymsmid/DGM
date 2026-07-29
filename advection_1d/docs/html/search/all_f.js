@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['operator_0',['Operator',['../classDG_1_1Operator.html',1,'DG::Operator&lt; Real, Device, Index &gt;'],['../classDG_1_1Operator.html#a343cc66059d9b8fb21d8488381d5fde9',1,'DG::Operator::Operator()']]],
-  ['operator_20hpp_1',['Operator.hpp',['../md_README.html#autotoc_md14',1,'']]],
-  ['operator_2ehpp_2',['Operator.hpp',['../Operator_8hpp.html',1,'']]],
-  ['order_3',['order',['../classDG_1_1ReferenceElement.html#a3a60b897356d830c49c2f9ed810a929b',1,'DG::ReferenceElement']]]
+  ['simulation_0',['Simulation',['../classSimulation.html',1,'']]],
+  ['solver_1',['Solver',['../classTNL_1_1DGM_1_1Solver.html',1,'TNL::DGM']]],
+  ['ssprk_2',['SSPRK',['../classTNL_1_1DGM_1_1SSPRK.html',1,'TNL::DGM']]],
+  ['ssprk_3c_20realtype_2c_20device_20_3e_3',['SSPRK&lt; RealType, Device &gt;',['../classTNL_1_1DGM_1_1SSPRK.html',1,'TNL::DGM']]],
+  ['step_4',['step',['../classTNL_1_1DGM_1_1Integrator.html#ad9a710a86b615b2882ee3e1a24b0529a',1,'TNL::DGM::Integrator::step()'],['../classTNL_1_1DGM_1_1Solver.html#a5272bcca6791a384597ae97be57fbda1',1,'TNL::DGM::Solver::step()']]]
 ];

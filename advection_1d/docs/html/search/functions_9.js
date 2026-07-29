@@ -1,15 +1,7 @@
 var searchData=
 [
-  ['laxfriedrichsflux_0',['LaxFriedrichsFlux',['../structDG_1_1LaxFriedrichsFlux.html#a9aa969a27cd033b165f2d44a954b1e0d',1,'DG::LaxFriedrichsFlux']]],
-  ['leftcellofface_1',['leftCellOfFace',['../classDG_1_1Mesh.html#af08e4556e0e310884c64a61d23b53c8a',1,'DG::Mesh']]],
-  ['leftnormal_2',['leftNormal',['../classDG_1_1Mesh.html#abfeba070fca6389a6e1e6057e2e2a18a',1,'DG::Mesh']]],
-  ['leftvertex_3',['leftVertex',['../classDG_1_1Mesh.html#addf5500982cab3465915cc78c72b853b',1,'DG::Mesh']]],
-  ['legendrep_4',['legendreP',['../classDG_1_1ReferenceElement.html#addd6a7257798e331a07304ada683455c',1,'DG::ReferenceElement']]],
-  ['legendrepderiv_5',['legendrePDeriv',['../classDG_1_1ReferenceElement.html#ab90c8f2f3b137762b967a323f5b2ab1d',1,'DG::ReferenceElement']]],
-  ['legendrepderiv2_6',['legendrePDeriv2',['../classDG_1_1ReferenceElement.html#aad14cc8dcd5d963cfcdf2ffd38af1ee0',1,'DG::ReferenceElement']]],
-  ['legendrepderiv3_7',['legendrePDeriv3',['../classDG_1_1ReferenceElement.html#a9eb8c8fa1a015a15653cde832aa910fb',1,'DG::ReferenceElement']]],
-  ['legendrepderivn_8',['legendrePDerivN',['../classDG_1_1ReferenceElement.html#a3a18c803bfd1c5ebd965a2321546c587',1,'DG::ReferenceElement']]],
-  ['legendrepn_9',['legendrePN',['../classDG_1_1ReferenceElement.html#a9c7009c5d447322b06bda5f4f34882b5',1,'DG::ReferenceElement']]],
-  ['lift_10',['LIFT',['../classDG_1_1ReferenceElement.html#ae0f4f8dc0c2e61882db500697a697fac',1,'DG::ReferenceElement']]],
-  ['lserk_11',['LSERK',['../classDG_1_1LSERK.html#a00f9a76201ddc40b0896b187098eb2ec',1,'DG::LSERK']]]
+  ['numdof_0',['numDOF',['../classTNL_1_1DGM_1_1FieldVector.html#a5120b221723226ea5e34030f19a9c468',1,'TNL::DGM::FieldVector']]],
+  ['numelements_1',['numElements',['../classTNL_1_1DGM_1_1FieldVector.html#a615a2d947a6438c7e50d906e169e0d3d',1,'TNL::DGM::FieldVector::numElements()'],['../classTNL_1_1DGM_1_1Mesh.html#a61f92fd31d58c9d060888d5ece02b5a8',1,'TNL::DGM::Mesh::numElements()']]],
+  ['numpoints_2',['numPoints',['../classTNL_1_1DGM_1_1Integrator.html#acf2a52e3940b15553d072c766639ef0a',1,'TNL::DGM::Integrator::numPoints()'],['../classTNL_1_1DGM_1_1ERK.html#a0f08239aa72d015ec7ab2a5bc832ee7b',1,'TNL::DGM::ERK::numPoints()'],['../classTNL_1_1DGM_1_1LSERK.html#a90e0f69b5f4a3b80321b67ec1246c76f',1,'TNL::DGM::LSERK::numPoints()'],['../classTNL_1_1DGM_1_1SSPRK.html#a5680b1561aebc1bd64272cea304ffdfa',1,'TNL::DGM::SSPRK::numPoints()']]],
+  ['numsteps_3',['numSteps',['../classTNL_1_1DGM_1_1Integrator.html#a2dd0813e010900ade460942fa5568532',1,'TNL::DGM::Integrator::numSteps()'],['../classTNL_1_1DGM_1_1ERK.html#ad1c95f7d53d97b91934924a7b93c56f3',1,'TNL::DGM::ERK::numSteps()'],['../classTNL_1_1DGM_1_1LSERK.html#a8dae8e71a01abe6e6d13a0acc5d457f0',1,'TNL::DGM::LSERK::numSteps()'],['../classTNL_1_1DGM_1_1SSPRK.html#a73a2247fa90942d95afdfbee3058522b',1,'TNL::DGM::SSPRK::numSteps()']]]
 ];
