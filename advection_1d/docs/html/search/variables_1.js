@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['b_5f_0',['b_',['../classDG_1_1LSERK.html#a80a62f6ccd30d9131a0af514d5ececc0',1,'DG::LSERK']]],
-  ['boundary_5fface_1',['BOUNDARY_FACE',['../classDG_1_1Mesh.html#ac6fe7266084ccf103e593c95d02c0165',1,'DG::Mesh']]]
+  ['m_0',['M',['../structDG_1_1PadeApproximant.html#a714d4de4d6a7fee67a8d91279224712c',1,'DG::PadeApproximant']]],
+  ['modal_5fcoeffs_1',['modal_coeffs',['../structDG_1_1PadeApproximant.html#a4bac427fa74ef2cb88da7434d9ddc3c9',1,'DG::PadeApproximant']]]
 ];

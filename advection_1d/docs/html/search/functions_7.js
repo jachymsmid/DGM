@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['integrate_0',['integrate',['../classDG_1_1Integrator.html#a90da9e6fcf27a9cfd6f1d4bc389db5c7',1,'DG::Integrator::integrate()'],['../classDG_1_1ERK.html#acb040aacf35140ffc73e489797d15f49',1,'DG::ERK::integrate()'],['../classDG_1_1LSERK.html#a81d9c494a91deac24ef67fc267d61e72',1,'DG::LSERK::integrate()'],['../classDG_1_1SSPRK.html#a60ef15ff2f3eb210cbeea457e1aec039',1,'DG::SSPRK::integrate()']]],
-  ['invertmatrix_5f_1',['invertMatrix_',['../classDG_1_1ReferenceElement.html#a5c21ade497cb42b91e2e252f9d9e60f0',1,'DG::ReferenceElement']]],
-  ['isboundaryface_2',['isBoundaryFace',['../classDG_1_1Mesh.html#ac9d7970c6db20e61a6d7bd3a2836b1da',1,'DG::Mesh']]]
+  ['leftvertex_0',['leftVertex',['../classTNL_1_1DGM_1_1Mesh.html#aca83b771a00c1cba6b142ccefa86e7ba',1,'TNL::DGM::Mesh']]],
+  ['legendrep_1',['legendreP',['../classTNL_1_1DGM_1_1ReferenceElement.html#a7662bbcb502b6b4da8996ffac77cc2d7',1,'TNL::DGM::ReferenceElement']]],
+  ['legendrepderiv_2',['legendrePDeriv',['../classTNL_1_1DGM_1_1ReferenceElement.html#a031e5ba1c0b73df09aa479326a18f5e4',1,'TNL::DGM::ReferenceElement']]],
+  ['legendrepderiv2_3',['legendrePDeriv2',['../classTNL_1_1DGM_1_1ReferenceElement.html#a92252551113378dd97ec210dad70fa7c',1,'TNL::DGM::ReferenceElement']]],
+  ['legendrepderiv3_4',['legendrePDeriv3',['../classTNL_1_1DGM_1_1ReferenceElement.html#a807e2dd24b10cb24c28905d9565866d5',1,'TNL::DGM::ReferenceElement']]],
+  ['legendrepderivn_5',['legendrePDerivN',['../classTNL_1_1DGM_1_1ReferenceElement.html#abb821b41c67c80945a097d0b8e93d1aa',1,'TNL::DGM::ReferenceElement']]],
+  ['legendrepn_6',['legendrePN',['../classTNL_1_1DGM_1_1ReferenceElement.html#ac8d3a03b9a36bf0565b05677a4fd9224',1,'TNL::DGM::ReferenceElement']]]
 ];

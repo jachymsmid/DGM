@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['1d_20advection_20equation_0',['DGM solver for 1D advection equation',['../md_README.html',1,'']]]
+  ['applyfilter_0',['applyFilter',['../classTNL_1_1DGM_1_1Solver.html#aed34e4bd48f3ebd0cf8db8bcc4f7f90e',1,'TNL::DGM::Solver']]]
 ];

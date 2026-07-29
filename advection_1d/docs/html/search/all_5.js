@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['eigentotnl_0',['eigenToTnl',['../classDG_1_1ReferenceElement.html#a8c95ff38f1b6f7d4c19d0eee20cc44d3',1,'DG::ReferenceElement']]],
-  ['elementptr_1',['elementPtr',['../classDG_1_1FieldVector.html#ad21f3d22f36a80498f6457a6a4ef1e4d',1,'DG::FieldVector::elementPtr(Index k)'],['../classDG_1_1FieldVector.html#a44145cd9bf493d4b6a5716b21e14e577',1,'DG::FieldVector::elementPtr(Index k) const']]],
-  ['elementsize_2',['elementSize',['../classDG_1_1Mesh.html#ac9819dab042d4dac9f33985e09a0684f',1,'DG::Mesh']]],
-  ['equation_3',['DGM solver for 1D advection equation',['../md_README.html',1,'']]],
-  ['erk_4',['ERK',['../classDG_1_1ERK.html',1,'DG::ERK&lt; Real, Device, Index &gt;'],['../classDG_1_1ERK.html#a898818fcaadf1e2daa806dfebe1a1fab',1,'DG::ERK::ERK()']]]
+  ['fieldvector_0',['FieldVector',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM::FieldVector&lt; Real, Device, Index &gt;'],['../classTNL_1_1DGM_1_1FieldVector.html#a483635e75471b20a762ea0149551ee96',1,'TNL::DGM::FieldVector::FieldVector()=default'],['../classTNL_1_1DGM_1_1FieldVector.html#ac8290112bb333e813bb969341d8ca7a6',1,'TNL::DGM::FieldVector::FieldVector(Index K, Index Np)']]],
+  ['fieldvector_2ehpp_1',['FieldVector.hpp',['../FieldVector_8hpp.html',1,'']]],
+  ['fieldvector_3c_20double_2c_20tnl_3a_3adevices_3a_3ahost_2c_20int_20_3e_2',['FieldVector&lt; double, TNL::Devices::Host, int &gt;',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM']]],
+  ['fieldvector_3c_20real_2c_20device_2c_20index_20_3e_3',['FieldVector&lt; Real, Device, Index &gt;',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM']]],
+  ['fieldvector_3c_20real_2c_20tnl_3a_3adevices_3a_3ahost_2c_20index_20_3e_4',['FieldVector&lt; Real, TNL::Devices::Host, Index &gt;',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM']]],
+  ['fieldvector_3c_20realtype_2c_20device_2c_20indextype_20_3e_5',['FieldVector&lt; RealType, Device, IndexType &gt;',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM']]],
+  ['fieldvector_3c_20realtype_2c_20device_2c_20int_20_3e_6',['FieldVector&lt; RealType, Device, int &gt;',['../classTNL_1_1DGM_1_1FieldVector.html',1,'TNL::DGM']]]
 ];

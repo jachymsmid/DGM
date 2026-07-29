@@ -1,13 +1,14 @@
 var searchData=
 [
-  ['index_0',['Index',['../main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3',1,'main.cpp']]],
-  ['indexarray_1',['IndexArray',['../classDG_1_1Mesh.html#a0f7b3ebbec430f917ee7ab7d9b657ff9',1,'DG::Mesh']]],
-  ['integrate_2',['integrate',['../classDG_1_1Integrator.html#a90da9e6fcf27a9cfd6f1d4bc389db5c7',1,'DG::Integrator::integrate()'],['../classDG_1_1ERK.html#acb040aacf35140ffc73e489797d15f49',1,'DG::ERK::integrate()'],['../classDG_1_1LSERK.html#a81d9c494a91deac24ef67fc267d61e72',1,'DG::LSERK::integrate()'],['../classDG_1_1SSPRK.html#a60ef15ff2f3eb210cbeea457e1aec039',1,'DG::SSPRK::integrate()']]],
-  ['integrator_3',['Integrator',['../classDG_1_1Integrator.html',1,'DG']]],
-  ['integrator_2ehpp_4',['Integrator.hpp',['../Integrator_8hpp.html',1,'']]],
-  ['integrator_3c_20double_2c_20tnl_3a_3adevices_3a_3ahost_2c_20int_20_3e_5',['Integrator&lt; double, TNL::Devices::Host, int &gt;',['../classDG_1_1Integrator.html',1,'DG']]],
-  ['invertmatrix_5f_6',['invertMatrix_',['../classDG_1_1ReferenceElement.html#a5c21ade497cb42b91e2e252f9d9e60f0',1,'DG::ReferenceElement']]],
-  ['io_20hpp_7',['IO.hpp',['../md_README.html#autotoc_md16',1,'']]],
-  ['io_2ehpp_8',['IO.hpp',['../IO_8hpp.html',1,'']]],
-  ['isboundaryface_9',['isBoundaryFace',['../classDG_1_1Mesh.html#ac9d7970c6db20e61a6d7bd3a2836b1da',1,'DG::Mesh']]]
+  ['m_0',['M',['../structDG_1_1PadeApproximant.html#a714d4de4d6a7fee67a8d91279224712c',1,'DG::PadeApproximant']]],
+  ['makesnapshot_1',['makeSnapshot',['../classTNL_1_1DGM_1_1Solver.html#a42631b9a0a4c9a739ae0e200caf6c7c3',1,'TNL::DGM::Solver']]],
+  ['mathematical_20background_2',['Mathematical background',['../PadeLegendre_8hpp.html#autotoc_md0',1,'Mathematical background'],['../PadeLegendre_8hpp.html#autotoc_md1',1,'Mathematical background']]],
+  ['mesh_3',['Mesh',['../classTNL_1_1DGM_1_1Mesh.html',1,'TNL::DGM']]],
+  ['mesh_2ehpp_4',['Mesh.hpp',['../Mesh_8hpp.html',1,'']]],
+  ['mesh_3c_20real_2c_20device_2c_20index_20_3e_5',['Mesh&lt; Real, Device, Index &gt;',['../classTNL_1_1DGM_1_1Mesh.html',1,'TNL::DGM']]],
+  ['mesh_3c_20realtype_2c_20device_2c_20indextype_20_3e_6',['Mesh&lt; RealType, Device, IndexType &gt;',['../classTNL_1_1DGM_1_1Mesh.html',1,'TNL::DGM']]],
+  ['meshconfig_7',['MeshConfig',['../structTNL_1_1DGM_1_1MeshConfig.html',1,'TNL::DGM::MeshConfig&lt; Real, GlobalIndex, LocalIndex &gt;'],['../structTraits.html#accca825bdb4f98623bf42704385b4e9b',1,'Traits::MeshConfig']]],
+  ['meshconfig_2ehpp_8',['MeshConfig.hpp',['../MeshConfig_8hpp.html',1,'']]],
+  ['modal_5fcoeffs_9',['modal_coeffs',['../structDG_1_1PadeApproximant.html#a4bac427fa74ef2cb88da7434d9ddc3c9',1,'DG::PadeApproximant']]],
+  ['modalcoeffs_10',['modalCoeffs',['../classDG_1_1PadeLegendreSolver.html#a6af12ada634892056bec1942efca579c',1,'DG::PadeLegendreSolver::modalCoeffs(const Real *nodal_vals) const'],['../classDG_1_1PadeLegendreSolver.html#a6af12ada634892056bec1942efca579c',1,'DG::PadeLegendreSolver::modalCoeffs(const Real *nodal_vals) const']]]
 ];

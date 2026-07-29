@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['data_0',['data',['../classDG_1_1FieldVector.html#a10ea7775e5a871ee39a19107635b6aed',1,'DG::FieldVector::data()'],['../classDG_1_1FieldVector.html#a5592c163fcc4e91d1b9849be2f0740fb',1,'DG::FieldVector::data() const']]],
-  ['dr_1',['Dr',['../classDG_1_1ReferenceElement.html#a9ed62cda886576bf41b183dc881460b0',1,'DG::ReferenceElement']]]
+  ['data_0',['data',['../classTNL_1_1DGM_1_1FieldVector.html#ac530cdc761ea0e6076ce9b3c90ee7c7f',1,'TNL::DGM::FieldVector::data()'],['../classTNL_1_1DGM_1_1FieldVector.html#a23d795ee42482882ec63e18294d0d456',1,'TNL::DGM::FieldVector::data() const']]]
 ];

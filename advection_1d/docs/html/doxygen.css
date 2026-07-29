@@ -2519,6 +2519,13 @@ details[open]>summary::before {
 	font-size: 80%;
 }
 
+
+html {
+--timestamp: 'Wed Jul 29 2026 16:40:07';
+}
+span.timestamp { content: ' '; }
+span.timestamp:before { content: var(--timestamp); }
+
 :root {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);

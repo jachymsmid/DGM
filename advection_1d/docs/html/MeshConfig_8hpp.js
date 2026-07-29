@@ -1,5 +1,5 @@
 var MeshConfig_8hpp =
 [
-    [ "DG::MeshConfig&lt; Real, GlobalIndex, LocalIndex &gt;", "structDG_1_1MeshConfig.html", "structDG_1_1MeshConfig" ],
-    [ "DG::TNLMesh", "namespaceDG.html#a4b2474058fb582e38e177e1f1b89baac", null ]
+    [ "TNL::DGM::MeshConfig&lt; Real, GlobalIndex, LocalIndex &gt;", "structTNL_1_1DGM_1_1MeshConfig.html", null ],
+    [ "TNL::DGM::TNLMesh", "MeshConfig_8hpp.html#a86996c6124697ff97476eedb5d726749", null ]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>advection_1d: headers/MeshConfig.hpp Source File</title>
+<title>DGM: advection_1d/include/MeshConfig.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -26,8 +26,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">advection_1d
+   <div id="projectname">DGM<span id="projectnumber">&#160;0.1</span>
    </div>
+   <div id="projectbrief">Numerical lirary utilizing the Discontinuos Galerkin Method</div>
   </td>
  </tr>
  </tbody>
@@ -101,59 +102,47 @@ $(function(){initNavTree('MeshConfig_8hpp_source.html','',''); });
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &lt;TNL/Meshes/MeshBuilder.h&gt;</span></div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &lt;TNL/Containers/StaticArray.h&gt;</span></div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceDG.html">DG</a> {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">namespace </span>TNL::DGM {</div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="comment">// inherits from DefaultConfig</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">template</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>&lt;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a> = double,</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>  <span class="keyword">class </span>GlobalIndex = int,</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>  <span class="keyword">typename</span> LocalIndex = <span class="keywordtype">short</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>&gt;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">template</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>&lt;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  <span class="keyword">class </span>Real = double,</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  <span class="keyword">class </span>GlobalIndex = int,</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  <span class="keyword">typename</span> LocalIndex = <span class="keywordtype">short</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>&gt;</div>
 <div class="foldopen" id="foldopen00033" data-start="{" data-end="};">
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structDG_1_1MeshConfig.html">   33</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structDG_1_1MeshConfig.html">MeshConfig</a></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structTNL_1_1DGM_1_1MeshConfig.html">   33</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structTNL_1_1DGM_1_1MeshConfig.html">MeshConfig</a></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    : TNL::Meshes::DefaultConfig&lt;TNL::Meshes::Topologies::Edge, 1, Real, GlobalIndex, LocalIndex&gt;</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>{</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  <span class="comment">// dont really understand this ??</span></div>
-<div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="structDG_1_1MeshConfig.html#ae5e7edcbc8457b649a6b8785ceae83da">   37</a></span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="structDG_1_1MeshConfig.html#ae5e7edcbc8457b649a6b8785ceae83da">subentityStorageEnabled</a>(<span class="keywordtype">int</span> entityDim, <span class="keywordtype">int</span> subentityDim)</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">bool</span> subentityStorageEnabled(<span class="keywordtype">int</span> entityDim, <span class="keywordtype">int</span> subentityDim)</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  {</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  }</div>
-</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>};</div>
 </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="comment">// alias for my mesh type</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">template</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>&lt;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a> = double,</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a> = TNL::Devices::Host,</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3">Index</a> = <span class="keywordtype">int</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>&gt;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">template</span> &lt;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a>,</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a>,</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keyword">class </span><a class="code hl_typedef" href="main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3">Index</a></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>&gt;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="namespaceDG.html#a4b2474058fb582e38e177e1f1b89baac">   58</a></span><span class="keyword">using </span><a class="code hl_typedef" href="namespaceDG.html#a4b2474058fb582e38e177e1f1b89baac">TNLMesh</a> = TNL::Meshes::Mesh&lt;MeshConfig&lt;Real, Index, short&gt;, <a class="code hl_typedef" href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a>&gt;;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>} <span class="comment">// namespace DG</span></div>
-<div class="ttc" id="amain_8cpp_html_a1673229bf7fec9388ac2a829a52d69b3"><div class="ttname"><a href="main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3">Index</a></div><div class="ttdeci">int Index</div><div class="ttdef"><b>Definition</b> main.cpp:14</div></div>
-<div class="ttc" id="amain_8cpp_html_a4b04262b81aa7d31eb5d2f607e2a35de"><div class="ttname"><a href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a></div><div class="ttdeci">double Real</div><div class="ttdef"><b>Definition</b> main.cpp:13</div></div>
-<div class="ttc" id="amain_8cpp_html_acb2b5443505d951aa6edfed8e5d49651"><div class="ttname"><a href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a></div><div class="ttdeci">TNL::Devices::Host Device</div><div class="ttdef"><b>Definition</b> main.cpp:12</div></div>
-<div class="ttc" id="anamespaceDG_html"><div class="ttname"><a href="namespaceDG.html">DG</a></div><div class="ttdef"><b>Definition</b> FieldVector.hpp:13</div></div>
-<div class="ttc" id="anamespaceDG_html_a4b2474058fb582e38e177e1f1b89baac"><div class="ttname"><a href="namespaceDG.html#a4b2474058fb582e38e177e1f1b89baac">DG::TNLMesh</a></div><div class="ttdeci">TNL::Meshes::Mesh&lt; MeshConfig&lt; Real, Index, short &gt;, Device &gt; TNLMesh</div><div class="ttdoc">Alias for the TNL mesh type used in the DG codebase.</div><div class="ttdef"><b>Definition</b> MeshConfig.hpp:58</div></div>
-<div class="ttc" id="astructDG_1_1MeshConfig_html"><div class="ttname"><a href="structDG_1_1MeshConfig.html">DG::MeshConfig</a></div><div class="ttdoc">TNL mesh configuration for 1D Edge topology.</div><div class="ttdef"><b>Definition</b> MeshConfig.hpp:35</div></div>
-<div class="ttc" id="astructDG_1_1MeshConfig_html_ae5e7edcbc8457b649a6b8785ceae83da"><div class="ttname"><a href="structDG_1_1MeshConfig.html#ae5e7edcbc8457b649a6b8785ceae83da">DG::MeshConfig::subentityStorageEnabled</a></div><div class="ttdeci">static constexpr bool subentityStorageEnabled(int entityDim, int subentityDim)</div><div class="ttdef"><b>Definition</b> MeshConfig.hpp:37</div></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">template</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>&lt;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keyword">class </span>Real = double,</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="keyword">class </span>Device = TNL::Devices::Host,</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="keyword">class </span>Index = <span class="keywordtype">int</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>&gt;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="MeshConfig_8hpp.html#a86996c6124697ff97476eedb5d726749">   53</a></span><span class="keyword">using </span><a class="code hl_typedef" href="MeshConfig_8hpp.html#a86996c6124697ff97476eedb5d726749">TNLMesh</a> = TNL::Meshes::Mesh&lt;MeshConfig&lt;Real, Index, short&gt;, Device&gt;;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>} <span class="comment">// namespace DG</span></div>
+<div class="ttc" id="aMeshConfig_8hpp_html_a86996c6124697ff97476eedb5d726749"><div class="ttname"><a href="MeshConfig_8hpp.html#a86996c6124697ff97476eedb5d726749">TNL::DGM::TNLMesh</a></div><div class="ttdeci">TNL::Meshes::Mesh&lt; MeshConfig&lt; Real, Index, short &gt;, Device &gt; TNLMesh</div><div class="ttdoc">Alias for the TNL mesh type used in the DG codebase.</div><div class="ttdef"><b>Definition</b> MeshConfig.hpp:53</div></div>
+<div class="ttc" id="astructTNL_1_1DGM_1_1MeshConfig_html"><div class="ttname"><a href="structTNL_1_1DGM_1_1MeshConfig.html">TNL::DGM::MeshConfig</a></div><div class="ttdoc">TNL mesh configuration for 1D Edge topology.</div><div class="ttdef"><b>Definition</b> MeshConfig.hpp:35</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a href="dir_7f57b1e41c5acd0e859ae5f3a2b075a9.html">headers</a></li><li class="navelem"><a href="MeshConfig_8hpp.html">MeshConfig.hpp</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+    <li class="navelem"><b>advection_1d</b></li><li class="navelem"><b>include</b></li><li class="navelem"><a href="MeshConfig_8hpp.html">MeshConfig.hpp</a></li>
+    <li class="footer">Generated on <span class="timestamp"></span> for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>
 </body>

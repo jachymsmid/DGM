@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>advection_1d: headers/MeshConfig.hpp File Reference</title>
+<title>DGM: advection_1d/include/MeshConfig.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -26,8 +26,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">advection_1d
+   <div id="projectname">DGM<span id="projectnumber">&#160;0.1</span>
    </div>
+   <div id="projectbrief">Numerical lirary utilizing the Discontinuos Galerkin Method</div>
   </td>
  </tr>
  </tbody>
@@ -104,18 +105,15 @@ $(function(){initNavTree('MeshConfig_8hpp.html','',''); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:DG_3A_3AMeshConfig_3C_20Real_2C_20GlobalIndex_2C_20LocalIndex_20_3E" id="r_DG_3A_3AMeshConfig_3C_20Real_2C_20GlobalIndex_2C_20LocalIndex_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structDG_1_1MeshConfig.html">DG::MeshConfig&lt; Real, GlobalIndex, LocalIndex &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">TNL mesh configuration for 1D Edge topology.  <a href="structDG_1_1MeshConfig.html#details">More...</a><br /></td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
-Namespaces</h2></td></tr>
-<tr class="memitem:DG" id="r_DG"><td class="memItemLeft">namespace &#160;</td><td class="memItemRight"><a class="el" href="namespaceDG.html">DG</a></td></tr>
+<tr class="memitem:TNL_3A_3ADGM_3A_3AMeshConfig_3C_20Real_2C_20GlobalIndex_2C_20LocalIndex_20_3E" id="r_TNL_3A_3ADGM_3A_3AMeshConfig_3C_20Real_2C_20GlobalIndex_2C_20LocalIndex_20_3E"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structTNL_1_1DGM_1_1MeshConfig.html">TNL::DGM::MeshConfig&lt; Real, GlobalIndex, LocalIndex &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">TNL mesh configuration for 1D Edge topology.  <a href="structTNL_1_1DGM_1_1MeshConfig.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a4b2474058fb582e38e177e1f1b89baac" id="r_a4b2474058fb582e38e177e1f1b89baac"><td class="memTemplParams" colspan="2">template&lt;class <a class="el" href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a>, class <a class="el" href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a>, class <a class="el" href="main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3">Index</a>&gt; </td></tr>
-<tr class="memitem:a4b2474058fb582e38e177e1f1b89baac template"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="namespaceDG.html#a4b2474058fb582e38e177e1f1b89baac">DG::TNLMesh</a> = TNL::Meshes::Mesh&lt;<a class="el" href="structDG_1_1MeshConfig.html">MeshConfig</a>&lt;<a class="el" href="main_8cpp.html#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a>, <a class="el" href="main_8cpp.html#a1673229bf7fec9388ac2a829a52d69b3">Index</a>, short&gt;, <a class="el" href="main_8cpp.html#acb2b5443505d951aa6edfed8e5d49651">Device</a>&gt;</td></tr>
-<tr class="memdesc:a4b2474058fb582e38e177e1f1b89baac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for the TNL mesh type used in the <a class="el" href="namespaceDG.html">DG</a> codebase.  <br /></td></tr>
+<tr class="memitem:a86996c6124697ff97476eedb5d726749" id="r_a86996c6124697ff97476eedb5d726749"><td class="memTemplParams" colspan="2"><a id="a86996c6124697ff97476eedb5d726749" name="a86996c6124697ff97476eedb5d726749"></a>
+template&lt;class Real = double, class Device = TNL::Devices::Host, class Index = int&gt; </td></tr>
+<tr class="memitem:a86996c6124697ff97476eedb5d726749 template"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><b>TNL::DGM::TNLMesh</b> = TNL::Meshes::Mesh&lt;<a class="el" href="structTNL_1_1DGM_1_1MeshConfig.html">MeshConfig</a>&lt;Real, Index, short&gt;, Device&gt;</td></tr>
+<tr class="memdesc:a86996c6124697ff97476eedb5d726749"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for the TNL mesh type used in the DG codebase. <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>TNL mesh configuration and convenient alias for the 1D mesh type. </p>
@@ -133,8 +131,8 @@ Typedefs</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a href="dir_7f57b1e41c5acd0e859ae5f3a2b075a9.html">headers</a></li><li class="navelem"><a href="MeshConfig_8hpp.html">MeshConfig.hpp</a></li>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+    <li class="navelem"><b>advection_1d</b></li><li class="navelem"><b>include</b></li><li class="navelem"><a href="MeshConfig_8hpp.html">MeshConfig.hpp</a></li>
+    <li class="footer">Generated on <span class="timestamp"></span> for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
   </ul>
 </div>
 </body>

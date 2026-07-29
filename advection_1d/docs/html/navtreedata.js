@@ -24,38 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "advection_1d", "index.html", [
-    [ "DGM solver for 1D advection equation", "md_README.html", [
-      [ "MeshConfig.hpp", "md_README.html#autotoc_md1", null ],
-      [ "DGMesh.hpp", "md_README.html#autotoc_md2", [
-        [ "Constructors", "md_README.html#autotoc_md3", null ],
-        [ "Public methods", "md_README.html#autotoc_md4", null ],
-        [ "Private methods", "md_README.html#autotoc_md5", null ]
-      ] ],
-      [ "ReferenceElement.hpp", "md_README.html#autotoc_md6", [
-        [ "Public methods", "md_README.html#autotoc_md7", null ],
-        [ "Private methods", "md_README.html#autotoc_md8", null ]
-      ] ],
-      [ "FiledVector.hpp", "md_README.html#autotoc_md9", [
-        [ "Public methods", "md_README.html#autotoc_md10", null ]
-      ] ],
-      [ "NumericalFlux.hpp", "md_README.html#autotoc_md11", [
-        [ "Upwind", "md_README.html#autotoc_md12", null ],
-        [ "Lax-Friedrichs", "md_README.html#autotoc_md13", null ]
-      ] ],
-      [ "Operator.hpp", "md_README.html#autotoc_md14", null ],
-      [ "RK4Integrator.hpp", "md_README.html#autotoc_md15", null ],
-      [ "IO.hpp", "md_README.html#autotoc_md16", null ],
-      [ "Compilation notes", "md_README.html#autotoc_md17", null ]
-    ] ],
-    [ "Namespaces", "namespaces.html", [
-      [ "Namespace List", "namespaces.html", "namespaces_dup" ],
-      [ "Namespace Members", "namespacemembers.html", [
-        [ "All", "namespacemembers.html", null ],
-        [ "Functions", "namespacemembers_func.html", null ],
-        [ "Typedefs", "namespacemembers_type.html", null ]
-      ] ]
-    ] ],
+  [ "DGM", "index.html", [
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -68,20 +37,14 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Files", "files.html", [
-      [ "File List", "files.html", "files_dup" ],
-      [ "File Members", "globals.html", [
-        [ "All", "globals.html", null ],
-        [ "Functions", "globals_func.html", null ],
-        [ "Typedefs", "globals_type.html", null ]
-      ] ]
+      [ "File List", "files.html", "files_dup" ]
     ] ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"FieldVector_8hpp.html",
-"classDG_1_1ReferenceElement.html#a028c63f59fc33ad4535e99d931bdfe36"
+"FieldVector_8hpp.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

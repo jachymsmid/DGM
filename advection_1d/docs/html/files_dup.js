@@ -1,6 +1,4 @@
 var files_dup =
 [
-    [ "headers", "dir_7f57b1e41c5acd0e859ae5f3a2b075a9.html", "dir_7f57b1e41c5acd0e859ae5f3a2b075a9" ],
-    [ "src", "dir_68267d1309a1af8e8297ef4c3efbcdba.html", "dir_68267d1309a1af8e8297ef4c3efbcdba" ],
-    [ "plot_dg.py", "plot__dg_8py.html", "plot__dg_8py" ]
+    [ "advection_1d", "dir_7f64de0ac3cd94543e23f741fcfbadc0.html", "dir_7f64de0ac3cd94543e23f741fcfbadc0" ]
 ];

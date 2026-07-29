@@ -1,8 +1,8 @@
 var NumericalFlux_8hpp =
 [
-    [ "DG::NumericalFlux&lt; Real &gt;", "structDG_1_1NumericalFlux.html", "structDG_1_1NumericalFlux" ],
-    [ "DG::UpwindFlux&lt; Real &gt;", "structDG_1_1UpwindFlux.html", "structDG_1_1UpwindFlux" ],
-    [ "DG::LaxFriedrichsFlux&lt; Real &gt;", "structDG_1_1LaxFriedrichsFlux.html", "structDG_1_1LaxFriedrichsFlux" ],
-    [ "DG::GodunovFlux&lt; Real &gt;", "structDG_1_1GodunovFlux.html", "structDG_1_1GodunovFlux" ],
-    [ "DG::RoeFlux&lt; Real &gt;", "structDG_1_1RoeFlux.html", "structDG_1_1RoeFlux" ]
+    [ "TNL::DGM::NumericalFlux&lt; Real &gt;", "structTNL_1_1DGM_1_1NumericalFlux.html", null ],
+    [ "TNL::DGM::UpwindFlux&lt; Real &gt;", "structTNL_1_1DGM_1_1UpwindFlux.html", null ],
+    [ "TNL::DGM::LaxFriedrichsFlux&lt; Real &gt;", "structTNL_1_1DGM_1_1LaxFriedrichsFlux.html", null ],
+    [ "TNL::DGM::GodunovFlux&lt; Real &gt;", "structTNL_1_1DGM_1_1GodunovFlux.html", null ],
+    [ "TNL::DGM::RoeFlux&lt; Real &gt;", "structTNL_1_1DGM_1_1RoeFlux.html", null ]
 ];
