@@ -110,36 +110,36 @@ Inheritance diagram for TNL::DGM::SSPRK&lt; Real, Device, Index &gt;:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a7105b0d01ca90a75a3d5fc2b52aecc7a" id="r_a7105b0d01ca90a75a3d5fc2b52aecc7a"><td class="memItemLeft" align="right" valign="top"><a id="a7105b0d01ca90a75a3d5fc2b52aecc7a" name="a7105b0d01ca90a75a3d5fc2b52aecc7a"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>Field</b> = <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">FieldVector</a>&lt; Real, Device, Index &gt;</td></tr>
+<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Field</b> = <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">FieldVector</a>&lt; Real, Device, Index &gt;</td></tr>
 <tr class="separator:a7105b0d01ca90a75a3d5fc2b52aecc7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a63200c3ff906ffc371ee2e919b7397" id="r_a7a63200c3ff906ffc371ee2e919b7397"><td class="memItemLeft" align="right" valign="top"><a id="a7a63200c3ff906ffc371ee2e919b7397" name="a7a63200c3ff906ffc371ee2e919b7397"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>RHSFunc</b> = std::function&lt; void(const <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;, const Real &amp;)&gt;</td></tr>
+<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>RHSFunc</b> = std::function&lt; <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">void</a>(<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> Real &amp;)&gt;</td></tr>
 <tr class="separator:a7a63200c3ff906ffc371ee2e919b7397"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a681ed6db95f155ca23590ea85d708643" id="r_a681ed6db95f155ca23590ea85d708643"><td class="memItemLeft" align="right" valign="top"><a id="a681ed6db95f155ca23590ea85d708643" name="a681ed6db95f155ca23590ea85d708643"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>Callback</b> = StepCallback&lt; Real, Device, Index &gt;</td></tr>
+<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Callback</b> = StepCallback&lt; Real, Device, Index &gt;</td></tr>
 <tr class="separator:a681ed6db95f155ca23590ea85d708643"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a8643012ac205e28c10e765dcde0dfda3" id="r_a8643012ac205e28c10e765dcde0dfda3"><td class="memItemLeft" align="right" valign="top"><a id="a8643012ac205e28c10e765dcde0dfda3" name="a8643012ac205e28c10e765dcde0dfda3"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SSPRK</b> (RHSFunc rhs, Index K, Index Np, Callback callback=nullptr)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>SSPRK</b> (RHSFunc <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">rhs</a>, Index <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">K</a>, Index <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Np</a>, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Callback</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">callback</a>=<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">nullptr</a>)</td></tr>
 <tr class="separator:a8643012ac205e28c10e765dcde0dfda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a47cf71f3346bc5e5e72953854a220fef" id="r_a47cf71f3346bc5e5e72953854a220fef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a47cf71f3346bc5e5e72953854a220fef">step</a> (<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;u, Real dt, Real t_in) override</td></tr>
+<tr class="memitem:a47cf71f3346bc5e5e72953854a220fef" id="r_a47cf71f3346bc5e5e72953854a220fef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a47cf71f3346bc5e5e72953854a220fef">step</a> (<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">dt</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">t_in</a>) <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="memdesc:a47cf71f3346bc5e5e72953854a220fef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a single time step updating u in-place.  <br /></td></tr>
 <tr class="separator:a47cf71f3346bc5e5e72953854a220fef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a421c5b66212e45d06337d8ad30daf353" id="r_a421c5b66212e45d06337d8ad30daf353"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a421c5b66212e45d06337d8ad30daf353">integrate</a> (<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;u, Real t0, Real t_end, Real dt) override</td></tr>
+<tr class="memitem:a421c5b66212e45d06337d8ad30daf353" id="r_a421c5b66212e45d06337d8ad30daf353"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a421c5b66212e45d06337d8ad30daf353">integrate</a> (<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">t0</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">t_end</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">dt</a>) <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="memdesc:a421c5b66212e45d06337d8ad30daf353"><td class="mdescLeft">&#160;</td><td class="mdescRight">Integrate from t0 to t_end using fixed step dt (last step clipped).  <br /></td></tr>
 <tr class="separator:a421c5b66212e45d06337d8ad30daf353"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9c6930714318d02ebe9d69b59bbe561" id="r_ad9c6930714318d02ebe9d69b59bbe561"><td class="memItemLeft" align="right" valign="top"><a id="ad9c6930714318d02ebe9d69b59bbe561" name="ad9c6930714318d02ebe9d69b59bbe561"></a>
-Real&#160;</td><td class="memItemRight" valign="bottom"><b>computeDt</b> (Real x_min, Real max_wave_speed, int poly_order, Real cfl=Real(0.4))</td></tr>
+Real&#160;</td><td class="memItemRight" valign="bottom"><b>computeDt</b> (Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">x_min</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">max_wave_speed</a>, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">int</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">poly_order</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">cfl</a>=Real(0.4))</td></tr>
 <tr class="separator:ad9c6930714318d02ebe9d69b59bbe561"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73a2247fa90942d95afdfbee3058522b" id="r_a73a2247fa90942d95afdfbee3058522b"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a73a2247fa90942d95afdfbee3058522b">numSteps</a> () const override</td></tr>
+<tr class="memitem:a73a2247fa90942d95afdfbee3058522b" id="r_a73a2247fa90942d95afdfbee3058522b"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a73a2247fa90942d95afdfbee3058522b">numSteps</a> () <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="memdesc:a73a2247fa90942d95afdfbee3058522b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of steps performed by the integrator.  <br /></td></tr>
 <tr class="separator:a73a2247fa90942d95afdfbee3058522b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae20f25900968f4de5418e21974b0e57a" id="r_ae20f25900968f4de5418e21974b0e57a"><td class="memItemLeft" align="right" valign="top">Real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#ae20f25900968f4de5418e21974b0e57a">currentTime</a> () const override</td></tr>
+<tr class="memitem:ae20f25900968f4de5418e21974b0e57a" id="r_ae20f25900968f4de5418e21974b0e57a"><td class="memItemLeft" align="right" valign="top">Real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#ae20f25900968f4de5418e21974b0e57a">currentTime</a> () <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="memdesc:ae20f25900968f4de5418e21974b0e57a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current simulation time tracked by the integrator.  <br /></td></tr>
 <tr class="separator:ae20f25900968f4de5418e21974b0e57a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5680b1561aebc1bd64272cea304ffdfa" id="r_a5680b1561aebc1bd64272cea304ffdfa"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a5680b1561aebc1bd64272cea304ffdfa">numPoints</a> () const override</td></tr>
+<tr class="memitem:a5680b1561aebc1bd64272cea304ffdfa" id="r_a5680b1561aebc1bd64272cea304ffdfa"><td class="memItemLeft" align="right" valign="top">Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html#a5680b1561aebc1bd64272cea304ffdfa">numPoints</a> () <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="memdesc:a5680b1561aebc1bd64272cea304ffdfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of DOFs managed by the integrator (K * Np).  <br /></td></tr>
 <tr class="separator:a5680b1561aebc1bd64272cea304ffdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -150,7 +150,7 @@ Real&#160;</td><td class="memItemRight" valign="bottom"><b>computeDt</b> (Real x
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, typename Index  = int&gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Real  = double, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Device  = TNL::Devices::Host, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Index  = int&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -181,7 +181,7 @@ template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, type
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, typename Index  = int&gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Real  = double, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Device  = TNL::Devices::Host, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Index  = int&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -236,7 +236,7 @@ template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, type
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, typename Index  = int&gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Real  = double, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Device  = TNL::Devices::Host, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Index  = int&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -267,7 +267,7 @@ template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, type
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, typename Index  = int&gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Real  = double, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Device  = TNL::Devices::Host, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Index  = int&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -298,13 +298,13 @@ template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, type
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, typename Index  = int&gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Real  = double, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Device  = TNL::Devices::Host, <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">typename</a> Index  = int&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classTNL_1_1DGM_1_1SSPRK.html">TNL::DGM::SSPRK</a>&lt; Real, Device, Index &gt;::step </td>
+          <td class="memname"><a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">void</a> <a class="el" href="classTNL_1_1DGM_1_1SSPRK.html">TNL::DGM::SSPRK</a>&lt; Real, Device, Index &gt;::step </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">Field</a> &amp;&#160;</td>
           <td class="paramname"><em>u</em>, </td>
@@ -357,7 +357,7 @@ template&lt;typename Real  = double, typename Device  = TNL::Devices::Host, type
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>TNL</b></li><li class="navelem"><b>DGM</b></li><li class="navelem"><a class="el" href="classTNL_1_1DGM_1_1SSPRK.html">SSPRK</a></li>
-    <li class="footer">Generated on Wed Jul 29 2026 15:03:55 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Jul 29 2026 15:13:28 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

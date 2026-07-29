@@ -122,12 +122,12 @@ $(document).ready(function(){initNavTree('Traits_8h_source.html',''); initResiza
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>{</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="structTraits.html#a124da6cab48b13f548f15f05aae0e0b9">   29</a></span>   <span class="keyword">using </span><a class="code hl_typedef" href="structTraits.html#a124da6cab48b13f548f15f05aae0e0b9">Device</a> = TNL::Devices::Host;</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="structTraits.html#ad66081f63738aa5cf19235c5f4853dbd">   34</a></span>   <span class="keyword">using </span><a class="code hl_typedef" href="structTraits.html#ad66081f63738aa5cf19235c5f4853dbd">RealType</a> = <a class="code hl_typedef" href="structTraits.html#ae2da93892af8f51d5e6d257602b43bf6">float</a>;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>   <span class="keyword">using </span>IndexType = <a class="code hl_typedef" href="structTraits.html#ae2da93892af8f51d5e6d257602b43bf6">int</a>;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="structTraits.html#ad66081f63738aa5cf19235c5f4853dbd">   34</a></span>   <span class="keyword">using </span><a class="code hl_typedef" href="structTraits.html#ad66081f63738aa5cf19235c5f4853dbd">RealType</a> = float;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>   <span class="keyword">using </span>IndexType = int;</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="structTraits.html#accca825bdb4f98623bf42704385b4e9b">   40</a></span>   <span class="keyword">using </span><a class="code hl_typedef" href="structTraits.html#accca825bdb4f98623bf42704385b4e9b">MeshConfig</a> = TNL::Meshes::DefaultConfig&lt; TNL::Meshes::Topologies::Quadrangle &gt;;</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>   <span class="keyword">using </span>MeshType = TNL::Meshes::Mesh&lt; MeshConfig, Device &gt;;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>   <span class="keyword">using </span><a class="code hl_class" href="classTNL_1_1DGM_1_1Mesh.html">MyMesh</a> = <a class="code hl_class" href="classTNL_1_1DGM_1_1Mesh.html">TNL::DGM::Mesh&lt;RealType, Device, IndexType&gt;</a>;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>   <span class="keyword">using </span><a class="code hl_class" href="classTNL_1_1DGM_1_1FieldVector.html">MyMesh</a> = <a class="code hl_class" href="classTNL_1_1DGM_1_1FieldVector.html">TNL::DGM::Mesh&lt;RealType, Device, IndexType&gt;</a>;</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>   <span class="keyword">using </span>HostMeshType = TNL::Meshes::Mesh&lt; MeshConfig, TNL::Devices::Host &gt;;</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>   <span class="keyword">using </span>ReaderType = TNL::Meshes::Readers::VTKReader;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>   <span class="keyword">using </span>WriterType = TNL::Meshes::Writers::VTKWriter&lt; HostMeshType &gt;;</div>
@@ -138,7 +138,7 @@ $(document).ready(function(){initNavTree('Traits_8h_source.html',''); initResiza
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="structTraits.html#ae2da93892af8f51d5e6d257602b43bf6">   56</a></span>  <span class="keyword">using </span><a class="code hl_typedef" href="structTraits.html#ae2da93892af8f51d5e6d257602b43bf6">Vector</a> = TNL::Containers::Vector&lt; RealType, Device, IndexType &gt;;</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="keyword">using </span>Matrix = TNL::Matrices::DenseMatrix&lt; RealType, Device, IndexType &gt;;</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="structTraits.html#a6f424d5ee8d19178264c92eeaf42bb70">   62</a></span>  <span class="keyword">using </span><a class="code hl_class" href="classTNL_1_1DGM_1_1Operator.html">Operator</a> = <a class="code hl_class" href="classTNL_1_1DGM_1_1Operator.html">TNL::DGM::Operator&lt; RealType, Device, IndexType &gt;</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="structTraits.html#a6f424d5ee8d19178264c92eeaf42bb70">   62</a></span>  <span class="keyword">using </span><a class="code hl_class" href="classTNL_1_1DGM_1_1FieldVector.html">Operator</a> = <a class="code hl_class" href="classTNL_1_1DGM_1_1FieldVector.html">TNL::DGM::Operator&lt; RealType, Device, IndexType &gt;</a>;</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>};</div>
 </div>
@@ -147,8 +147,7 @@ $(document).ready(function(){initNavTree('Traits_8h_source.html',''); initResiza
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
 <div class="ttc" id="aMesh_8hpp_html"><div class="ttname"><a href="Mesh_8hpp.html">Mesh.hpp</a></div><div class="ttdoc">DG mesh wrapper built on top of TNL meshes for 1D problems.</div></div>
 <div class="ttc" id="aOperator_8hpp_html"><div class="ttname"><a href="Operator_8hpp.html">Operator.hpp</a></div><div class="ttdoc">Spatial DG operator that computes the semi-discrete RHS.</div></div>
-<div class="ttc" id="aclassTNL_1_1DGM_1_1Mesh_html"><div class="ttname"><a href="classTNL_1_1DGM_1_1Mesh.html">TNL::DGM::Mesh</a></div><div class="ttdoc">1D DG mesh wrapper providing element geometry and adjacency queries.</div><div class="ttdef"><b>Definition</b> Mesh.hpp:36</div></div>
-<div class="ttc" id="aclassTNL_1_1DGM_1_1Operator_html"><div class="ttname"><a href="classTNL_1_1DGM_1_1Operator.html">TNL::DGM::Operator</a></div><div class="ttdef"><b>Definition</b> Operator.hpp:29</div></div>
+<div class="ttc" id="aclassTNL_1_1DGM_1_1FieldVector_html"><div class="ttname"><a href="classTNL_1_1DGM_1_1FieldVector.html">TNL::DGM::FieldVector</a></div><div class="ttdoc">Element-local storage for the DG solution field.</div><div class="ttdef"><b>Definition</b> FieldVector.hpp:30</div></div>
 <div class="ttc" id="astructTraits_html"><div class="ttname"><a href="structTraits.html">Traits</a></div><div class="ttdoc">Holds the commonly used types.</div><div class="ttdef"><b>Definition</b> Traits.h:25</div></div>
 <div class="ttc" id="astructTraits_html_a124da6cab48b13f548f15f05aae0e0b9"><div class="ttname"><a href="structTraits.html#a124da6cab48b13f548f15f05aae0e0b9">Traits::Device</a></div><div class="ttdeci">TNL::Devices::Host Device</div><div class="ttdef"><b>Definition</b> Traits.h:29</div></div>
 <div class="ttc" id="astructTraits_html_accca825bdb4f98623bf42704385b4e9b"><div class="ttname"><a href="structTraits.html#accca825bdb4f98623bf42704385b4e9b">Traits::MeshConfig</a></div><div class="ttdeci">TNL::Meshes::DefaultConfig&lt; TNL::Meshes::Topologies::Quadrangle &gt; MeshConfig</div><div class="ttdef"><b>Definition</b> Traits.h:40</div></div>
@@ -161,7 +160,7 @@ $(document).ready(function(){initNavTree('Traits_8h_source.html',''); initResiza
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_7f64de0ac3cd94543e23f741fcfbadc0.html">advection_1d</a></li><li class="navelem"><a class="el" href="dir_4444c98d0c7a086577051077f9992071.html">include</a></li><li class="navelem"><b>Traits.h</b></li>
-    <li class="footer">Generated on Wed Jul 29 2026 15:03:55 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Jul 29 2026 15:13:28 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

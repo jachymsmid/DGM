@@ -115,22 +115,22 @@ Inheritance diagram for TNL::DGM::RoeFlux&lt; Real &gt;:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a09d017a2ca3f7b56ed6a8999b4ed20f6" id="r_a09d017a2ca3f7b56ed6a8999b4ed20f6"><td class="memItemLeft" align="right" valign="top"><a id="a09d017a2ca3f7b56ed6a8999b4ed20f6" name="a09d017a2ca3f7b56ed6a8999b4ed20f6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>RoeFlux</b> (std::function&lt; Real(Real u) &gt; advection_speed, std::function&lt; Real(Real u) &gt; physical_flux)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><b>RoeFlux</b> (std::function&lt; Real(Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>) &gt; <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">advection_speed</a>, std::function&lt; Real(Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>) &gt; <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">physical_flux</a>)</td></tr>
 <tr class="separator:a09d017a2ca3f7b56ed6a8999b4ed20f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0faf5bbb297ce5b48b672996ee199f9a" id="r_a0faf5bbb297ce5b48b672996ee199f9a"><td class="memItemLeft" align="right" valign="top">Real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTNL_1_1DGM_1_1RoeFlux.html#a0faf5bbb297ce5b48b672996ee199f9a">compute</a> (Real u_minus, Real u_plus, Real n_outward) const override</td></tr>
+<tr class="memitem:a0faf5bbb297ce5b48b672996ee199f9a" id="r_a0faf5bbb297ce5b48b672996ee199f9a"><td class="memItemLeft" align="right" valign="top">Real&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTNL_1_1DGM_1_1RoeFlux.html#a0faf5bbb297ce5b48b672996ee199f9a">compute</a> (Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u_minus</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u_plus</a>, Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">n_outward</a>) <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">const</a> <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">override</a></td></tr>
 <tr class="separator:a0faf5bbb297ce5b48b672996ee199f9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a2eceb41b6aead7e273e2a79911e856e9" id="r_a2eceb41b6aead7e273e2a79911e856e9"><td class="memItemLeft" align="right" valign="top"><a id="a2eceb41b6aead7e273e2a79911e856e9" name="a2eceb41b6aead7e273e2a79911e856e9"></a>
-std::function&lt; Real(Real u) &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>advection_speed_</b></td></tr>
+std::function&lt; Real(Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>) &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>advection_speed_</b></td></tr>
 <tr class="separator:a2eceb41b6aead7e273e2a79911e856e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a022218efc168557e7ae082b82924e56e" id="r_a022218efc168557e7ae082b82924e56e"><td class="memItemLeft" align="right" valign="top"><a id="a022218efc168557e7ae082b82924e56e" name="a022218efc168557e7ae082b82924e56e"></a>
-std::function&lt; Real(Real u) &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>physical_flux_</b></td></tr>
+std::function&lt; Real(Real <a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">u</a>) &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>physical_flux_</b></td></tr>
 <tr class="separator:a022218efc168557e7ae082b82924e56e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;class Real&gt;<br />
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">class</a> Real&gt;<br />
 struct TNL::DGM::RoeFlux&lt; Real &gt;</div><p>Roe approximate Riemann solver (linearized flux). </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0faf5bbb297ce5b48b672996ee199f9a" name="a0faf5bbb297ce5b48b672996ee199f9a"></a>
@@ -139,7 +139,7 @@ struct TNL::DGM::RoeFlux&lt; Real &gt;</div><p>Roe approximate Riemann solver (l
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class Real &gt; </div>
+template&lt;<a class="el" href="classTNL_1_1DGM_1_1FieldVector.html">class</a> Real &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -188,7 +188,7 @@ template&lt;class Real &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>TNL</b></li><li class="navelem"><b>DGM</b></li><li class="navelem"><a class="el" href="structTNL_1_1DGM_1_1RoeFlux.html">RoeFlux</a></li>
-    <li class="footer">Generated on Wed Jul 29 2026 15:03:55 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Jul 29 2026 15:13:28 for DGM by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>
