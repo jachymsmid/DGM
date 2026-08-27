@@ -69,6 +69,9 @@ public:
       }
       RealType x_min = r_min * Mesh.minJacobian();
 
+      // i think?
+      int PolynomialOrder = RefElement.numDOF();
+
       time_step_ = ODESolver.computeDt(x_min, max_speed, PolynomialOrder);
    }
 
