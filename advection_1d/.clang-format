@@ -1,33 +1,35 @@
 # Documentation: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 ---
 Language: Cpp
-Standard: c++17
-#BasedOnStyle: Mozilla
 
 # max line length
-ColumnLimit: 128
+ColumnLimit: 80
 LineEnding: LF
 InsertNewlineAtEOF: true
 
+# indentation
 IndentWidth: 3
 ContinuationIndentWidth: 3
+
 IndentAccessModifiers: false
 AccessModifierOffset: -3
 IndentCaseLabels: true
-IndentCaseBlocks: true
+IndentCaseBlocks: false
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash
-IndentExternBlock: NoIndent
+IndentExternBlock: AfterExternBlock
 IndentWrappedFunctionNames: false
 
-NamespaceIndentation: None
+NamespaceIndentation: All
 FixNamespaceComments: true
 CompactNamespaces: false
-ShortNamespaceLines: 10
+ShortNamespaceLines: 0
 
-EmptyLineAfterAccessModifier: Never
-EmptyLineBeforeAccessModifier: LogicalBlock
-KeepEmptyLinesAtTheStartOfBlocks: false
+EmptyLineAfterAccessModifier: Always
+EmptyLineBeforeAccessModifier: Always
+KeepEmptyLines:
+  AtEndOfFile: true
+  AtStartOfBlock: true
 MaxEmptyLinesToKeep: 1
 SeparateDefinitionBlocks: Leave  # 'Always' breaks formatting of __cuda_callable__ etc.
 
@@ -68,7 +70,7 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel:  false
   AfterClass:      true
-  AfterControlStatement: MultiLine
+  AfterControlStatement: Always
   AfterEnum:       true
   AfterFunction:   true
   AfterNamespace:  false
@@ -91,12 +93,18 @@ BreakTemplateDeclarations: Yes
 BreakBeforeConceptDeclarations: Always
 BreakAfterAttributes: Never
 
-AlignAfterOpenBracket: Align
-AlignArrayOfStructures: None
+AlignAfterOpenBracket: true
+AlignArrayOfStructures: Right
 AlignConsecutiveMacros: None
-AlignConsecutiveAssignments: None
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+  AcrossEmptyLines: false
 AlignConsecutiveBitFields: None
-AlignConsecutiveDeclarations: None
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossComments: true
+  AcrossEmptyLines: false
 AlignEscapedNewlines: Left
 AlignOperands:   AlignAfterOperator
 AlignTrailingComments:

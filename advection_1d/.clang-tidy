@@ -38,7 +38,7 @@ WarningsAsErrors: >
   bubprone-suspicious-semicolon,
 
 CheckOptions:
-  readability-function-size.LineThreshold: 64
+  readability-function-size.LineThreshold: 80
   readability-function-size.ParameterThreshold: 15
   readability-magic-numbers.IgnoreAllFloatingPointValues: true
   readability-magic-numbers.IgnorePowersOf2IntegerValues: true
